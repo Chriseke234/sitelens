@@ -31,12 +31,12 @@ export default async function DashboardLayout({
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex min-h-screen flex-col lg:flex-row bg-slate-50 dark:bg-slate-950">
       {/* Sidebar Navigation */}
       <Sidebar userProfile={userProfile} />
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 min-w-0 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
     </div>

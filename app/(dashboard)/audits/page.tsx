@@ -107,7 +107,7 @@ export default async function AuditsPage({ searchParams }: AuditsPageProps) {
         <CardContent className="pt-6">
           {hasAudits ? (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full min-w-[600px] text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-400 dark:border-slate-800">
                     <th className="pb-3 font-semibold">Website URL</th>

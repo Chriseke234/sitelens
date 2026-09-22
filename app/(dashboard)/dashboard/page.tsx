@@ -115,7 +115,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Overview Stat Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Total Audits</span>
           <div className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-white">{totalAudits}</div>
@@ -161,7 +161,7 @@ export default async function DashboardPage() {
         <CardContent>
           {audits.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full min-w-[600px] text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-950">
                     <th className="py-2.5 px-3 font-semibold">Website URL</th>

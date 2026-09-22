@@ -60,7 +60,7 @@ export default async function MediaPage() {
         <CardContent>
           {hasScans ? (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full min-w-[600px] text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-950">
                     <th className="py-2.5 px-3 font-semibold">File Name</th>
