@@ -92,11 +92,11 @@ export default async function DashboardPage() {
   const welcomeHeadline = fullName ? `Welcome back, ${fullName}` : "Welcome back";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       {/* Header Greeting & Actions */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-6 dark:border-slate-800">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-3xl font-sans">
             {welcomeHeadline}
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -106,7 +106,7 @@ export default async function DashboardPage() {
 
         <div className="flex items-center gap-3">
           <Link href="/audits">
-            <Button size="sm" className="gap-2">
+            <Button size="sm" className="gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold btn-interactive">
               <Search className="h-4 w-4" />
               <span>New Audit</span>
             </Button>
@@ -116,24 +116,24 @@ export default async function DashboardPage() {
 
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 card-hover-effect">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Total Audits</span>
           <div className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-white">{totalAudits}</div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 card-hover-effect">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Completed</span>
           <div className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-white">{completedCount}</div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 card-hover-effect">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Average Score</span>
           <div className="mt-2 text-3xl font-extrabold text-blue-600 dark:text-blue-400">
             {avgScore !== null ? `${avgScore}/100` : "N/A"}
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 card-hover-effect">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Open High Issues</span>
           <div className="mt-2 text-3xl font-extrabold text-rose-600 dark:text-rose-400">{criticalHighCount}</div>
         </div>

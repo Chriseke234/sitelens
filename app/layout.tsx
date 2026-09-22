@@ -1,8 +1,18 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Lato, Great_Vibes } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const lato = Lato({
+  subsets: ["latin"],
+  weight: ["300", "400", "700", "900"],
+  variable: "--font-lato",
+});
+
+const greatVibes = Great_Vibes({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-great-vibes",
+});
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://sitelens.app";
 
@@ -79,7 +89,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${inter.className} min-h-full flex flex-col bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-50`}>
+      <body className={`${lato.variable} ${greatVibes.variable} ${lato.className} min-h-full flex flex-col bg-slate-50 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-50`}>
         {children}
       </body>
     </html>

@@ -104,9 +104,9 @@ export function Sidebar({ userProfile }: SidebarProps) {
                 key={item.name}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all btn-interactive ${
                   isActive
-                    ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                    ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30 dark:bg-blue-600 dark:text-white"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                 }`}
               >
@@ -138,7 +138,7 @@ export function Sidebar({ userProfile }: SidebarProps) {
             size="sm"
             onClick={handleSignOut}
             disabled={signingOut}
-            className="w-full justify-start gap-2 text-slate-600 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400"
+            className="w-full justify-start gap-2 text-slate-600 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 rounded-lg btn-interactive"
           >
             <LogOut className="h-4 w-4" />
             <span>{signingOut ? "Signing out..." : "Sign Out"}</span>
