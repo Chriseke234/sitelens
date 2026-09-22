@@ -43,12 +43,12 @@ export function Navbar() {
 
         {/* Action Buttons */}
         <div className="hidden items-center space-x-3 md:flex">
-          <Link href="#how-it-works">
+          <Link href="/login">
             <Button variant="ghost" size="sm">
               Sign in
             </Button>
           </Link>
-          <Link href="#how-it-works">
+          <Link href="/signup">
             <Button size="sm" className="gap-1.5">
               <span>Get started</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -94,12 +94,12 @@ export function Navbar() {
               Resources
             </Link>
             <div className="pt-2 flex flex-col space-y-2">
-              <Link href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" className="w-full justify-center">
                   Sign in
                 </Button>
               </Link>
-              <Link href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full justify-center gap-1.5">
                   <span>Get started</span>
                   <ArrowRight className="h-4 w-4" />
