@@ -60,10 +60,11 @@ export default function SignupPage() {
       });
 
       if (error) {
-        if (error.message.includes("User already registered") || error.message.includes("already registered")) {
+        console.error("Supabase sign up error:", error);
+        if (error.message.toLowerCase().includes("already registered")) {
           setErrorMessage("An account with this email already exists. Try signing in instead.");
         } else {
-          setErrorMessage("Could not create account at this time. Please check your information and try again.");
+          setErrorMessage(error.message || "Could not create account at this time. Please check your information and try again.");
         }
         setLoading(false);
         return;
@@ -90,8 +91,7 @@ export default function SignupPage() {
 
       // Check if session was immediately established or email confirmation is required
       if (data.session) {
-        router.push("/dashboard");
-        router.refresh();
+        window.location.href = "/dashboard";
       } else {
         setConfirmationSuccess(true);
         setLoading(false);

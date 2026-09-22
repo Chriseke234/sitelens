@@ -38,20 +38,20 @@ export default function LoginPage() {
       });
 
       if (error) {
-        // Convert technical Supabase error strings to user-understandable messages
-        if (error.message.includes("Invalid login credentials")) {
+        console.error("Supabase sign in error:", error);
+        if (error.message.toLowerCase().includes("invalid login credentials")) {
           setErrorMessage("Invalid email address or password. Please check your credentials and try again.");
-        } else if (error.message.includes("Email not confirmed")) {
+        } else if (error.message.toLowerCase().includes("email not confirmed")) {
           setErrorMessage("Your email address has not been verified yet. Please check your inbox for the confirmation link.");
         } else {
-          setErrorMessage("Unable to sign in at this time. Please check your internet connection and try again.");
+          setErrorMessage(error.message || "Unable to sign in at this time. Please try again.");
         }
         setLoading(false);
         return;
       }
 
-      router.push(redirectPath);
-      router.refresh();
+      window.location.href = redirectPath;
+
     } catch {
       setErrorMessage("An unexpected network error occurred. Please try again.");
       setLoading(false);
