@@ -46,18 +46,18 @@ export function HowItWorks() {
             return (
               <div
                 key={step.number}
-                className="relative flex flex-col rounded-xl border border-slate-200/80 bg-slate-50/60 p-6 dark:border-slate-800 dark:bg-slate-900"
+                className="relative flex flex-col rounded-xl border border-slate-200/80 bg-slate-50/60 p-6 dark:border-slate-800 dark:bg-slate-900 card-hover-effect group"
               >
                 <div className="flex items-center justify-between pb-4">
-                  <span className="font-mono text-2xl font-extrabold text-slate-400 dark:text-slate-600">
+                  <span className="font-mono text-2xl font-extrabold text-blue-600 dark:text-blue-400">
                     {step.number}
                   </span>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-500/30 group-hover:scale-110 transition-transform">
                     <Icon className="h-5 w-5" />
                   </div>
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 font-sans">
                   {step.title}
                 </h3>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -65,7 +65,7 @@ export function HowItWorks() {
                 </p>
 
                 {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute -right-4 top-1/2 -translate-y-1/2 z-10 text-slate-300 dark:text-slate-700">
+                  <div className="hidden md:block absolute -right-4 top-1/2 -translate-y-1/2 z-10 text-blue-400 dark:text-blue-500">
                     <svg
                       width="16"
                       height="16"
