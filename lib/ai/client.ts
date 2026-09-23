@@ -1,12 +1,13 @@
 /**
- * Server-Side OpenAI Client Utility
+ * Server-Side Gemini API Client Utility
  * Ensures API key security - never exposed to browser context.
  */
 
-export function getOpenAIApiKey(): string | null {
-  return process.env.OPENAI_API_KEY || null;
+export function getGeminiApiKey(): string | null {
+  return process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || null;
 }
 
 export function isAIConfigured(): boolean {
-  return Boolean(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim() !== "");
+  const key = getGeminiApiKey();
+  return Boolean(key && key.trim() !== "");
 }

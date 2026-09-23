@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getOpenAIApiKey, isAIConfigured } from "./client";
+import { getGeminiApiKey, isAIConfigured } from "./client";
 import { AuditAIReportSchema, AuditAIReportData } from "./schemas/audit-report";
 import { SYSTEM_PROMPT, PROMPT_VERSION, DEFAULT_AI_MODEL } from "./prompts/audit-report";
 
@@ -105,44 +105,50 @@ export async function getOrGenerateAIReport(
     return { success: true, data: savedReport as DBStoredAIReport };
   }
 
-  // 4. Call OpenAI API for structured interpretation
+  // 4. Call Google Gemini API for structured interpretation
   try {
-    const apiKey = getOpenAIApiKey();
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const apiKey = getGeminiApiKey();
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_AI_MODEL}:generateContent?key=${apiKey}`;
+
+    const promptText = `Interpret this website audit evidence for ${audit.url}:\n${JSON.stringify(
+      structuredEvidence,
+      null,
+      2
+    )}`;
+
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: DEFAULT_AI_MODEL,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+        system_instruction: {
+          parts: [{ text: SYSTEM_PROMPT }],
+        },
+        contents: [
           {
             role: "user",
-            content: `Interpret this website audit evidence for ${audit.url}:\n${JSON.stringify(
-              structuredEvidence,
-              null,
-              2
-            )}`,
+            parts: [{ text: promptText }],
           },
         ],
-        response_format: { type: "json_object" },
-        temperature: 0.2,
+        generationConfig: {
+          response_mime_type: "application/json",
+          temperature: 0.2,
+        },
       }),
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("OpenAI API call failed:", errText);
-      return { success: false, error: `OpenAI API returned status ${response.status}` };
+      console.error("Gemini API call failed:", errText);
+      return { success: false, error: `Gemini API returned status ${response.status}` };
     }
 
     const resData = await response.json();
-    const rawContent = resData.choices?.[0]?.message?.content;
+    const rawContent = resData.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawContent) {
-      return { success: false, error: "Empty response from AI service." };
+      return { success: false, error: "Empty response from Gemini AI service." };
     }
 
     const parsedJson = JSON.parse(rawContent);
