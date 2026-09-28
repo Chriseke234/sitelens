@@ -1,8 +1,6 @@
-"use client";
-
 import React, { useState } from "react";
 import Link from "next/link";
-import { Search, ShieldCheck, X, FileText, ArrowRight } from "lucide-react";
+import { Sparkles, ShieldCheck, X, FileText, ArrowRight } from "lucide-react";
 
 export function Footer() {
   const [modalType, setModalType] = useState<"privacy" | "terms" | null>(null);
@@ -15,43 +13,38 @@ export function Footer() {
           <div className="space-y-3 sm:col-span-2 md:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 font-bold text-white group btn-interactive">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm shadow-blue-500/30 group-hover:scale-105 transition-transform">
-                <Search className="h-4 w-4" />
+                <Sparkles className="h-4 w-4" />
               </div>
-              <span className="text-lg font-extrabold tracking-tight font-sans">SiteLens</span>
+              <span className="text-lg font-black tracking-tight font-sans">Aigenstra</span>
             </Link>
             <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
-              Evidence-based website auditing and digital media provenance verification in one workspace.
+              AI product engineering & audit workspace for vibe coders. Reduce blind spots before you ship.
             </p>
             <div className="pt-1 flex items-center gap-2">
               <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[11px] font-medium text-slate-400">All audit engines operational</span>
+              <span className="text-[11px] font-medium text-slate-400">All AI Agent Engines Operational</span>
             </div>
           </div>
 
           {/* Links Column 1: Product Navigation */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-              Product
+              Workspace
             </h3>
             <ul className="mt-3.5 space-y-2.5">
               <li>
-                <Link href="#capabilities" className="inline-block text-xs text-slate-400 transition-all hover:translate-x-1 hover:text-blue-400">
-                  Audit Capabilities
+                <Link href="/projects" className="inline-block text-xs text-slate-400 transition-all hover:translate-x-1 hover:text-blue-400">
+                  AI Workspaces
                 </Link>
               </li>
               <li>
-                <Link href="#media-proof" className="inline-block text-xs text-slate-400 transition-all hover:translate-x-1 hover:text-blue-400">
-                  Media Provenance
+                <Link href="/projects/new" className="inline-block text-xs text-slate-400 transition-all hover:translate-x-1 hover:text-blue-400">
+                  New Project Wizard
                 </Link>
               </li>
               <li>
-                <Link href="#how-it-works" className="inline-block text-xs text-slate-400 transition-all hover:translate-x-1 hover:text-blue-400">
-                  How it Works
-                </Link>
-              </li>
-              <li>
-                <Link href="#reports" className="inline-block text-xs text-slate-400 transition-all hover:translate-x-1 hover:text-blue-400">
-                  AI Reports
+                <Link href="/audits" className="inline-block text-xs text-slate-400 transition-all hover:translate-x-1 hover:text-blue-400">
+                  Website Audits
                 </Link>
               </li>
             </ul>
@@ -76,16 +69,6 @@ export function Footer() {
               <li>
                 <Link href="/dashboard" className="inline-block text-xs text-slate-400 transition-all hover:translate-x-1 hover:text-blue-400">
                   Workspace Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link href="/audits" className="inline-block text-xs text-slate-400 transition-all hover:translate-x-1 hover:text-blue-400">
-                  Website Audits
-                </Link>
-              </li>
-              <li>
-                <Link href="/media" className="inline-block text-xs text-slate-400 transition-all hover:translate-x-1 hover:text-blue-400">
-                  Media Authenticity
                 </Link>
               </li>
             </ul>
@@ -122,7 +105,7 @@ export function Footer() {
         {/* Footer Bottom Bar */}
         <div className="mt-12 border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-slate-400">
-            &copy; 2026 SiteLens. All rights reserved. Built for evidence-first website & media intelligence.
+            &copy; 2026 Aigenstra. All rights reserved. Build with an AI product team of specialized agents.
           </p>
 
           <div className="flex space-x-6 text-xs text-slate-400">
@@ -160,31 +143,25 @@ export function Footer() {
               {modalType === "privacy" ? (
                 <>
                   <p>
-                    <strong>SiteLens Data Privacy Commitment:</strong> We are dedicated to respecting your privacy and protecting the security of your website and media audit data.
+                    <strong>Aigenstra Data Privacy Commitment:</strong> We are dedicated to respecting your privacy and protecting the security of your product specifications and project code audit data.
                   </p>
                   <p>
-                    1. <strong>Audit Data Usage:</strong> Website URLs submitted for audit are processed strictly to calculate technical SEO, performance, accessibility, UX, trust, and conversion metrics.
+                    1. <strong>Project Data Protection:</strong> Project details and code submissions are treated as untrusted data and strictly scoped to your authenticated account using Supabase Row-Level Security (RLS).
                   </p>
                   <p>
-                    2. <strong>Media Provenance Storage:</strong> Uploaded media files are stored securely in isolated Supabase storage buckets protected by strict Row-Level Security (RLS) policies.
-                  </p>
-                  <p>
-                    3. <strong>No Third-Party Data Selling:</strong> Your personal information, user email addresses, and private audit histories are never sold or rented to third-party advertisers.
+                    2. <strong>No Third-Party Data Selling:</strong> Your personal information, user email addresses, and private audit histories are never sold or rented to third-party advertisers.
                   </p>
                 </>
               ) : (
                 <>
                   <p>
-                    <strong>SiteLens Pre-Launch Terms of Service:</strong> Welcome to SiteLens. By accessing or using our platform, you agree to comply with the following terms:
+                    <strong>Aigenstra Terms of Service:</strong> Welcome to Aigenstra. By accessing or using our platform, you agree to comply with the following terms:
                   </p>
                   <p>
-                    1. <strong>Pre-Launch Free Access:</strong> During pre-launch testing, SiteLens provides website intelligence and media authenticity auditing free of charge. No payment details are required.
+                    1. <strong>Defensive Engineering Tool:</strong> Aigenstra provides AI product engineering and audit recommendations to reduce blind spots. It does not guarantee zero vulnerabilities or complete security.
                   </p>
                   <p>
-                    2. <strong>Authorized Scanning:</strong> You agree to submit website URLs and media files only for authorized testing, diagnostic, or evaluation purposes.
-                  </p>
-                  <p>
-                    3. <strong>Evidence-Grounded Intelligence:</strong> Audit reports and media authenticity scores are generated deterministically based on empirical HTML, EXIF metadata, and forensic evidence signals.
+                    2. <strong>User Responsibility:</strong> You retain complete control over external implementation, pull request merges, and deployments.
                   </p>
                 </>
               )}

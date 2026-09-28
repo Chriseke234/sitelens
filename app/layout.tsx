@@ -14,31 +14,31 @@ const greatVibes = Great_Vibes({
   variable: "--font-great-vibes",
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://sitelens.app";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://sitlens.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "SiteLens — Website Intelligence & Media Authenticity Platform",
-    template: "%s | SiteLens",
+    default: "Aigenstra — AI Product Engineering & Audit Platform for Vibe Coders",
+    template: "%s | Aigenstra",
   },
   description:
-    "SiteLens analyzes websites and digital media to identify technical problems, surface verifiable evidence, and give practical recommendations.",
+    "Aigenstra is an AI-assisted product engineering workspace. Plan, build, debate, and audit your products with a multidisciplinary AI team before you ship.",
   keywords: [
+    "AI product development",
+    "AI product engineering",
+    "vibe coding",
+    "AI code audit",
+    "AI security audit",
     "website audit",
-    "website SEO audit",
-    "website performance audit",
-    "website accessibility audit",
-    "website UX audit",
-    "website analysis tool",
-    "website health check",
-    "image authenticity checker",
-    "AI image detection",
-    "C2PA provenance",
+    "AI development workflow",
+    "product engineering assistant",
+    "AI software architecture",
+    "vibe coding assistant",
   ],
-  authors: [{ name: "SiteLens Team" }],
-  creator: "SiteLens",
-  publisher: "SiteLens",
+  authors: [{ name: "Aigenstra Team" }],
+  creator: "Aigenstra",
+  publisher: "Aigenstra",
   formatDetection: {
     email: false,
     address: false,
@@ -48,16 +48,16 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: baseUrl,
-    siteName: "SiteLens",
-    title: "SiteLens — Website Intelligence & Media Authenticity Platform",
+    siteName: "Aigenstra",
+    title: "Aigenstra — AI Product Engineering & Audit Platform",
     description:
-      "SiteLens analyzes websites and digital media to identify problems, surface evidence, and deliver actionable insights.",
+      "Reduce blind spots before you ship. Build with an AI product team of specialized agents: PM, UX, Architecture, Security, and Auditor.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SiteLens — Website Intelligence & Media Authenticity Platform",
+    title: "Aigenstra — AI Product Engineering & Audit Platform",
     description:
-      "SiteLens analyzes websites and digital media to identify problems, surface evidence, and deliver actionable insights.",
+      "Reduce blind spots before you ship. Build with an AI product team of specialized agents.",
   },
   icons: {
     icon: "/icon.svg",
@@ -73,11 +73,11 @@ export default function RootLayout({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "SiteLens",
+    name: "Aigenstra",
     url: baseUrl,
     description:
-      "Evidence-based website intelligence auditing and digital media authenticity assessment platform.",
-    applicationCategory: "BusinessApplication",
+      "AI-assisted product engineering workspace helping vibe coders plan, debate, structure build prompts, and audit products.",
+    applicationCategory: "SoftwareEngineeringApplication",
     operatingSystem: "All",
   };
 

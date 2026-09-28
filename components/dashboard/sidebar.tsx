@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Search,
   LayoutDashboard,
+  FolderKanban,
   FileCheck,
   ShieldCheck,
   Settings,
@@ -15,6 +16,7 @@ import {
   Menu,
   X,
   User as UserIcon,
+  Sparkles,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -32,6 +34,7 @@ export function Sidebar({ userProfile }: SidebarProps) {
 
   const navigationItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "AI Workspaces", href: "/projects", icon: FolderKanban },
     { name: "Audits", href: "/audits", icon: FileCheck },
     { name: "Media", href: "/media", icon: ShieldCheck },
     { name: "Settings", href: "/settings", icon: Settings },
@@ -57,11 +60,11 @@ export function Sidebar({ userProfile }: SidebarProps) {
     <>
       {/* Mobile Top Header */}
       <div className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 lg:hidden">
-        <Link href="/dashboard" className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
-            <Search className="h-4 w-4" />
+        <Link href="/dashboard" className="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+            <Sparkles className="h-4 w-4" />
           </div>
-          <span className="text-lg tracking-tight">SiteLens</span>
+          <span className="text-lg tracking-tight font-black">Aigenstra</span>
         </Link>
 
         <button
@@ -87,10 +90,10 @@ export function Sidebar({ userProfile }: SidebarProps) {
         {/* Brand Header */}
         <div className="flex h-16 items-center px-6 border-b border-slate-100 dark:border-slate-800">
           <Link href="/dashboard" className="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
-              <Search className="h-4 w-4" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+              <Sparkles className="h-4 w-4" />
             </div>
-            <span className="text-lg tracking-tight">SiteLens</span>
+            <span className="text-lg tracking-tight font-black">Aigenstra</span>
           </Link>
         </div>
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Search, Menu, X, ArrowRight } from "lucide-react";
+import { Sparkles, Menu, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Navbar() {
@@ -14,9 +14,9 @@ export function Navbar() {
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white group btn-interactive">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm shadow-blue-500/30 group-hover:scale-105 transition-transform">
-            <Search className="h-4 w-4" />
+            <Sparkles className="h-4 w-4" />
           </div>
-          <span className="text-base font-extrabold tracking-tight font-sans">SiteLens</span>
+          <span className="text-base font-black tracking-tight font-sans">Aigenstra</span>
         </Link>
 
         {/* Desktop Navigation Links */}
