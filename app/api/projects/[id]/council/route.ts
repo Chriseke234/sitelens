@@ -23,7 +23,16 @@ export async function GET(
       .eq("project_id", id)
       .order("created_at", { ascending: false });
 
-    return NextResponse.json({ discussions: discussions || [] });
+    const { data: decisions } = await supabase
+      .from("agent_decisions")
+      .select("*")
+      .eq("project_id", id)
+      .order("decision_number", { ascending: false });
+
+    return NextResponse.json({
+      discussions: discussions || [],
+      decisions: decisions || [],
+    });
   } catch (err) {
     console.error("Council GET error:", err);
     return NextResponse.json({ error: "An unexpected server error occurred." }, { status: 500 });
@@ -105,6 +114,21 @@ export async function POST(
       })
       .select("*")
       .single();
+
+    // Also attempt inserting into adrs table
+    try {
+      await supabase.from("adrs").insert({
+        project_id: id,
+        adr_number: nextDecNum,
+        title: councilResult.decision.topic,
+        status: "accepted",
+        context: councilResult.decision.problem,
+        decision: councilResult.decision.decision,
+        reason: councilResult.decision.reason,
+        consequences: councilResult.decision.consequences || "Documented by Orchestrator Agent.",
+        alternatives: councilResult.decision.alternativesConsidered,
+      });
+    } catch (_) {}
 
     return NextResponse.json({
       discussion: discussionRecord,

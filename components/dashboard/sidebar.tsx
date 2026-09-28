@@ -9,6 +9,7 @@ import {
   Search,
   LayoutDashboard,
   FolderKanban,
+  Layers,
   FileCheck,
   ShieldCheck,
   Settings,
@@ -34,9 +35,9 @@ export function Sidebar({ userProfile }: SidebarProps) {
 
   const navigationItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "AI Workspaces", href: "/projects", icon: FolderKanban },
+    { name: "Projects", href: "/projects", icon: FolderKanban },
+    { name: "Templates", href: "/templates", icon: Layers },
     { name: "Audits", href: "/audits", icon: FileCheck },
-    { name: "Media", href: "/media", icon: ShieldCheck },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 

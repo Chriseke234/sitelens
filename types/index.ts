@@ -128,6 +128,18 @@ export interface MediaEvidence {
 // AIGENSTRA V2 - AI PRODUCT ENGINEERING TYPES
 // ==========================================
 
+export type ProductType =
+  | "SaaS"
+  | "Marketplace"
+  | "Web App"
+  | "Mobile App"
+  | "Internal Tool"
+  | "E-commerce"
+  | "AI Product"
+  | "API"
+  | "Landing Page"
+  | "Other";
+
 export type ProjectStage =
   | "idea"
   | "researching"
@@ -153,6 +165,10 @@ export interface Project {
   user_id: string;
   name: string;
   description: string;
+  product_type?: ProductType;
+  target_audience?: string | null;
+  problem_statement?: string | null;
+  raw_idea?: string | null;
   stage: ProjectStage;
   coding_environment: CodingEnvironment;
   tech_stack?: string | null;
@@ -161,6 +177,53 @@ export interface Project {
   repo_url?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProjectStageRecord {
+  id: string;
+  project_id: string;
+  stage_name: string;
+  status: "not_started" | "in_progress" | "completed" | "needs_attention";
+  progress_pct: number;
+  completed_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ADR {
+  id: string;
+  project_id: string;
+  adr_number: number;
+  title: string;
+  status: "proposed" | "accepted" | "superseded" | "rejected";
+  context: string;
+  decision: string;
+  reason: string;
+  consequences: string;
+  alternatives: string[];
+  created_at: string;
+}
+
+export interface UserPersona {
+  name: string;
+  goal: string;
+  pain: string;
+  technicalAbility: "Low" | "Medium" | "High";
+  primaryTask: string;
+}
+
+export interface FunctionalRequirement {
+  code: string; // e.g. FR-001
+  title: string;
+  description: string;
+  priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+}
+
+export interface NonFunctionalRequirement {
+  code: string; // e.g. NFR-001
+  title: string;
+  description: string;
+  category: "Security" | "Performance" | "Reliability" | "Usability";
 }
 
 export interface DiscoveryQnA {
@@ -182,7 +245,7 @@ export interface ResearchDocument {
   user_needs: string[];
   risks: Array<{ risk: string; severity: string; mitigation: string }>;
   opportunities: string[];
-  assumptions: Array<{ assumption: string; status: "verified" | "unverified" | "hypothesis" }>;
+  assumptions: Array<{ assumption: string; status: "VERIFIED" | "INFERRED" | "ASSUMPTION" | "NEEDS RESEARCH" }>;
   hypotheses: string[];
   sources: Array<{ title: string; url?: string; notes?: string }>;
   created_at: string;
@@ -196,6 +259,7 @@ export interface UserJourneyStep {
   userAction: string;
   systemResponse: string;
   friction?: string;
+  possibleFailure?: string;
   errorStates?: string[];
   alternativePaths?: string[];
   security?: string;
@@ -219,11 +283,14 @@ export interface ProductSpec {
   project_id: string;
   problem_statement: string;
   target_users: string[];
+  personas?: UserPersona[];
   goals: string[];
   non_goals: string[];
   user_stories: Array<{ title: string; asA: string; iWantTo: string; soThat: string; priority: string }>;
   functional_reqs: string[];
+  structured_functional_reqs?: FunctionalRequirement[];
   non_functional_reqs: string[];
+  structured_non_functional_reqs?: NonFunctionalRequirement[];
   business_rules: string[];
   acceptance_criteria: string[];
   edge_cases: string[];
@@ -275,21 +342,29 @@ export interface SecurityPlan {
 }
 
 export type AgentRole =
-  | "Product Manager Agent"
-  | "Research Agent"
+  | "Orchestrator Agent"
+  | "Product Agent"
   | "UX Agent"
-  | "UI Agent"
-  | "Frontend Engineer Agent"
-  | "Backend Engineer Agent"
-  | "Security Engineer Agent"
+  | "Design Agent"
+  | "Implementation Advisor"
+  | "Security Agent"
   | "QA Agent"
   | "Performance Agent"
-  | "Auditor Agent"
-  | "Orchestrator Agent";
+  | "Auditor Agent";
+
+export type AgentMessageType =
+  | "ANALYSIS"
+  | "QUESTION"
+  | "CONCERN"
+  | "PROPOSAL"
+  | "DISAGREEMENT"
+  | "AGREEMENT"
+  | "DECISION";
 
 export interface AgentMessage {
   agentId: string;
   agentName: AgentRole;
+  messageType?: AgentMessageType;
   content: string;
   timestamp: string;
 }

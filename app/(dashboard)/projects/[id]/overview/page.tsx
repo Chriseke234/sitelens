@@ -9,10 +9,10 @@ import {
   ArrowRight,
   Sparkles,
   Users,
-  Terminal,
   Activity,
   Layers,
-  Search,
+  FileCode2,
+  TrendingUp,
 } from "lucide-react";
 import { Project } from "@/types";
 
@@ -50,20 +50,59 @@ export default async function ProjectOverviewPage({
 
   const project = projectData as Project;
 
-  // Fetch summary data
-  const [findingsRes, decisionsRes, discoveryRes, promptsRes] = await Promise.all([
+  // Fetch actual project artifacts in parallel to compute real progress
+  const [
+    findingsRes,
+    decisionsRes,
+    discoveryRes,
+    researchRes,
+    journeyRes,
+    productRes,
+    designRes,
+    archRes,
+    secRes,
+    promptsRes,
+  ] = await Promise.all([
     supabase.from("audit_findings").select("*").eq("project_id", id),
     supabase.from("agent_decisions").select("*").eq("project_id", id).order("created_at", { ascending: false }).limit(3),
     supabase.from("discovery_qna").select("*").eq("project_id", id),
+    supabase.from("research_documents").select("id").eq("project_id", id).limit(1),
+    supabase.from("user_journeys").select("id").eq("project_id", id).limit(1),
+    supabase.from("product_specs").select("id").eq("project_id", id).limit(1),
+    supabase.from("design_specs").select("id").eq("project_id", id).limit(1),
+    supabase.from("architecture_docs").select("id").eq("project_id", id).limit(1),
+    supabase.from("security_plans").select("id").eq("project_id", id).limit(1),
     supabase.from("prompts").select("*").eq("project_id", id),
   ]);
 
   const findings = findingsRes.data || [];
   const decisions = decisionsRes.data || [];
   const qnaList = discoveryRes.data || [];
+  const hasResearch = (researchRes.data?.length || 0) > 0;
+  const hasJourney = (journeyRes.data?.length || 0) > 0;
+  const hasProduct = (productRes.data?.length || 0) > 0;
+  const hasDesign = (designRes.data?.length || 0) > 0;
+  const hasArch = (archRes.data?.length || 0) > 0;
+  const hasSecurity = (secRes.data?.length || 0) > 0;
   const prompts = promptsRes.data || [];
 
   const answeredCount = qnaList.filter((q) => q.answer && q.answer.trim().length > 0).length;
+  const hasDiscovery = answeredCount >= 2;
+
+  // Calculate real progress percentage (10 stages)
+  const stageWeights = [
+    hasDiscovery ? 10 : answeredCount > 0 ? 5 : 0,
+    hasResearch ? 10 : 0,
+    hasJourney ? 10 : 0,
+    hasProduct ? 10 : 0,
+    hasDesign ? 10 : 0,
+    hasArch ? 10 : 0,
+    hasSecurity ? 10 : 0,
+    decisions.length > 0 ? 10 : 0,
+    prompts.length > 0 ? 10 : 0,
+    findings.length > 0 ? 10 : 0,
+  ];
+  const totalProgressPct = stageWeights.reduce((a, b) => a + b, 0);
 
   const openIssues = {
     critical: findings.filter((f) => f.severity === "critical" && f.status === "open").length,
@@ -72,18 +111,16 @@ export default async function ProjectOverviewPage({
     low: findings.filter((f) => f.severity === "low" && f.status === "open").length,
   };
 
-  // Readiness category mock calculation based on state
+  // Readiness categories based on actual database stage records
   const readinessCategories = [
-    { name: "Product Spec", status: answeredCount >= 3 ? "READY" : "NEEDS ATTENTION", score: answeredCount >= 3 ? 85 : 40, href: `/projects/${id}/product` },
-    { name: "UX Journeys", status: "READY", score: 80, href: `/projects/${id}/journey` },
-    { name: "Architecture", status: prompts.some((p) => p.category === "architecture") ? "READY" : "NEEDS ATTENTION", score: prompts.some((p) => p.category === "architecture") ? 90 : 50, href: `/projects/${id}/architecture` },
-    { name: "Database Schema", status: "READY", score: 85, href: `/projects/${id}/architecture` },
-    { name: "API Strategy", status: "READY", score: 75, href: `/projects/${id}/architecture` },
-    { name: "Security Architecture", status: openIssues.critical === 0 ? "READY" : "NEEDS ATTENTION", score: openIssues.critical === 0 ? 80 : 35, href: `/projects/${id}/security` },
-    { name: "Testing Plan", status: "READY", score: 70, href: `/projects/${id}/council` },
-    { name: "Accessibility", status: "READY", score: 90, href: `/projects/${id}/design` },
-    { name: "Performance", status: "READY", score: 85, href: `/projects/${id}/audit` },
-    { name: "SEO Structure", status: "READY", score: 80, href: `/projects/${id}/audit` },
+    { name: "Product Spec", status: hasProduct ? "READY" : "NEEDS ATTENTION", score: hasProduct ? 100 : answeredCount >= 2 ? 50 : 20, href: `/projects/${id}/product` },
+    { name: "UX Journeys", status: hasJourney ? "READY" : "NEEDS ATTENTION", score: hasJourney ? 100 : 20, href: `/projects/${id}/journey` },
+    { name: "Design System", status: hasDesign ? "READY" : "NEEDS ATTENTION", score: hasDesign ? 100 : 20, href: `/projects/${id}/design` },
+    { name: "Architecture", status: hasArch ? "READY" : "NEEDS ATTENTION", score: hasArch ? 100 : 20, href: `/projects/${id}/architecture` },
+    { name: "Security Architecture", status: hasSecurity && openIssues.critical === 0 ? "READY" : "NEEDS ATTENTION", score: hasSecurity ? (openIssues.critical === 0 ? 100 : 50) : 20, href: `/projects/${id}/security` },
+    { name: "Agent Council & ADRs", status: decisions.length > 0 ? "READY" : "NEEDS ATTENTION", score: decisions.length > 0 ? 100 : 20, href: `/projects/${id}/council` },
+    { name: "Vibe Build Prompts", status: prompts.length > 0 ? "READY" : "NEEDS ATTENTION", score: prompts.length > 0 ? 100 : 20, href: `/projects/${id}/prompts` },
+    { name: "Code & Quality Audit", status: findings.length > 0 ? "READY" : "NEEDS ATTENTION", score: findings.length > 0 ? 100 : 20, href: `/projects/${id}/audit` },
   ];
 
   // Dynamic next recommended action
@@ -94,10 +131,31 @@ export default async function ProjectOverviewPage({
     cta: "Go to Discovery Engine",
   };
 
-  if (answeredCount >= 3 && prompts.length === 0) {
+  if (!hasProduct && answeredCount >= 2) {
     nextAction = {
-      title: "Consult Multi-Agent Council & Generate Build Prompts",
-      desc: "Your discovery requirements are set. Have your AI Engineering Council debate key decisions and generate your first Vibe-Coding Build Prompts.",
+      title: "Synthesize Product Requirements (PRD)",
+      desc: "Your discovery answers are ready. Formulate personas, FRs, NFRs, edge cases, and anti-bloat scope boundaries.",
+      href: `/projects/${id}/product`,
+      cta: "Generate PRD",
+    };
+  } else if (!hasArch && hasProduct) {
+    nextAction = {
+      title: "Design Technical Architecture & Security Model",
+      desc: "Generate your database entities, API endpoints, auth model, and zero-trust security plan.",
+      href: `/projects/${id}/architecture`,
+      cta: "Plan Architecture",
+    };
+  } else if (decisions.length === 0 && hasArch) {
+    nextAction = {
+      title: "Consult Multi-Agent Council & Record ADRs",
+      desc: "Have the 7 specialized agents debate architecture trade-offs and record formal Architecture Decision Records.",
+      href: `/projects/${id}/council`,
+      cta: "Convene Agent Council",
+    };
+  } else if (prompts.length === 0 && decisions.length > 0) {
+    nextAction = {
+      title: "Generate 11-Part Vibe-Coding Implementation Prompts",
+      desc: "Transform your PRD, Architecture, and Council Decisions into structured prompts for Cursor, Claude Code, and Lovable.",
       href: `/projects/${id}/prompts`,
       cta: "Generate Build Prompts",
     };
@@ -112,16 +170,48 @@ export default async function ProjectOverviewPage({
 
   return (
     <div className="space-y-8">
-      {/* Disclaimer Banner */}
-      <div className="flex items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-xs text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200">
-        <Sparkles className="h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400 mt-0.5" />
-        <div>
-          <span className="font-bold">Aigenstra Engineering Disclaimer:</span> Build readiness indicators and security summaries reflect completed automated checks and structured reasoning. They reduce blind spots before you ship, but do not guarantee 100% security or vulnerability-free code.
+      {/* Project Header with Progress Indicator */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="rounded-md bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                {project.product_type || "SaaS"}
+              </span>
+              <span className="text-xs text-slate-400">•</span>
+              <span className="text-xs text-slate-500 font-medium">
+                Environment: {project.coding_environment || "Cursor"}
+              </span>
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
+              {project.name}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl">
+              {project.description || project.raw_idea || "AI-assisted product engineering workspace."}
+            </p>
+          </div>
+
+          {/* Real Stage Completion Metric */}
+          <div className="flex flex-col items-start sm:items-end rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 dark:border-indigo-950 dark:bg-indigo-950/20">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+              <TrendingUp className="h-3.5 w-3.5" />
+              Project Readiness
+            </div>
+            <div className="text-3xl font-black text-slate-900 dark:text-white mt-0.5">
+              {totalProgressPct}%
+            </div>
+            <div className="mt-2 h-1.5 w-32 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+              <div
+                className="h-full bg-indigo-600 transition-all duration-500"
+                style={{ width: `${totalProgressPct}%` }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Next Recommended Action Banner */}
-      <div className="rounded-2xl border border-blue-500/30 bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white shadow-xl">
+      {/* Recommended Next Action Banner */}
+      <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-600 to-purple-700 p-6 text-white shadow-xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-0.5 text-xs font-bold text-white backdrop-blur-sm">
@@ -131,14 +221,14 @@ export default async function ProjectOverviewPage({
             <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">
               {nextAction.title}
             </h2>
-            <p className="max-w-2xl text-xs sm:text-sm text-blue-100">
+            <p className="max-w-2xl text-xs sm:text-sm text-indigo-100">
               {nextAction.desc}
             </p>
           </div>
 
           <Link
             href={nextAction.href}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-bold text-blue-700 shadow-md transition-all hover:bg-blue-50 active:scale-95"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-bold text-indigo-700 shadow-md transition-all hover:bg-indigo-50 active:scale-95"
           >
             {nextAction.cta}
             <ArrowRight className="h-4 w-4" />
@@ -181,15 +271,15 @@ export default async function ProjectOverviewPage({
           <p className="mt-1 text-xs text-slate-500">Secondary enhancements</p>
         </div>
 
-        <div className="rounded-2xl border border-blue-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center justify-between text-blue-600 dark:text-blue-400">
+        <div className="rounded-2xl border border-indigo-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center justify-between text-indigo-600 dark:text-indigo-400">
             <span className="text-xs font-bold uppercase tracking-wider">Agent Decisions</span>
             <Users className="h-5 w-5" />
           </div>
           <div className="mt-3 text-3xl font-black text-slate-900 dark:text-white">
             {decisions.length}
           </div>
-          <p className="mt-1 text-xs text-slate-500">Agreed architecture decisions</p>
+          <p className="mt-1 text-xs text-slate-500">Agreed architecture records</p>
         </div>
       </div>
 
@@ -201,17 +291,17 @@ export default async function ProjectOverviewPage({
               System Build Readiness Indicators
             </h3>
             <p className="text-xs text-slate-500">
-              Evaluated across 10 specialized engineering categories
+              Evaluated across core product engineering domains
             </p>
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {readinessCategories.map((cat) => (
             <Link
               key={cat.name}
               href={cat.href}
-              className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition-all hover:border-blue-500/50 hover:bg-white hover:shadow-md dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-900"
+              className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition-all hover:border-indigo-500/50 hover:bg-white hover:shadow-md dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-900"
             >
               <div>
                 <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
@@ -237,7 +327,7 @@ export default async function ProjectOverviewPage({
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-between text-[11px] text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+              <div className="mt-4 flex items-center justify-between text-[11px] text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                 <span>Score: {cat.score}%</span>
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </div>
@@ -250,14 +340,14 @@ export default async function ProjectOverviewPage({
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              Recent AI Agent Decisions & Discussions
+              Recent AI Agent Decisions & ADRs
             </h3>
           </div>
           <Link
             href={`/projects/${id}/council`}
-            className="text-xs font-bold text-blue-600 hover:underline dark:text-blue-400"
+            className="text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
           >
             View Council →
           </Link>
@@ -268,7 +358,7 @@ export default async function ProjectOverviewPage({
             <Sparkles className="h-6 w-6 text-slate-400" />
             <p className="mt-2 font-semibold">No decisions recorded yet.</p>
             <p className="mt-1 max-w-sm text-slate-400">
-              Run your AI Agent Council to evaluate trade-offs (e.g. guest checkout, authentication structure, database indexes).
+              Convene the 7-Agent Council to evaluate trade-offs (e.g. guest checkout, authentication structure, database indexes).
             </p>
           </div>
         ) : (
@@ -279,8 +369,8 @@ export default async function ProjectOverviewPage({
                 className="flex flex-col gap-2 rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400">
-                    <span>Decision #{dec.decision_number}</span>
+                  <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                    <span>ADR-{String(dec.decision_number).padStart(3, "0")}</span>
                     <span className="text-slate-400">•</span>
                     <span className="text-slate-900 dark:text-white">{dec.topic}</span>
                   </div>
@@ -288,8 +378,8 @@ export default async function ProjectOverviewPage({
                     {dec.decision}
                   </p>
                 </div>
-                <div className="text-right text-[11px] text-slate-500">
-                  {dec.status}
+                <div className="text-right text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                  {dec.status || "ACCEPTED"}
                 </div>
               </div>
             ))}

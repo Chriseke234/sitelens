@@ -1,4 +1,5 @@
 import { getGeminiApiKey } from "./client";
+import { UserPersona, FunctionalRequirement, NonFunctionalRequirement } from "@/types";
 
 /**
  * Generate Discovery Q&A follow-ups based on initial idea and previous answers.
@@ -12,23 +13,32 @@ export async function generateDiscoveryQuestions(
 
   if (!apiKey) {
     return [
-      "Who is the primary target customer for this product?",
-      "What specific friction or problem currently makes their workflow difficult?",
-      "How will providers/partners interact with the platform?",
-      "What is your primary revenue model or business success metric?",
-      "What constraints (budget, timeline, security, compliance) exist for launch?",
+      "Who experiences the core problem most frequently?",
+      "When and where does the problem typically occur (context)?",
+      "What does an ideal, effortless outcome look like for the user?",
+      "What critical assumptions are we currently making about user behavior?",
+      "What potential business or technical risks could cause this product to fail?",
     ];
   }
 
   const prompt = `
 System Instruction:
-You are an expert AI Product Manager conducting a discovery session for an AI Product Engineering workspace called Aigenstra.
+You are an expert AI Product Manager conducting a discovery session for Aigenstra.
 Analyze the project details and previous answers. Identify missing critical product information.
-Generate 3 to 5 clear, intelligent follow-up questions to clarify the product scope.
-Do NOT ask technical stack questions. Focus on user motivation, business goals, core workflows, edge cases, and constraints.
+Break discovery down into:
+- Problem (What problem is the product attempting to solve?)
+- Users (Who experiences the problem?)
+- Context (When and where does it happen?)
+- Desired outcome (What does success look like?)
+- Assumptions (What are we currently assuming?)
+- Unknowns (What don't we know yet?)
+- Risks (What could make the product fail?)
 
-Project Name: ${projectName}
-Product Description: ${productDescription}
+Generate 3 to 5 clear, progressive follow-up questions to clarify scope.
+Do NOT ask technical stack questions.
+
+Project: ${projectName}
+Description: ${productDescription}
 
 Previous Q&A Context:
 ${JSON.stringify(previousQnA, null, 2)}
@@ -52,29 +62,24 @@ Respond ONLY with a JSON array of string questions, e.g. ["Question 1?", "Questi
       }
     );
 
-    if (!res.ok) {
-      throw new Error(`Gemini API returned status ${res.status}`);
-    }
-
     const resData = await res.json();
     const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!rawText) throw new Error("Empty response from Gemini API");
-
     const parsed = JSON.parse(rawText);
     return Array.isArray(parsed) ? parsed : [parsed.question || "What is the primary action a user takes?"];
   } catch (err) {
     console.error("Discovery question generation error:", err);
     return [
-      "Who is the primary customer for this product?",
-      "What currently makes their experience difficult?",
-      "What is the main action they must complete in the app?",
-      "What are the non-negotiable security or privacy requirements?",
+      "Who experiences the core problem most frequently?",
+      "What does an ideal, effortless outcome look like for the user?",
+      "What critical assumptions are we currently making about user behavior?",
+      "What potential risks could cause this product to fail?",
     ];
   }
 }
 
 /**
- * Generate Research Synthesis document.
+ * Generate Research Synthesis document with explicit label tagging:
+ * VERIFIED, INFERRED, ASSUMPTION, NEEDS RESEARCH.
  */
 export async function generateResearchDocument(
   projectName: string,
@@ -85,9 +90,13 @@ export async function generateResearchDocument(
 
   const prompt = `
 System Instruction:
-You are a senior Market & User Research AI Agent for Aigenstra.
-Synthesize market context, user context, competitor landscape, user needs, risks, assumptions, and hypotheses for this product idea.
-Clearly separate verified information, user-provided assumptions, and AI-generated hypotheses. Never present AI assumptions as verified facts.
+You are the Lead Research AI Agent for Aigenstra.
+Synthesize market context, user context, competitor landscape, user needs, risks, assumptions, and hypotheses for ${projectName}.
+CRITICAL RULE: Explicitly label all assumptions and findings using these exact labels:
+- VERIFIED (proven fact or user confirmed)
+- INFERRED (logical deduction from context)
+- ASSUMPTION (unverified premise)
+- NEEDS RESEARCH (unknown requiring validation)
 
 Project: ${projectName}
 Description: ${productDescription}
@@ -97,38 +106,44 @@ ${JSON.stringify(qnaContext, null, 2)}
 Return a valid JSON object matching this schema:
 {
   "market_context": "Detailed market overview...",
-  "user_context": "Target user demographics & pain points...",
+  "user_context": "Target user context & workflow...",
   "competitor_analysis": [
     { "name": "Competitor Name", "strengths": "...", "weaknesses": "...", "differentiation": "..." }
   ],
   "user_needs": ["Need 1", "Need 2"],
   "risks": [
-    { "risk": "Description", "severity": "HIGH/MEDIUM/LOW", "mitigation": "..." }
+    { "risk": "Risk description", "severity": "HIGH/MEDIUM/LOW", "mitigation": "..." }
   ],
   "opportunities": ["Opportunity 1", "Opportunity 2"],
   "assumptions": [
-    { "assumption": "Text", "status": "unverified" }
+    { "assumption": "Users prefer WhatsApp over mobile app download", "status": "ASSUMPTION" },
+    { "assumption": "Local providers have stable smartphone access", "status": "VERIFIED" },
+    { "assumption": "Average ticket size justifies 5% transaction commission", "status": "NEEDS RESEARCH" }
   ],
-  "hypotheses": ["Hypothesis 1"],
+  "hypotheses": ["Guest checkout increases conversion by 30%"],
   "sources": [
-    { "title": "Industry Benchmark", "notes": "Reference baseline" }
+    { "title": "Industry E-Commerce & Service Benchmarks", "notes": "Baseline metrics" }
   ]
 }
 `;
 
   if (!apiKey) {
     return {
-      market_context: `The market for ${projectName} represents a high-growth opportunity in tech-enabled service automation.`,
-      user_context: `Target users require seamless, low-friction interactions and real-time status visibility.`,
+      market_context: `The market for ${projectName} represents a high-growth opportunity in on-demand service and workflow automation.`,
+      user_context: `Target users experience high friction in manual scheduling and status tracking.`,
       competitor_analysis: [
-        { name: "Legacy Alternatives", strengths: "Brand awareness", weaknesses: "High friction, poor mobile UX", differentiation: "AI-assisted workflows & instant verification" }
+        { name: "Legacy Alternatives", strengths: "Brand presence", weaknesses: "Clunky UI, mandatory signup barriers", differentiation: "Instant AI-assisted workflows & friction-free checkout" }
       ],
-      user_needs: ["Fast order placement", "Transparent pricing", "Secure data protection"],
-      risks: [{ risk: "User drop-off at account registration", severity: "HIGH", mitigation: "Implement guest checkout with secure order tokens" }],
+      user_needs: ["Rapid task execution", "Transparent pricing", "Data security"],
+      risks: [{ risk: "User abandonment at signup modal", severity: "HIGH", mitigation: "Enable guest flow with secure order tokens" }],
       opportunities: ["Automated status notifications", "Mobile-optimized progressive app"],
-      assumptions: [{ assumption: "Users prefer mobile web access over app downloads", status: "unverified" as const }],
-      hypotheses: ["Guest checkout increases conversion by over 25%"],
-      sources: [{ title: "Aigenstra UX Benchmarks", notes: "Standard e-commerce & SaaS metrics" }],
+      assumptions: [
+        { assumption: "Target users prefer quick mobile web access over app store downloads", status: "VERIFIED" as const },
+        { assumption: "Providers can manage orders via simple web dashboard", status: "INFERRED" as const },
+        { assumption: "Average user repeats orders twice per month", status: "NEEDS RESEARCH" as const },
+      ],
+      hypotheses: ["Zero-friction onboarding increases completion rates by 35%"],
+      sources: [{ title: "Aigenstra Service Benchmarks", notes: "Standard SaaS & marketplace metrics" }],
     };
   }
 
@@ -168,71 +183,84 @@ export async function generateUserJourneyDocument(
 
   const prompt = `
 System Instruction:
-You are a lead UX AI Agent for Aigenstra.
-Generate a complete visual user journey mapping out step-by-step interactions, happy paths, edge cases, and failure recovery paths for ${projectName}.
-Include friction points, system responses, error states, and security checks for every step.
+You are the Lead UX AI Agent for Aigenstra.
+Generate a complete visual user journey mapping out step-by-step interactions for ${projectName}:
+Discovery → Landing Page → Sign Up / Guest → Onboarding → Dashboard → Core Action → Confirmation → Return / Retention.
+
+For every stage capture:
+- User Goal
+- User Action
+- System Response
+- Potential Friction
+- Possible Failure
+- Security Consideration
+
+Also include Happy Path, Edge Cases, and Failure Recovery Paths.
 
 Project: ${projectName}
 Description: ${productDescription}
 
 Return a valid JSON object matching this schema:
 {
-  "title": "Primary Customer Journey - ${projectName}",
-  "persona": "Target Customer",
+  "title": "Core Customer Journey — ${projectName}",
+  "persona": "Primary User",
   "steps": [
     {
       "stepNumber": 1,
-      "title": "Landing Page Discovery",
+      "title": "Discovery & Landing Page",
       "userGoal": "Understand value proposition and options",
       "userAction": "Browses services and pricing",
-      "systemResponse": "Renders responsive hero & interactive preview",
-      "friction": "Unclear navigation links",
-      "errorStates": ["Failed asset load"],
+      "systemResponse": "Renders responsive hero and value propositions",
+      "friction": "Ambiguous CTAs",
+      "possibleFailure": "Slow asset load",
+      "errorStates": ["Failed image load"],
       "alternativePaths": ["Direct search query"],
-      "security": "HTTPS enforced"
+      "security": "HTTPS & Content Security Policy enforced"
     }
   ],
-  "happy_path": ["Discover", "Select Service", "Provide Details", "Confirm & Pay", "Receive Value"],
+  "happy_path": ["Discovery", "Select Option", "Provide Details", "Confirm & Pay", "Receive Value", "Repeat"],
   "edge_cases": [
-    { "scenario": "Network disconnect during submission", "resolution": "Local state autosave & offline retry indicator" }
+    { "scenario": "Network disconnect during submission", "resolution": "Local state autosave and offline retry indicator" }
   ],
   "failure_paths": [
-    { "trigger": "Payment authorization fails", "userMessage": "Payment failed. Please verify card details or choose another method.", "fallbackAction": "Allow retry without losing order details" }
+    { "trigger": "Payment authorization failure", "userMessage": "Payment failed. Please verify details or try another method.", "fallbackAction": "Allow retry without losing form input state" }
   ]
 }
 `;
 
   if (!apiKey) {
     return {
-      title: `Primary Customer Journey - ${projectName}`,
-      persona: "Primary App User",
+      title: `Core Customer Journey — ${projectName}`,
+      persona: "Primary User",
       steps: [
         {
           stepNumber: 1,
           title: "Discovery & Value Understanding",
-          userGoal: "Understand what the service provides",
+          userGoal: "Understand service offering and pricing",
           userAction: "Visits landing page",
-          systemResponse: "Displays clear value headline and primary CTA button",
-          friction: "Too much text above the fold",
-          errorStates: ["Slow image load"],
+          systemResponse: "Displays clear headline, demo, and primary action button",
+          friction: "Too much text above fold",
+          possibleFailure: "Slow initial render",
+          errorStates: ["CDN asset timeout"],
           alternativePaths: ["Direct link to order form"],
-          security: "CSRF & SSL protection",
+          security: "HTTPS & CSRF protection",
         },
         {
           stepNumber: 2,
-          title: "Service Selection & Configuration",
-          userGoal: "Select options and specify details",
-          userAction: "Fills out interactive form",
-          systemResponse: "Validates input in real-time and calculates total price",
-          friction: "Ambiguous form fields",
-          errorStates: ["Validation error on address"],
-          alternativePaths: ["Save draft for later"],
-          security: "Server-side input sanitization",
+          title: "Configuration & Order Entry",
+          userGoal: "Configure preferences and submit request",
+          userAction: "Fills out responsive order form",
+          systemResponse: "Real-time client validation and subtotal computation",
+          friction: "Unclear input labels",
+          possibleFailure: "Validation errors",
+          errorStates: ["Invalid phone/email format"],
+          alternativePaths: ["Save draft locally"],
+          security: "Zod server-side sanitization",
         },
       ],
-      happy_path: ["Landing", "Configuration", "Confirmation", "Fulfillment"],
-      edge_cases: [{ scenario: "User leaves page mid-way", resolution: "Restore form state from localStorage draft" }],
-      failure_paths: [{ trigger: "Form validation error", userMessage: "Please check highlighted fields", fallbackAction: "Focus first invalid input" }],
+      happy_path: ["Landing", "Configuration", "Confirmation", "Tracking", "Retention"],
+      edge_cases: [{ scenario: "User navigates away mid-order", resolution: "Restore draft state on return" }],
+      failure_paths: [{ trigger: "Form validation error", userMessage: "Please check highlighted fields", fallbackAction: "Auto-focus first error field" }],
     };
   }
 
@@ -262,7 +290,7 @@ Return a valid JSON object matching this schema:
 }
 
 /**
- * Generate Product Specification document.
+ * Generate Product Specification (PRD) with Personas, FRs, NFRs, and Edge Cases.
  */
 export async function generateProductSpecDocument(
   projectName: string,
@@ -272,48 +300,92 @@ export async function generateProductSpecDocument(
 
   const prompt = `
 System Instruction:
-You are a Principal Product Manager AI Agent for Aigenstra.
-Generate a structured Product Specification for ${projectName}.
-Actively identify and eliminate unnecessary feature bloat. Focus on a tight, high-converting MVP scope.
+You are the Principal Product Agent for Aigenstra.
+Generate a structured Product Requirements Document (PRD) for ${projectName}.
+Include:
+1. Problem Statement
+2. Target Users & Lightweight Personas (Goal, Pain, Technical Ability [Low/Medium/High], Primary Task)
+3. Core Goals & Non-Goals (Anti-bloat filter)
+4. Structured Functional Requirements (e.g. FR-001: Users can create an account)
+5. Structured Non-Functional Requirements (e.g. NFR-001: Sub-second latency, NFR-002: Server-side authorization)
+6. Automatic Edge Cases for every major feature
+7. Business Rules & Acceptance Criteria
+8. MVP Scope vs Future Scope
 
 Project: ${projectName}
 Description: ${productDescription}
 
 Return a valid JSON object matching this schema:
 {
-  "problem_statement": "Clear problem definition...",
+  "problem_statement": "...",
   "target_users": ["User Segment 1", "User Segment 2"],
-  "goals": ["Goal 1", "Goal 2"],
-  "non_goals": ["Non-Goal 1 (Anti-bloat)"],
-  "user_stories": [
-    { "title": "Place Order", "asA": "customer", "iWantTo": "schedule laundry", "soThat": "I save time", "priority": "CRITICAL" }
+  "personas": [
+    { "name": "Business Owner", "goal": "Get orders without manual phone calls", "pain": "Repeated customer questions", "technicalAbility": "Low", "primaryTask": "Create and manage orders" }
   ],
-  "functional_reqs": ["Functional requirement 1"],
-  "non_functional_reqs": ["Performance under 2s", "Mobile responsive"],
-  "business_rules": ["Order cancellation allowed up to 1h before pickup"],
-  "acceptance_criteria": ["Criteria 1"],
-  "edge_cases": ["Edge case 1"],
-  "mvp_scope": ["MVP feature 1"],
-  "future_scope": ["Post-launch feature 1"]
+  "goals": ["Goal 1", "Goal 2"],
+  "non_goals": ["In-app social feed (anti-bloat)"],
+  "user_stories": [
+    { "title": "Place Order", "asA": "customer", "iWantTo": "book service quickly", "soThat": "I save time", "priority": "CRITICAL" }
+  ],
+  "functional_reqs": ["FR-001: Users can create account", "FR-002: Users can place orders"],
+  "structured_functional_reqs": [
+    { "code": "FR-001", "title": "User Account & Guest Flow", "description": "Users can authenticate or proceed with secure guest order tokens.", "priority": "CRITICAL" },
+    { "code": "FR-002", "title": "Order Management", "description": "Users can view real-time status of submitted orders.", "priority": "HIGH" }
+  ],
+  "non_functional_reqs": ["NFR-001: Sub-second page load", "NFR-002: Server-side authorization"],
+  "structured_non_functional_reqs": [
+    { "code": "NFR-001", "title": "Security & Authorization", "description": "Every API endpoint must enforce server-side ownership checks.", "category": "Security" },
+    { "code": "NFR-002", "title": "Mobile Responsiveness", "description": "UI must render seamlessly across 360px to 4K displays.", "category": "Usability" }
+  ],
+  "business_rules": ["Order cancellation permitted up to 1 hour prior to pickup"],
+  "acceptance_criteria": ["Order confirmation returns valid tracking code and SMS link"],
+  "edge_cases": [
+    "Email already registered during guest checkout upgrade",
+    "Network disconnect mid-payment submission",
+    "Duplicate request submitted within 30 seconds"
+  ],
+  "mvp_scope": ["Landing page", "Order booking form", "Order status view", "Admin portal"],
+  "future_scope": ["Subscription recurring billing", "Native mobile push notifications"]
 }
 `;
 
   if (!apiKey) {
     return {
       problem_statement: `Users lack an efficient, transparent way to request and track ${projectName} services online.`,
-      target_users: ["Busy urban professionals", "Small business partners"],
-      goals: ["Enable 2-click service requests", "Provide real-time status updates"],
-      non_goals: ["In-app social networking", "Complex multi-tier loyalty point exchange (anti-bloat)"],
-      user_stories: [
-        { title: "Service Booking", asA: "busy customer", iWantTo: "book service in 2 minutes", soThat: "I don't waste time on phone calls", priority: "CRITICAL" }
+      target_users: ["Busy urban professionals", "Service providers"],
+      personas: [
+        {
+          name: "Busy Professional",
+          goal: "Book services quickly on mobile without phone calls",
+          pain: "Unpredictable wait times and confusing pricing",
+          technicalAbility: "Medium" as const,
+          primaryTask: "Submit request and track status",
+        },
       ],
-      functional_reqs: ["User authentication & guest token checkout", "Real-time order status tracking"],
-      non_functional_reqs: ["Sub-second page loading speed", "100% Mobile responsiveness"],
-      business_rules: ["Server-side ownership verification on all order lookups"],
-      acceptance_criteria: ["Form submits successfully and returns tracking code", "User receives visual confirmation screen"],
-      edge_cases: ["Duplicate request submission within 30 seconds"],
-      mvp_scope: ["Landing page", "Order booking form", "Order status view", "Admin dashboard"],
-      future_scope: ["Subscription recurring billing", "Native iOS/Android app push notifications"],
+      goals: ["Enable 2-minute booking flow", "Provide real-time status updates"],
+      non_goals: ["In-app social networking", "Complex multi-tier loyalty exchange (anti-bloat)"],
+      user_stories: [
+        { title: "Service Booking", asA: "busy customer", iWantTo: "book service in 2 minutes", soThat: "I don't waste time", priority: "CRITICAL" },
+      ],
+      functional_reqs: ["FR-001: Secure authentication & guest checkout", "FR-002: Real-time status tracking"],
+      structured_functional_reqs: [
+        { code: "FR-001", title: "Authentication & Guest Flow", description: "Users can register or proceed as guest with secure order tokens.", priority: "CRITICAL" as const },
+        { code: "FR-002", title: "Status Tracking", description: "Live progress dashboard for active orders.", priority: "HIGH" as const },
+      ],
+      non_functional_reqs: ["NFR-001: Server-side authorization", "NFR-002: Mobile responsiveness"],
+      structured_non_functional_reqs: [
+        { code: "NFR-001", title: "Security & Authorization", description: "Enforce ownership verification on all resource routes.", category: "Security" as const },
+        { code: "NFR-002", title: "Mobile Performance", description: "Sub-second page loading speed on 4G connections.", category: "Performance" as const },
+      ],
+      business_rules: ["Order cancellation allowed up to 1h before pickup"],
+      acceptance_criteria: ["Form submission generates tracking code and displays confirmation screen"],
+      edge_cases: [
+        "User registers with already existing email address",
+        "Network drop during form submission",
+        "Duplicate order submission within 30 seconds",
+      ],
+      mvp_scope: ["Landing page", "Order booking flow", "Status tracking", "Admin overview"],
+      future_scope: ["Recurring subscriptions", "Native mobile app push notifications"],
     };
   }
 
