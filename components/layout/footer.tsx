@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
 import { Sparkles, ShieldCheck, X, FileText, ArrowRight } from "lucide-react";

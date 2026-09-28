@@ -256,7 +256,7 @@ export default function UserJourneyPage() {
                       Trigger: {fp.trigger}
                     </div>
                     <div className="mt-1 text-xs text-slate-700 dark:text-slate-300">
-                      Message: "{fp.userMessage}"
+                      Message: &quot;{fp.userMessage}&quot;
                     </div>
                     <div className="mt-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400">
                       Fallback: {fp.fallbackAction}

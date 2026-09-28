@@ -156,7 +156,7 @@ export default function PromptsPage() {
             No Prompts Generated Yet
           </h2>
           <p className="mt-2 max-w-md text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-            Select a category above and click "Generate Prompt" to formulate an 11-part structured coding prompt.
+            Select a category above and click &quot;Generate Prompt&quot; to formulate an 11-part structured coding prompt.
           </p>
         </div>
       ) : (

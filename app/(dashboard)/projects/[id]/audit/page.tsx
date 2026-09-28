@@ -120,7 +120,7 @@ export default function AuditPage() {
             No Project Audits Executed Yet
           </h2>
           <p className="mt-2 max-w-md text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-            Click "Run Multi-Agent Audit" above to analyze your product across all 9 engineering categories.
+            Click &quot;Run Multi-Agent Audit&quot; above to analyze your product across all 9 engineering categories.
           </p>
         </div>
       ) : (

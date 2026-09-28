@@ -420,7 +420,7 @@ ${specDoc.future_scope.map((f) => `- [ ] ${f}`).join("\n")}
                   </div>
 
                   <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 italic">
-                    "As a <span className="font-semibold text-slate-900 dark:text-white">{story.asA}</span>, I want to <span className="font-semibold text-slate-900 dark:text-white">{story.iWantTo}</span> so that <span className="font-semibold text-slate-900 dark:text-white">{story.soThat}</span>."
+                    &quot;As a <span className="font-semibold text-slate-900 dark:text-white">{story.asA}</span>, I want to <span className="font-semibold text-slate-900 dark:text-white">{story.iWantTo}</span> so that <span className="font-semibold text-slate-900 dark:text-white">{story.soThat}</span>.&quot;
                   </p>
                 </div>
               ))}
