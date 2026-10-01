@@ -78,7 +78,7 @@ export function AuditReportView({
           {audit.status === "queued" ? "Your audit is queued." : "Analyzing your website..."}
         </h3>
         <p className="mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
-          SiteLens is inspecting headers, DOM structure, SEO tags, performance metrics, and UX signals for <strong className="font-mono">{audit.url}</strong>.
+          Aigenstra is inspecting headers, DOM structure, SEO tags, performance metrics, and UX signals for <strong className="font-mono">{audit.url}</strong>.
         </p>
       </div>
     );
@@ -94,7 +94,7 @@ export function AuditReportView({
           We couldn&apos;t complete this audit
         </h3>
         <p className="mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
-          SiteLens was unable to reach or analyze <strong className="font-mono">{audit.url}</strong>. Please check that the URL is public and online.
+          Aigenstra was unable to reach or analyze <strong className="font-mono">{audit.url}</strong>. Please check that the URL is public and online.
         </p>
         <div className="mt-6">
           <Link href="/audits">

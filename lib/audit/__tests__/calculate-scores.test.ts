@@ -9,7 +9,7 @@ export function testScoreCalculations() {
     titleText: "Example Website - Professional Digital Intelligence",
     titleLength: 50,
     hasMetaDescription: true,
-    metaDescriptionText: "SiteLens analyzes websites and digital media to identify problems, measure performance metrics, and provide actionable recommendations.",
+    metaDescriptionText: "Aigenstra analyzes products, codebases, and websites to identify problems, measure performance metrics, and provide actionable recommendations.",
     metaDescriptionLength: 136,
     hasCanonical: true,
     canonicalUrl: "https://example.com/",

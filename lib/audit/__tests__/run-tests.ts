@@ -7,7 +7,7 @@ import { testKeywordAndFaviconEngine } from "./keywords.test";
 
 async function main() {
   console.log("==========================================");
-  console.log("   SiteLens Phases 1-17 Master Test Suite  ");
+  console.log("   Aigenstra Master Test Suite            ");
   console.log("==========================================");
 
   try {

@@ -254,7 +254,7 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
                 id="name"
                 type="text"
                 required
-                placeholder="e.g. OgaWash, Sitelens, DevPortal"
+                placeholder="e.g. OgaWash, Aigenstra, DevPortal"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"

@@ -61,9 +61,9 @@ export default function LoginPage() {
   return (
     <Card className="border-slate-200/80 shadow-md dark:border-slate-800">
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold tracking-tight">Sign in to SiteLens</CardTitle>
+        <CardTitle className="text-2xl font-bold tracking-tight">Sign in to Aigenstra</CardTitle>
         <CardDescription className="text-sm">
-          Enter your credentials to access your website & media audits
+          Enter your credentials to access your AI engineering workspaces
         </CardDescription>
       </CardHeader>
 

@@ -13,10 +13,10 @@ export function Navbar() {
       <div className="flex h-14 items-center justify-between rounded-full border border-slate-200/90 bg-white/90 px-4 sm:px-6 shadow-lg shadow-slate-200/50 backdrop-blur-md dark:border-slate-800/90 dark:bg-slate-900/90 dark:shadow-slate-950/50">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white group btn-interactive">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm shadow-blue-500/30 group-hover:scale-105 transition-transform">
-            <Sparkles className="h-4 w-4" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 border border-slate-800 p-1 group-hover:scale-105 transition-transform">
+            <img src="/aigenstra-logo.png" alt="Aigenstra Logo" className="h-full w-full object-contain" />
           </div>
-          <span className="text-base font-black tracking-tight font-sans">Aigenstra</span>
+          <span className="text-base font-black tracking-tight font-sans bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">Aigenstra</span>
         </Link>
 
         {/* Desktop Navigation Links */}

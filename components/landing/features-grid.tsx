@@ -53,7 +53,7 @@ export function FeaturesGrid() {
             One audit. Multiple layers of intelligence.
           </h2>
           <p className="mt-3 text-base text-slate-600 dark:text-slate-400 leading-relaxed">
-            SiteLens inspects key technical, visual, and user-experience dimensions to provide a complete evaluation of digital presence.
+            Aigenstra inspects key architectural, security, UX, and code quality dimensions to provide a complete evaluation of your product.
           </p>
         </div>
 

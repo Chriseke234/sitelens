@@ -196,7 +196,7 @@ function generateFallbackEvidenceReport(evidence: any): AuditAIReportData {
   const issues = evidence.issues || [];
   const criticalIssues = issues.filter((i: any) => i.severity === "critical" || i.severity === "high");
 
-  const summary = `SiteLens completed a deterministic audit for ${evidence.url} achieving an overall score of ${evidence.overallScore ?? "N/A"}/100. The engine identified ${evidence.detectedIssuesCount} total issue(s), of which ${criticalIssues.length} require immediate high-priority attention.`;
+  const summary = `Aigenstra completed a deterministic audit for ${evidence.url} achieving an overall score of ${evidence.overallScore ?? "N/A"}/100. The engine identified ${evidence.detectedIssuesCount} total issue(s), of which ${criticalIssues.length} require immediate high-priority attention.`;
 
   const key_findings = [
     `Overall score measured at ${evidence.overallScore ?? "N/A"}/100 based on version ${evidence.scoringVersion}.`,

@@ -13,10 +13,10 @@ export default function AuthLayout({
       <header className="py-6 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
-              <Search className="h-4 w-4" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 border border-slate-800 p-1">
+              <img src="/aigenstra-logo.png" alt="Aigenstra Logo" className="h-full w-full object-contain" />
             </div>
-            <span className="text-lg tracking-tight">SiteLens</span>
+            <span className="text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">Aigenstra</span>
           </Link>
           <Link
             href="/"
@@ -34,7 +34,7 @@ export default function AuthLayout({
 
       {/* Simple Footer */}
       <footer className="py-6 text-center text-xs text-slate-400">
-        &copy; 2026 SiteLens. All rights reserved.
+        &copy; 2026 Aigenstra. All rights reserved.
       </footer>
     </div>
   );

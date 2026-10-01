@@ -165,7 +165,7 @@ export default async function AuditsPage({ searchParams }: AuditsPageProps) {
               description={
                 q || status !== "all"
                   ? "No website audits matched your filter query."
-                  : "Give SiteLens a website URL above to generate your first technical and UX audit report."
+                  : "Give Aigenstra a website URL above to generate your first technical and UX audit report."
               }
               icon={<FileSearch className="h-6 w-6" />}
             />

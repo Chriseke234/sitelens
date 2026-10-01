@@ -12,23 +12,23 @@ import { AudienceSection } from "@/components/landing/audience-section";
 import { FinalCTA } from "@/components/landing/final-cta";
 
 export const metadata: Metadata = {
-  title: "SiteLens — Website Intelligence & Digital Media Analysis",
+  title: "Aigenstra — AI Product Engineering & Audit Platform for Vibe Coders",
   description:
-    "Analyze your website, uncover problems, and get practical recommendations. SiteLens also helps assess digital media authenticity using available evidence and provenance signals.",
+    "Think before you vibe. Plan, architect, debate with AI specialist agents, generate surgical 16-part implementation prompts, and audit your products with Aigenstra.",
   openGraph: {
-    title: "SiteLens — Website Intelligence & Digital Media Analysis",
+    title: "Aigenstra — AI Product Engineering & Audit Platform",
     description:
-      "Analyze your website, uncover problems, and get practical recommendations. SiteLens also helps assess digital media authenticity using available evidence and provenance signals.",
-    url: "https://sitelens.io",
-    siteName: "SiteLens",
+      "Think before you vibe. Transform messy ideas into verified products with a multidisciplinary AI engineering council and comprehensive audit suite.",
+    url: "https://aigenstra.vercel.app",
+    siteName: "Aigenstra",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SiteLens — Website Intelligence & Digital Media Analysis",
+    title: "Aigenstra — AI Product Engineering & Audit Platform",
     description:
-      "Analyze your website, uncover problems, and get practical recommendations.",
+      "Think before you vibe. AI-assisted product engineering and audit workspace for vibe coders.",
   },
 };
 
@@ -44,7 +44,7 @@ export default function Home() {
         {/* 2. Problem Section */}
         <ProblemSection />
 
-        {/* 3. What SiteLens Analyzes (6 categories) */}
+        {/* 3. What Aigenstra Analyzes (6 categories) */}
         <FeaturesGrid />
 
         {/* 4. How It Works (3-step progression) */}

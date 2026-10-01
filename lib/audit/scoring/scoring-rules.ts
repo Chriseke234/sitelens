@@ -1,5 +1,5 @@
 /**
- * SiteLens Scoring Rules & Configuration
+ * Aigenstra Scoring Rules & Configuration
  * Scoring Version: v1
  */
 

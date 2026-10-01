@@ -14,10 +14,10 @@ export function Footer() {
           {/* Brand Info */}
           <div className="space-y-3 sm:col-span-2 md:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 font-bold text-white group btn-interactive">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm shadow-blue-500/30 group-hover:scale-105 transition-transform">
-                <Sparkles className="h-4 w-4" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 border border-slate-800 p-1 group-hover:scale-105 transition-transform">
+                <img src="/aigenstra-logo.png" alt="Aigenstra Logo" className="h-full w-full object-contain" />
               </div>
-              <span className="text-lg font-black tracking-tight font-sans">Aigenstra</span>
+              <span className="text-lg font-black tracking-tight font-sans bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">Aigenstra</span>
             </Link>
             <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
               AI product engineering & audit workspace for vibe coders. Reduce blind spots before you ship.

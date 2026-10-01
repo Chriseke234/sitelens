@@ -36,7 +36,7 @@ export function AudienceSection() {
             Built for professionals who care about website performance.
           </h2>
           <p className="mt-3 text-base text-slate-600 dark:text-slate-400 leading-relaxed">
-            Whether managing your own site or advising clients, SiteLens provides structured insights.
+            Whether building your own startup or advising clients, Aigenstra provides structured engineering insights.
           </p>
         </div>
 

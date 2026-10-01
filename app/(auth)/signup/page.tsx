@@ -129,9 +129,9 @@ export default function SignupPage() {
   return (
     <Card className="border-slate-200/80 shadow-md dark:border-slate-800">
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold tracking-tight">Create your SiteLens account</CardTitle>
+        <CardTitle className="text-2xl font-bold tracking-tight">Create your Aigenstra account</CardTitle>
         <CardDescription className="text-sm">
-          Start auditing websites and analyzing digital media authenticity
+          Start engineering, architecting, and auditing your AI products
         </CardDescription>
       </CardHeader>
 

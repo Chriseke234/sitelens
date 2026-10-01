@@ -13,7 +13,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     // Log error to error logging reporting service if available
-    console.error("SiteLens Global Application Error:", error);
+    console.error("Aigenstra Global Application Error:", error);
   }, [error]);
 
   return (

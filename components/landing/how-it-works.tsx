@@ -5,22 +5,22 @@ export function HowItWorks() {
   const steps = [
     {
       number: "01",
-      title: "Enter your website",
-      description: "Give SiteLens a website URL and start an audit.",
+      title: "Enter your product idea or codebase",
+      description: "Give Aigenstra a raw vibe-coder prompt, repo URL, or production domain.",
       icon: Link2,
     },
     {
       number: "02",
-      title: "We analyze it",
+      title: "AI Specialist Council & Audit",
       description:
-        "SiteLens evaluates measurable website signals and uses AI to interpret findings.",
+        "Aigenstra evaluates architecture, UX edge states, security vulnerabilities, and generates 16-part prompts.",
       icon: Cpu,
     },
     {
       number: "03",
-      title: "Get practical recommendations",
+      title: "Get verified prompts & fixes",
       description:
-        "See what needs attention, why it matters, and what you can do about it.",
+        "Take surgical implementation prompts to Cursor, Antigravity, or Claude Code with zero regressions.",
       icon: FileCheck,
     },
   ];
@@ -33,10 +33,10 @@ export function HowItWorks() {
             Simple Workflow
           </span>
           <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl md:text-4xl">
-            From URL to actionable insight.
+            From idea to verified product.
           </h2>
           <p className="mt-3 text-base text-slate-600 dark:text-slate-400 leading-relaxed">
-            SiteLens turns technical parsing and qualitative heuristics into clear prioritizations.
+            Aigenstra turns raw ideas and messy code into rock-solid software architectures and surgical agent prompts.
           </p>
         </div>
 

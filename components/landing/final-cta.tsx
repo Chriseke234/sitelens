@@ -34,7 +34,7 @@ export function FinalCTA() {
                 size="lg"
                 className="w-full sm:w-auto rounded-full border-slate-700 bg-slate-800/80 text-white font-bold hover:bg-slate-700 dark:border-slate-800 dark:bg-slate-900 btn-interactive"
               >
-                <span>Explore SiteLens</span>
+                <span>Explore Aigenstra</span>
               </Button>
             </Link>
           </div>
