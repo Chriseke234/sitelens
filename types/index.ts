@@ -153,10 +153,20 @@ export type CodingEnvironment =
   | "Antigravity"
   | "Cursor"
   | "Claude Code"
+  | "Codex"
   | "Replit"
   | "Lovable"
   | "v0"
+  | "Generic"
   | "Other";
+
+export type CodingAgentProfile =
+  | "Antigravity"
+  | "Cursor"
+  | "Claude Code"
+  | "Codex"
+  | "Replit"
+  | "Generic";
 
 export type ProjectMode = "build" | "audit";
 
@@ -398,15 +408,14 @@ export interface AgentDecision {
 export type PromptCategory =
   | "product"
   | "ux"
-  | "design"
-  | "architecture"
-  | "database"
-  | "authentication"
-  | "backend"
-  | "api"
+  | "ui"
   | "frontend"
-  | "testing"
+  | "backend"
+  | "database"
+  | "api"
+  | "authentication"
   | "security"
+  | "testing"
   | "deployment"
   | "audit"
   | "fix";
@@ -422,6 +431,9 @@ export interface Prompt {
   updated_at: string;
 }
 
+/**
+ * 16-Part Implementation Prompt Version Record (Phase 5)
+ */
 export interface PromptVersion {
   id: string;
   prompt_id: string;
@@ -431,14 +443,33 @@ export interface PromptVersion {
   current_state: string;
   objective: string;
   requirements: string[];
-  constraints: string[];
+  existing_architecture?: string;
+  technical_constraints?: string[];
+  ux_requirements?: string[];
   security_requirements: string[];
   edge_cases: string[];
+  do_not_change?: string[];
   acceptance_criteria: string[];
+  testing_requirements?: string[];
   validation: string[];
-  output_requirements: string;
+  expected_output: string;
   full_prompt_text: string;
   created_at: string;
+}
+
+export type BuildSessionStatus = "not_started" | "in_progress" | "implemented" | "needs_review";
+
+export interface BuildSession {
+  id: string;
+  project_id: string;
+  title: string;
+  stage: string;
+  coding_agent: CodingAgentProfile;
+  prompt_id?: string | null;
+  status: BuildSessionStatus;
+  user_notes?: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export type FindingCategory =
@@ -446,27 +477,43 @@ export type FindingCategory =
   | "ux"
   | "frontend"
   | "backend"
+  | "api"
   | "security"
+  | "qa"
   | "performance"
   | "seo"
   | "accessibility"
   | "code_quality";
 
+export type FindingConfidence = "confirmed" | "likely" | "potential" | "unable_to_verify";
+
+export type FindingLifecycleStatus =
+  | "open"
+  | "fix_prompt_generated"
+  | "user_implementing"
+  | "ready_for_verification"
+  | "resolved"
+  | "regressed";
+
 export interface AuditFinding {
   id: string;
   project_id: string;
   project_audit_id?: string | null;
-  finding_code: string;
+  finding_code: string; // e.g. SEC-014
   category: FindingCategory;
   severity: SeverityLevel;
   title: string;
   simple_explanation: string;
   technical_explanation: string;
-  evidence: string;
+  evidence: string; // e.g. GET /api/projects/[id]
+  affected_file_or_route?: string | null;
   potential_impact: string;
   recommended_fix: string;
+  verification_method?: string | null;
+  confidence: FindingConfidence;
   related_files: string[];
   status: "open" | "in_progress" | "resolved" | "partially_resolved" | "unable_to_verify";
+  lifecycle_status: FindingLifecycleStatus;
   created_at: string;
   updated_at: string;
 }
@@ -482,3 +529,50 @@ export interface FixPrompt {
   created_at: string;
 }
 
+export interface ReAuditRecord {
+  id: string;
+  project_id: string;
+  previous_audit_id?: string | null;
+  new_audit_id?: string | null;
+  resolved_findings_count: number;
+  regressed_findings_count: number;
+  still_present_count: number;
+  comparison_summary: string;
+  evidence_log: Array<{
+    findingCode: string;
+    previousState: string;
+    currentState: string;
+    verdict: "RESOLVED" | "PARTIALLY RESOLVED" | "STILL PRESENT" | "REGRESSED" | "UNABLE TO VERIFY";
+    explanation: string;
+  }>;
+  created_at: string;
+}
+
+export interface ProjectShare {
+  id: string;
+  project_id: string;
+  share_token: string;
+  is_active: boolean;
+  expires_at?: string | null;
+  created_by: string;
+  created_at: string;
+}
+
+export interface ProductionChecklistItem {
+  id: string;
+  project_id: string;
+  category: "product" | "ux" | "engineering" | "security" | "performance" | "seo";
+  item_key: string;
+  title: string;
+  is_checked: boolean;
+  notes?: string | null;
+  updated_at: string;
+}
+
+export interface TraceabilityNode {
+  stage: string;
+  title: string;
+  referenceId: string;
+  status: "verified" | "in_progress" | "open" | "resolved";
+  details: string;
+}

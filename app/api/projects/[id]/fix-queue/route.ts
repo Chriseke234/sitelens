@@ -46,16 +46,21 @@ export async function POST(
     }
 
     const body = await request.json().catch(() => ({}));
-    const { findingId, action, newStatus } = body;
+    const { findingId, action, lifecycleStatus, newStatus } = body;
 
-    if (action === "update_status" && findingId && newStatus) {
+    if (action === "update_lifecycle" && findingId) {
+      const statusToSet = lifecycleStatus || newStatus || "open";
       await supabase
         .from("audit_findings")
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .update({
+          lifecycle_status: statusToSet,
+          status: statusToSet === "resolved" ? "resolved" : "open",
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", findingId)
         .eq("project_id", id);
 
-      return NextResponse.json({ success: true, status: newStatus });
+      return NextResponse.json({ success: true, lifecycleStatus: statusToSet });
     }
 
     if (action === "generate_fix_prompt" && findingId) {
@@ -76,7 +81,10 @@ export async function POST(
         severity: finding.severity,
         title: finding.title,
         technicalExplanation: finding.technical_explanation,
+        evidence: finding.evidence,
+        affectedFileOrRoute: finding.affected_file_or_route,
         recommendedFix: finding.recommended_fix,
+        verificationMethod: finding.verification_method,
         relatedFiles: finding.related_files || [],
       });
 
@@ -93,7 +101,19 @@ export async function POST(
         .select("*")
         .single();
 
-      return NextResponse.json({ fixPrompt: fixPromptRecord });
+      // Update lifecycle status to fix_prompt_generated
+      await supabase
+        .from("audit_findings")
+        .update({
+          lifecycle_status: "fix_prompt_generated",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", findingId);
+
+      return NextResponse.json({
+        fixPrompt: fixPromptRecord,
+        lifecycleStatus: "fix_prompt_generated",
+      });
     }
 
     return NextResponse.json({ error: "Invalid action." }, { status: 400 });
