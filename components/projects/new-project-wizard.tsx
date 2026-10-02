@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Sparkles,
   Rocket,
@@ -16,19 +16,26 @@ import {
   ShieldAlert,
   Wrench,
   Layers,
-  HelpCircle,
+  X,
+  ChevronDown,
 } from "lucide-react";
 import { ProductType, CodingEnvironment, ProjectMode } from "@/types";
+import { STARTER_TEMPLATES, getTemplateById, StarterTemplate } from "@/lib/templates/data";
 
 interface NewProjectWizardProps {
   onSuccess?: (projectId: string) => void;
 }
 
-export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
+function NewProjectWizardContent({ onSuccess }: NewProjectWizardProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const templateParam = searchParams.get("template");
+
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTemplate, setActiveTemplate] = useState<StarterTemplate | null>(null);
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -45,6 +52,38 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
     repo_url: "",
   });
 
+  // Apply template helper
+  const applyTemplate = (tpl: StarterTemplate) => {
+    setActiveTemplate(tpl);
+    setFormData((prev) => ({
+      ...prev,
+      name: prev.name && prev.name !== "My Project" ? prev.name : tpl.title,
+      description: tpl.description,
+      product_type: tpl.category,
+      target_audience: tpl.targetAudience,
+      problem_statement: tpl.problemStatement,
+      raw_idea: tpl.rawIdea,
+      tech_stack: tpl.techStack,
+      coding_environment: tpl.defaultEnvironment || "Cursor",
+      mode: tpl.mode || "build",
+    }));
+    setShowTemplateSelector(false);
+  };
+
+  const clearTemplate = () => {
+    setActiveTemplate(null);
+  };
+
+  // Sync template from URL query param on mount
+  useEffect(() => {
+    if (templateParam) {
+      const found = getTemplateById(templateParam);
+      if (found) {
+        applyTemplate(found);
+      }
+    }
+  }, [templateParam]);
+
   const productTypes: ProductType[] = [
     "SaaS",
     "Marketplace",
@@ -58,7 +97,7 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
     "Other",
   ];
 
-  const environments: Array<{ value: CodingEnvironment; label: string; icon: any }> = [
+  const environments: Array<{ value: CodingEnvironment; label: string; icon: React.ComponentType<{ className?: string }> }> = [
     { value: "Cursor", label: "Cursor", icon: Terminal },
     { value: "Antigravity", label: "Google Antigravity", icon: Sparkles },
     { value: "Claude Code", label: "Claude Code", icon: Code2 },
@@ -124,8 +163,9 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
       } else {
         router.push(`/projects/${data.project.id}/overview`);
       }
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "An unexpected error occurred.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -135,9 +175,9 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
     <div className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 md:p-8">
       {/* Header & Step Indicator */}
       <div className="border-b border-slate-200 pb-6 dark:border-slate-800">
-        <div className="flex items-center justify-between">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
-            <Sparkles className="h-3.5 w-3.5" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 self-start">
+            <Sparkles className="h-3.5 w-3.5 text-cyan-500" />
             Aigenstra Product Workspace
           </div>
 
@@ -166,7 +206,7 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
           </div>
         </div>
 
-        <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-900 dark:text-white md:text-3xl">
+        <h1 className="mt-4 text-2xl font-black tracking-tight text-slate-900 dark:text-white md:text-3xl">
           {step === 1 ? "Step 1 — Project Basics" : "Step 2 — Raw Product Idea"}
         </h1>
         <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
@@ -174,6 +214,97 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
             ? "Define your project parameters, product type, target audience, and environment."
             : "Describe what you want to build in your own words. Messy input is encouraged."}
         </p>
+
+        {/* Template Banner / Selector */}
+        <div className="mt-4">
+          {activeTemplate ? (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50/80 p-3.5 dark:border-indigo-900/60 dark:bg-indigo-950/40">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
+                  <Layers className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-indigo-900 dark:text-indigo-200">
+                      Using Template: {activeTemplate.title}
+                    </span>
+                    <span className="rounded-full bg-indigo-200/70 dark:bg-indigo-900/80 px-2 py-0.5 text-[10px] font-bold text-indigo-800 dark:text-indigo-300">
+                      {activeTemplate.category}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-indigo-700 dark:text-indigo-300/80">
+                    Pre-filled with battle-tested architectures and prompt seeds.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowTemplateSelector(!showTemplateSelector)}
+                  className="rounded-lg border border-indigo-300 bg-white px-2.5 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300"
+                >
+                  Change
+                </button>
+                <button
+                  type="button"
+                  onClick={clearTemplate}
+                  className="rounded-lg p-1 text-indigo-500 hover:bg-indigo-200/50 dark:hover:bg-indigo-900/50"
+                  title="Clear Template"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-950/40">
+              <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span>Want to jumpstart with a pre-configured architecture?</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTemplateSelector(!showTemplateSelector)}
+                className="flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-indigo-700"
+              >
+                <span>Select Starter Template</span>
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* Collapsible Template Dropdown Menu */}
+          {showTemplateSelector && (
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-800 dark:bg-slate-900 animate-fade-in">
+              {STARTER_TEMPLATES.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  onClick={() => applyTemplate(tpl)}
+                  className={`flex flex-col text-left p-3 rounded-lg border transition-all ${
+                    activeTemplate?.id === tpl.id
+                      ? "border-indigo-600 bg-indigo-50/60 dark:border-indigo-500 dark:bg-indigo-950/50"
+                      : "border-slate-200 hover:border-indigo-300 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/60"
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase">
+                      {tpl.category}
+                    </span>
+                    {activeTemplate?.id === tpl.id && (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                    )}
+                  </div>
+                  <span className="mt-1 text-xs font-bold text-slate-900 dark:text-white line-clamp-1">
+                    {tpl.title}
+                  </span>
+                  <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">
+                    {tpl.tagline}
+                  </p>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -362,7 +493,7 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
           <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
               type="submit"
-              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 font-bold text-white shadow-md shadow-indigo-500/25 transition-all hover:bg-indigo-700 active:scale-95 text-xs sm:text-sm"
+              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 font-bold text-white shadow-md shadow-indigo-500/25 transition-all hover:bg-indigo-700 active:scale-95 text-xs sm:text-sm btn-interactive"
             >
               Continue to Product Idea
               <ArrowRight className="h-4 w-4" />
@@ -384,8 +515,8 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
             <textarea
               id="raw_idea"
               required
-              rows={8}
-              placeholder="e.g. I want to build a platform where restaurants can upload their menu and customers can order through WhatsApp. It should support cash on delivery, kitchen order printing, customer feedback via SMS, and mobile admin stats..."
+              rows={9}
+              placeholder="e.g. I want to build a platform where restaurants can upload their menu and customers can order through WhatsApp..."
               value={formData.raw_idea}
               onChange={(e) => setFormData({ ...formData, raw_idea: e.target.value })}
               className="mt-3 w-full rounded-2xl border border-slate-300 bg-white p-4 font-mono text-xs leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
@@ -410,7 +541,7 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:bg-indigo-700 active:scale-95 text-xs sm:text-sm disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:bg-indigo-700 active:scale-95 text-xs sm:text-sm disabled:opacity-50 btn-interactive"
             >
               {loading ? (
                 <>
@@ -428,5 +559,19 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
         </form>
       )}
     </div>
+  );
+}
+
+export function NewProjectWizard(props: NewProjectWizardProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[400px] items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        </div>
+      }
+    >
+      <NewProjectWizardContent {...props} />
+    </Suspense>
   );
 }

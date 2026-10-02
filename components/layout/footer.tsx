@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Sparkles, ShieldCheck, X, FileText, ArrowRight } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
 
 export function Footer() {
   const [modalType, setModalType] = useState<"privacy" | "terms" | null>(null);
@@ -13,11 +14,8 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-5">
           {/* Brand Info */}
           <div className="space-y-3 sm:col-span-2 md:col-span-2">
-            <Link href="/" className="flex items-center gap-2.5 font-bold text-white group btn-interactive">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 border border-slate-800 p-1 group-hover:scale-105 transition-transform">
-                <img src="/aigenstra-logo.png" alt="Aigenstra Logo" className="h-full w-full object-contain" />
-              </div>
-              <span className="text-lg font-black tracking-tight font-sans bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">Aigenstra</span>
+            <Link href="/" className="group btn-interactive inline-block">
+              <Logo size="md" className="group-hover:scale-105 transition-transform" />
             </Link>
             <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
               AI product engineering & audit workspace for vibe coders. Reduce blind spots before you ship.

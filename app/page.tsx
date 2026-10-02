@@ -9,6 +9,7 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { MediaAnalysisPreview } from "@/components/landing/media-analysis-preview";
 import { ReportPreview } from "@/components/landing/report-preview";
 import { AudienceSection } from "@/components/landing/audience-section";
+import { TemplatesPreview } from "@/components/landing/templates-preview";
 import { FinalCTA } from "@/components/landing/final-cta";
 
 export const metadata: Metadata = {
@@ -47,19 +48,22 @@ export default function Home() {
         {/* 3. What Aigenstra Analyzes (6 categories) */}
         <FeaturesGrid />
 
-        {/* 4. How It Works (3-step progression) */}
+        {/* 4. Starter Templates Showcase */}
+        <TemplatesPreview />
+
+        {/* 5. How It Works (3-step progression) */}
         <HowItWorks />
 
-        {/* 5. Media Authenticity & Provenance Preview */}
+        {/* 6. Media Authenticity & Provenance Preview */}
         <MediaAnalysisPreview />
 
-        {/* 6. Actionable Reports Showcase */}
+        {/* 7. Actionable Reports Showcase */}
         <ReportPreview />
 
-        {/* 7. Who It Is For (Target Audiences) */}
+        {/* 8. Who It Is For (Target Audiences) */}
         <AudienceSection />
 
-        {/* 8. Final Conversion CTA */}
+        {/* 9. Final Conversion CTA */}
         <FinalCTA />
       </main>
 

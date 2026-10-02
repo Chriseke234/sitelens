@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Sparkles, Menu, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -12,11 +13,8 @@ export function Navbar() {
     <header className="sticky top-3 z-50 w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto transition-all duration-300">
       <div className="flex h-14 items-center justify-between rounded-full border border-slate-200/90 bg-white/90 px-4 sm:px-6 shadow-lg shadow-slate-200/50 backdrop-blur-md dark:border-slate-800/90 dark:bg-slate-900/90 dark:shadow-slate-950/50">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white group btn-interactive">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 border border-slate-800 p-1 group-hover:scale-105 transition-transform">
-            <img src="/aigenstra-logo.png" alt="Aigenstra Logo" className="h-full w-full object-contain" />
-          </div>
-          <span className="text-base font-black tracking-tight font-sans bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">Aigenstra</span>
+        <Link href="/" className="group btn-interactive">
+          <Logo size="md" className="group-hover:scale-105 transition-transform" />
         </Link>
 
         {/* Desktop Navigation Links */}

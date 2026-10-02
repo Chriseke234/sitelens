@@ -51,13 +51,22 @@ export default async function ProjectsPage() {
           </p>
         </div>
 
-        <Link
-          href="/projects/new"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-700 active:scale-95"
-        >
-          <Plus className="h-4 w-4" />
-          New Workspace
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/templates"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 btn-interactive"
+          >
+            <span>Browse Templates</span>
+          </Link>
+
+          <Link
+            href="/projects/new"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-700 active:scale-95 btn-interactive"
+          >
+            <Plus className="h-4 w-4" />
+            <span>New Workspace</span>
+          </Link>
+        </div>
       </div>
 
       {/* Projects List or Empty State */}
@@ -72,13 +81,22 @@ export default async function ProjectsPage() {
           <p className="mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
             Start a new workspace to move your idea from discovery, user journeys, and technical architecture to structured build prompts and audits.
           </p>
-          <Link
-            href="/projects/new"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-blue-700"
-          >
-            <Plus className="h-4 w-4" />
-            Create Your First Workspace
-          </Link>
+          <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
+            <Link
+              href="/projects/new"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-blue-700 btn-interactive"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Create Blank Workspace</span>
+            </Link>
+            <Link
+              href="/templates"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 btn-interactive"
+            >
+              <span>Explore Starter Templates</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

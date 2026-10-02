@@ -20,6 +20,8 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { Logo } from "@/components/ui/logo";
+
 interface SidebarProps {
   userProfile?: {
     email: string;
@@ -61,11 +63,8 @@ export function Sidebar({ userProfile }: SidebarProps) {
     <>
       {/* Mobile Top Header */}
       <div className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 lg:hidden">
-        <Link href="/dashboard" className="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <span className="text-lg tracking-tight font-black">Aigenstra</span>
+        <Link href="/dashboard" className="btn-interactive">
+          <Logo size="md" />
         </Link>
 
         <button
@@ -90,11 +89,8 @@ export function Sidebar({ userProfile }: SidebarProps) {
       >
         {/* Brand Header */}
         <div className="flex h-16 items-center px-6 border-b border-slate-100 dark:border-slate-800">
-          <Link href="/dashboard" className="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <span className="text-lg tracking-tight font-black">Aigenstra</span>
+          <Link href="/dashboard" className="btn-interactive">
+            <Logo size="md" />
           </Link>
         </div>
 
