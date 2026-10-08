@@ -38,7 +38,6 @@ export function Sidebar({ userProfile }: SidebarProps) {
   const navigationItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Projects", href: "/projects", icon: FolderKanban },
-    { name: "Templates", href: "/templates", icon: Layers },
     { name: "Audits", href: "/audits", icon: FileCheck },
     { name: "Settings", href: "/settings", icon: Settings },
   ];

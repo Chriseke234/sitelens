@@ -9,17 +9,16 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { MediaAnalysisPreview } from "@/components/landing/media-analysis-preview";
 import { ReportPreview } from "@/components/landing/report-preview";
 import { AudienceSection } from "@/components/landing/audience-section";
-import { TemplatesPreview } from "@/components/landing/templates-preview";
 import { FinalCTA } from "@/components/landing/final-cta";
 
 export const metadata: Metadata = {
   title: "Aigenstra — AI Product Engineering & Audit Platform for Vibe Coders",
   description:
-    "Think before you vibe. Plan, architect, debate with AI specialist agents, generate surgical 16-part implementation prompts, and audit your products with Aigenstra.",
+    "Think before you vibe. Plan, architect, formulate surgical 16-part implementation prompts, and audit your products with Aigenstra.",
   openGraph: {
     title: "Aigenstra — AI Product Engineering & Audit Platform",
     description:
-      "Think before you vibe. Transform messy ideas into verified products with a multidisciplinary AI engineering council and comprehensive audit suite.",
+      "Think before you vibe. Transform messy ideas into verified products with product intelligence, build maps, and comprehensive audit suite.",
     url: "https://aigenstra.vercel.app",
     siteName: "Aigenstra",
     locale: "en_US",
@@ -39,31 +38,28 @@ export default function Home() {
       <Navbar />
 
       <main className="flex-1">
-        {/* 1. Hero & Example Audit Preview */}
+        {/* 1. Hero & Example Preview */}
         <Hero />
 
         {/* 2. Problem Section */}
         <ProblemSection />
 
-        {/* 3. What Aigenstra Analyzes (6 categories) */}
+        {/* 3. What Aigenstra Analyzes */}
         <FeaturesGrid />
 
-        {/* 4. Starter Templates Showcase */}
-        <TemplatesPreview />
-
-        {/* 5. How It Works (3-step progression) */}
+        {/* 4. How It Works (Idea to Prompt to Audit) */}
         <HowItWorks />
 
-        {/* 6. Media Authenticity & Provenance Preview */}
+        {/* 5. Media Authenticity & Provenance Preview */}
         <MediaAnalysisPreview />
 
-        {/* 7. Actionable Reports Showcase */}
+        {/* 6. Actionable Reports Showcase */}
         <ReportPreview />
 
-        {/* 8. Who It Is For (Target Audiences) */}
+        {/* 7. Who It Is For (Target Audiences) */}
         <AudienceSection />
 
-        {/* 9. Final Conversion CTA */}
+        {/* 8. Final Conversion CTA */}
         <FinalCTA />
       </main>
 

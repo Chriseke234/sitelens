@@ -5,16 +5,14 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Compass,
-  GitFork,
   FileCode2,
   Cpu,
-  Users,
+  FolderGit2,
+  ListTodo,
+  BookMarked,
   Terminal,
   SearchCheck,
-  Wrench,
-  Activity,
-  CheckSquare,
-  FileText,
+  ShieldCheck,
   Settings,
 } from "lucide-react";
 
@@ -27,33 +25,31 @@ export function ProjectWorkspaceNav({ projectId }: ProjectWorkspaceNavProps) {
 
   const navItems = [
     { name: "Overview", href: `/projects/${projectId}/overview`, icon: LayoutDashboard },
-    { name: "Discovery", href: `/projects/${projectId}/discovery`, icon: Compass },
-    { name: "User Journey", href: `/projects/${projectId}/journey`, icon: GitFork },
-    { name: "PRD & Reqs", href: `/projects/${projectId}/product`, icon: FileCode2 },
-    { name: "Architecture", href: `/projects/${projectId}/architecture`, icon: Cpu },
-    { name: "Agent Council", href: `/projects/${projectId}/council`, icon: Users },
+    { name: "Discovery & Q&A", href: `/projects/${projectId}/discovery`, icon: Compass },
+    { name: "Software Blueprint", href: `/projects/${projectId}/product`, icon: FileCode2 },
+    { name: "Architecture & Security", href: `/projects/${projectId}/architecture`, icon: Cpu },
+    { name: "Project Intelligence", href: `/projects/${projectId}/intelligence`, icon: FolderGit2 },
+    { name: "Task Planning", href: `/projects/${projectId}/tasks`, icon: ListTodo },
+    { name: "Decision Log", href: `/projects/${projectId}/decisions`, icon: BookMarked },
     { name: "Prompt Studio", href: `/projects/${projectId}/prompts`, icon: Terminal },
-    { name: "Audit Hub", href: `/projects/${projectId}/audit`, icon: SearchCheck },
-    { name: "Fix Queue", href: `/projects/${projectId}/fix-queue`, icon: Wrench },
-    { name: "Health & Trace", href: `/projects/${projectId}/health`, icon: Activity },
-    { name: "Readiness", href: `/projects/${projectId}/readiness`, icon: CheckSquare },
-    { name: "Report", href: `/projects/${projectId}/report`, icon: FileText },
+    { name: "Audit & Fixes", href: `/projects/${projectId}/audit`, icon: SearchCheck },
+    { name: "Readiness & Analytics", href: `/projects/${projectId}/readiness`, icon: ShieldCheck },
     { name: "Settings", href: `/projects/${projectId}/settings`, icon: Settings },
   ];
 
   return (
-    <nav className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+    <nav className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none" aria-label="Workspace Stages">
       {navItems.map((item) => {
         const Icon = item.icon;
-        const isActive = pathname === item.href;
+        const isActive = pathname === item.href || (item.href !== `/projects/${projectId}/overview` && pathname?.startsWith(item.href));
 
         return (
           <Link
             key={item.name}
             href={item.href}
-            className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all whitespace-nowrap btn-interactive ${
               isActive
-                ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30"
+                ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30 dark:bg-indigo-600 dark:text-white"
                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             }`}
           >

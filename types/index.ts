@@ -236,12 +236,636 @@ export interface NonFunctionalRequirement {
   category: "Security" | "Performance" | "Reliability" | "Usability";
 }
 
+export type QuestionPriority = "MUST_KNOW" | "HELPFUL" | "OPTIONAL";
+
+export interface AdaptiveDiscoveryQuestion {
+  id?: string;
+  question: string;
+  priority: QuestionPriority;
+  whyItMatters: string;
+  suggestedOptions?: string[];
+  defaultRecommendation: string;
+  defaultAssumption: string;
+}
+
+export type ConfidenceLevel = "CONFIRMED" | "INFERRED" | "ASSUMED" | "UNKNOWN";
+export type AssumptionStatus = "PROVISIONAL" | "CONFIRMED" | "REJECTED" | "SUPERSEDED";
+
+export interface IdeaUnderstandingRecord {
+  rawIdea: string;
+  normalizedDescription: string;
+  likelyProductType: string;
+  targetUsers: string[];
+  primaryOutcome: string;
+  detectedFeatures: string[];
+  detectedActors: string[];
+  detectedWorkflows: string[];
+  uncertainties: string[];
+  missingInformation: string[];
+  confidence: ConfidenceLevel;
+  initialAssumptions: string[];
+}
+
+export interface ProductAssumption {
+  id?: string;
+  statement: string;
+  reason: string;
+  source: "user_input" | "ai_recommendation" | "default";
+  status: AssumptionStatus;
+  confidence: ConfidenceLevel;
+  relatedArea?: string;
+}
+
+export interface ProductSummary {
+  whatBuilding: string;
+  whoFor: string[];
+  mainExperience: string;
+  businessExperience?: string;
+  coreCapabilities: string[];
+  activeAssumptions: ProductAssumption[];
+  decisionsLeft: string[];
+  isSufficient: boolean;
+}
+
+export type ItemSource =
+  | "USER_CONFIRMED"
+  | "USER_DESCRIBED"
+  | "SYSTEM_INFERRED"
+  | "SYSTEM_RECOMMENDED"
+  | "ASSUMED";
+
+export type ItemStatus =
+  | "CONFIRMED"
+  | "PROPOSED"
+  | "ASSUMED"
+  | "NEEDS_DECISION"
+  | "DEFERRED"
+  | "COMPLETED";
+
+export interface BlueprintOverview {
+  name: string;
+  summary: string;
+  problemStatement: string;
+  valueProposition: string;
+  productType: string;
+  targetOutcome: string;
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface BlueprintUserRole {
+  id: string;
+  roleName: string;
+  simpleDescription: string;
+  technicalPermissions: string[];
+  userGoals: string[];
+  restrictions: string[];
+  relatedRoles: string[];
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface BlueprintUserJourneyStep {
+  stepNumber: number;
+  title: string;
+  userAction: string;
+  systemResponse: string;
+  technicalImplication?: string;
+}
+
+export interface BlueprintUserJourney {
+  id: string;
+  title: string;
+  role: string;
+  happyPathSteps: BlueprintUserJourneyStep[];
+  frictionPoints: string[];
+  failureScenarios: Array<{ scenario: string; resolution: string }>;
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface BlueprintFeature {
+  id: string;
+  title: string;
+  simpleDescription: string;
+  technicalDetails: string;
+  category: "CORE_MVP" | "SUPPORTING" | "ADMIN" | "FUTURE";
+  priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface BlueprintScreen {
+  id: string;
+  screenName: string;
+  routePath: string;
+  simplePurpose: string;
+  accessRoles: string[];
+  keyComponents: string[];
+  emptyState: string;
+  loadingState: string;
+  errorState: string;
+  technicalNotes?: string;
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface BlueprintWorkflow {
+  id: string;
+  name: string;
+  trigger: string;
+  simpleDescription: string;
+  steps: string[];
+  technicalServices: string[];
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface BlueprintBusinessRule {
+  id: string;
+  code: string;
+  ruleStatement: string;
+  reason: string;
+  enforcementLevel: "STRICT" | "WARNING" | "INFO";
+  technicalConstraint?: string;
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface BlueprintDataAttribute {
+  name: string;
+  type: string;
+  required: boolean;
+  description: string;
+}
+
+export interface BlueprintDataEntity {
+  id: string;
+  entityName: string;
+  simpleDescription: string;
+  ownershipRole: string;
+  attributes: BlueprintDataAttribute[];
+  lifecycleStates: string[];
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface BlueprintIntegration {
+  id: string;
+  serviceName: string;
+  category: "AUTH" | "PAYMENT" | "EMAIL" | "AI" | "STORAGE" | "ANALYTICS" | "OTHER";
+  purpose: string;
+  fallbackPlan: string;
+  technicalApiNotes?: string;
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface BlueprintAdminTool {
+  id: string;
+  toolName: string;
+  simpleDescription: string;
+  operationalPurpose: string;
+  restrictedToRoles: string[];
+  technicalCapabilities: string[];
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface BlueprintSecurityRule {
+  id: string;
+  title: string;
+  simpleDescription: string;
+  category: "AUTHENTICATION" | "AUTHORIZATION" | "DATA_PROTECTION" | "PRIVACY" | "RATE_LIMITING";
+  technicalImplementation: string;
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface BlueprintQualityTarget {
+  id: string;
+  category: "RESPONSIVENESS" | "ACCESSIBILITY" | "PERFORMANCE" | "TESTING";
+  requirement: string;
+  targetMetric?: string;
+  technicalApproach: string;
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface BlueprintFuturePath {
+  id: string;
+  title: string;
+  simpleDescription: string;
+  phase: "POST_MVP" | "V2" | "SCALE";
+  technicalArchitectureNote: string;
+  source: ItemSource;
+  status: ItemStatus;
+}
+
+export interface SoftwareBlueprint {
+  id?: string;
+  project_id: string;
+  overview: BlueprintOverview;
+  usersRoles: BlueprintUserRole[];
+  userJourneys: BlueprintUserJourney[];
+  features: BlueprintFeature[];
+  screens: BlueprintScreen[];
+  workflows: BlueprintWorkflow[];
+  businessRules: BlueprintBusinessRule[];
+  dataEntities: BlueprintDataEntity[];
+  integrations: BlueprintIntegration[];
+  adminTools: BlueprintAdminTool[];
+  security: BlueprintSecurityRule[];
+  quality: BlueprintQualityTarget[];
+  futureConsiderations: BlueprintFuturePath[];
+  healthScore: number;
+  healthWarnings: string[];
+  updated_at: string;
+}
+
+export type BuildStageStatus =
+  | "NOT_STARTED"
+  | "READY"
+  | "IN_PROGRESS"
+  | "BLOCKED"
+  | "COMPLETED"
+  | "DEFERRED";
+
+export interface BuildStage {
+  id: string;
+  stageNumber: number;
+  title: string;
+  userCentricName: string;
+  whyThisExists: string;
+  deliverables: string[];
+  associatedScreens: string[];
+  associatedEntities: string[];
+  dependencies: string[];
+  status: BuildStageStatus;
+  agentGuidance: string;
+  estimatedComplexity: "LOW" | "MEDIUM" | "HIGH";
+}
+
+export interface BuildMap {
+  id?: string;
+  project_id: string;
+  stages: BuildStage[];
+  currentStageNumber: number;
+  totalStages: number;
+  completedStages: number;
+  updated_at: string;
+}
+
+export interface BlueprintHealthIssue {
+  id: string;
+  type: "ERROR" | "WARNING" | "SUGGESTION";
+  section: string;
+  message: string;
+  recommendation: string;
+  affectedItemIds?: string[];
+}
+
+export interface BlueprintHealthReport {
+  score: number;
+  issues: BlueprintHealthIssue[];
+  isReadyForBuild: boolean;
+  strengths: string[];
+}
+
+// ==========================================
+// PHASE 3 — ENGINEERING INTELLIGENCE TYPES
+// ==========================================
+
+export type EngineeringDomain =
+  | "PRODUCT_ARCHITECTURE"
+  | "UX_ARCHITECTURE"
+  | "UI_ARCHITECTURE"
+  | "FRONTEND"
+  | "BACKEND"
+  | "API_CONTRACTS"
+  | "DATABASE"
+  | "AUTHENTICATION"
+  | "AUTHORIZATION"
+  | "SECURITY"
+  | "PERFORMANCE"
+  | "ACCESSIBILITY"
+  | "TESTING"
+  | "DEPLOYMENT"
+  | "SEO";
+
+export interface EngineeringDomainItem {
+  id: string;
+  domain: EngineeringDomain;
+  title: string;
+  simpleExplanation: string;
+  whyItMatters: string;
+  technicalSpecification: string;
+  affectedFeatures: string[];
+  affectedScreens: string[];
+  affectedEntities: string[];
+  source: ItemSource;
+  status: ItemStatus;
+  priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+}
+
+export interface ApiContract {
+  id: string;
+  endpoint: string;
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  purpose: string;
+  inputPayload: string;
+  outputPayload: string;
+  errorCodes: Array<{ code: number; scenario: string; resolution: string }>;
+  rateLimitPolicy: string;
+  authRequired: boolean;
+  rolesAllowed: string[];
+}
+
+export interface EntityRelationship {
+  id: string;
+  fromEntity: string;
+  toEntity: string;
+  relationType: "ONE_TO_ONE" | "ONE_TO_MANY" | "MANY_TO_MANY";
+  foreignKey: string;
+  onDelete: "CASCADE" | "SET_NULL" | "RESTRICT";
+  simpleMeaning: string;
+}
+
+export interface StateTransition {
+  id: string;
+  entity: string;
+  fromState: string;
+  toState: string;
+  allowedRoles: string[];
+  trigger: string;
+  sideEffects: string[];
+  preventedIf?: string;
+}
+
+export interface TechnicalRecommendationAlternative {
+  name: string;
+  description: string;
+  pros: string;
+  cons: string;
+}
+
+export interface TechnicalRecommendation {
+  id: string;
+  title: string;
+  area:
+    | "DATABASE"
+    | "AUTH"
+    | "PAYMENTS"
+    | "FILE_STORAGE"
+    | "AI_INTEGRATION"
+    | "DEPLOYMENT"
+    | "EMAIL"
+    | "OTHER";
+  requirement: string;
+  recommendedOption: string;
+  whyRecommended: string;
+  tradeoffs: string;
+  alternatives: TechnicalRecommendationAlternative[];
+  status: "RECOMMENDED" | "USER_CONFIRMED" | "UNDECIDED" | "DEFERRED";
+  selectedOption?: string;
+}
+
+export interface TraceabilityItem {
+  featureId: string;
+  featureTitle: string;
+  screens: string[];
+  workflows: string[];
+  dataEntities: string[];
+  apiEndpoints: string[];
+  backendServices: string[];
+  authorizationRules: string[];
+  testCases: string[];
+}
+
+export interface EngineeringBlocker {
+  id: string;
+  title: string;
+  description: string;
+  severity: "CRITICAL" | "WARNING" | "INFO";
+  affectedDomain: EngineeringDomain;
+  resolution: string;
+}
+
+export interface EngineeringReadinessReport {
+  status: "READY" | "NEEDS_DECISIONS" | "BLOCKED";
+  domainReadiness: Record<string, "READY" | "NEEDS_REVIEW" | "UNDECIDED" | "BLOCKED">;
+  blockers: EngineeringBlocker[];
+  unresolvedDecisionsCount: number;
+  changeImpacts: Array<{
+    productChange: string;
+    affectedEngineeringAreas: string[];
+    recommendation: string;
+  }>;
+}
+
+export interface EngineeringBlueprint {
+  id?: string;
+  project_id: string;
+  highLevelFlow: {
+    userInterface: string;
+    applicationLogic: string;
+    databaseLayer: string;
+    externalServices: string;
+  };
+  domains: Record<EngineeringDomain, EngineeringDomainItem[]>;
+  apiContracts: ApiContract[];
+  entityRelationships: EntityRelationship[];
+  stateTransitions: StateTransition[];
+  recommendations: TechnicalRecommendation[];
+  traceabilityMatrix: TraceabilityItem[];
+  readiness: EngineeringReadinessReport;
+  updated_at: string;
+}
+
+// ==========================================
+// PHASE 4 — TASK PLANNING & CONTEXT ENGINE
+// ==========================================
+
+export type TaskType =
+  | "FEATURE"
+  | "BUG"
+  | "REFACTOR"
+  | "UI"
+  | "FRONTEND"
+  | "BACKEND"
+  | "API"
+  | "DATABASE"
+  | "AUTH"
+  | "SECURITY"
+  | "PERFORMANCE"
+  | "TESTING"
+  | "CONFIGURATION"
+  | "DOCUMENTATION";
+
+export type TaskPriority = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+
+export type TaskStatus =
+  | "BACKLOG"
+  | "READY"
+  | "IN_PROGRESS"
+  | "BLOCKED"
+  | "COMPLETED"
+  | "DEFERRED"
+  | "PROMPT_GENERATED"
+  | "HANDED_OFF"
+  | "IMPLEMENTED_BY_USER"
+  | "AUDIT_PENDING"
+  | "VERIFIED"
+  | "NEEDS_MORE_WORK";
+
+export type TaskReadiness =
+  | "READY"
+  | "NEEDS_INFORMATION"
+  | "NEEDS_DECISION"
+  | "BLOCKED"
+  | "READY_FOR_CONTEXT"
+  | "READY_FOR_PROMPT";
+
+export type TaskComplexity = "SMALL" | "MEDIUM" | "LARGE" | "COMPLEX";
+
+export type TaskSource =
+  | "BUILD_MAP"
+  | "BLUEPRINT"
+  | "ENGINEERING"
+  | "USER_REQUEST"
+  | "AIGENSTRA_RECOMMENDATION"
+  | "AUDIT_FINDING";
+
+export interface ChangeBoundaries {
+  mustChange: string[];
+  mayChange: string[];
+  mustNotChange: string[];
+}
+
+export interface AigenstraTask {
+  id: string;
+  project_id: string;
+  title: string;
+  short_description: string;
+  purpose: string;
+  user_value: string;
+  task_type: TaskType;
+  category: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  readiness: TaskReadiness;
+  complexity: TaskComplexity;
+  source: TaskSource;
+  stageNumber: number;
+  dependencies: string[];
+  blocked_by: string[];
+  related_blueprint_items: string[];
+  related_engineering_items: string[];
+  related_decisions: string[];
+  related_assumptions: string[];
+  affected_screens: string[];
+  affected_entities: string[];
+  affected_apis: string[];
+  acceptance_criteria: string[];
+  change_boundaries: ChangeBoundaries;
+  context_pack_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContextPackItem {
+  id: string;
+  source: string;
+  title: string;
+  content: string;
+  reason: string;
+  relevance: "DIRECT" | "SUPPORTING" | "DEPENDENCY" | "CONSTRAINT" | "SECURITY";
+  priority: number;
+}
+
+export interface ContextPackExclusion {
+  id: string;
+  source: string;
+  title: string;
+  reason: string;
+}
+
+export interface ContextPack {
+  id: string;
+  taskId: string;
+  taskTitle: string;
+  summary: string;
+  includedItems: ContextPackItem[];
+  excludedItems: ContextPackExclusion[];
+  constraints: ChangeBoundaries;
+  acceptanceCriteria: string[];
+  securityConsiderations: string[];
+  testingRequirements: string[];
+  estimatedSize: {
+    itemCount: number;
+    characterCount: number;
+    label: string;
+  };
+  isStale: boolean;
+  staleReason?: string;
+  repository?: TaskRepositoryContext;
+  snapshotId?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaskRecommendation {
+  recommendedTaskId: string;
+  recommendedTaskTitle: string;
+  whyNext: string;
+  prerequisitesMet: boolean;
+  alternativeReadyTasks: Array<{
+    taskId: string;
+    title: string;
+    reason: string;
+  }>;
+}
+
+export interface BlueprintSkeleton {
+  productOverview: {
+    name: string;
+    type: string;
+    purpose: string;
+    targetUsers: string[];
+  };
+  experiences: Array<{
+    userRole: string;
+    coreGoal: string;
+    keyWorkflow: string;
+  }>;
+  features: Array<{
+    title: string;
+    description: string;
+    priority: "CRITICAL" | "HIGH" | "MEDIUM";
+  }>;
+  screens: Array<{
+    name: string;
+    purpose: string;
+    keyActions: string[];
+  }>;
+  dataEntities: Array<{
+    name: string;
+    description: string;
+    ownership: string;
+  }>;
+  securityBasics: string[];
+  qualityConsiderations: string[];
+}
+
 export interface DiscoveryQnA {
   id: string;
   project_id: string;
   question: string;
   answer?: string | null;
   category?: string;
+  priority?: QuestionPriority;
+  why_it_matters?: string;
+  is_assumption?: boolean;
   step_order: number;
   created_at: string;
 }
@@ -431,6 +1055,66 @@ export interface Prompt {
   updated_at: string;
 }
 
+export type PromptQualityStatus =
+  | "READY"
+  | "READY_WITH_ASSUMPTIONS"
+  | "NEEDS_REVIEW"
+  | "NOT_READY";
+
+export type PromptSectionKey =
+  | "ROLE"
+  | "OBJECTIVE"
+  | "PROJECT_CONTEXT"
+  | "CURRENT_STATE"
+  | "RELEVANT_CONTEXT"
+  | "REQUIREMENTS"
+  | "CHANGE_BOUNDARIES"
+  | "SECURITY"
+  | "EDGE_CASES"
+  | "ACCEPTANCE_CRITERIA"
+  | "TESTING_EXPECTATIONS"
+  | "EXPECTED_OUTPUT";
+
+export interface PromptSection {
+  key: PromptSectionKey;
+  title: string;
+  content: string;
+  purpose: string;
+}
+
+export interface PromptOptimizationResult {
+  rawCharacterCount: number;
+  optimizedCharacterCount: number;
+  rawEstimatedTokens: number;
+  optimizedEstimatedTokens: number;
+  reductionPercentage: number;
+  optimizationsApplied: string[];
+  contradictionsDetected: Array<{
+    ruleA: string;
+    ruleB: string;
+    resolution: string;
+  }>;
+}
+
+export interface CompiledPrompt {
+  id: string;
+  projectId: string;
+  taskId?: string;
+  taskTitle?: string;
+  title: string;
+  targetAgent: CodingAgentProfile;
+  sections: PromptSection[];
+  markdownText: string;
+  qualityStatus: PromptQualityStatus;
+  readinessScore: number;
+  optimization: PromptOptimizationResult;
+  version: number;
+  repositorySnapshotId?: string;
+  repositoryRevision?: string;
+  repositoryFindings?: string[];
+  created_at: string;
+}
+
 /**
  * 16-Part Implementation Prompt Version Record (Phase 5)
  */
@@ -576,3 +1260,547 @@ export interface TraceabilityNode {
   status: "verified" | "in_progress" | "open" | "resolved";
   details: string;
 }
+
+// ==========================================
+// PHASE 6 — PROJECT CONNECTION & REPOSITORY INTELLIGENCE
+// ==========================================
+
+export type ConnectionSourceType =
+  | "UPLOAD_FOLDER"
+  | "UPLOAD_ARCHIVE"
+  | "GIT_PUBLIC"
+  | "GIT_PROVIDER"
+  | "LOCAL_PATH";
+
+export type ConnectionStatus = "ACTIVE" | "DISCONNECTED" | "ERROR";
+
+export interface ProjectConnection {
+  id: string;
+  project_id: string;
+  source_type: ConnectionSourceType;
+  source_reference?: string;
+  branch?: string;
+  status: ConnectionStatus;
+  metadata?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export type SnapshotStatus =
+  | "QUEUED"
+  | "ANALYZING"
+  | "READY"
+  | "PARTIAL"
+  | "FAILED"
+  | "STALE";
+
+export type FileClassificationType =
+  | "SOURCE"
+  | "COMPONENT"
+  | "ROUTE"
+  | "API"
+  | "DATABASE"
+  | "CONFIG"
+  | "TEST"
+  | "DOCUMENTATION"
+  | "ASSET"
+  | "STYLE"
+  | "SCRIPT"
+  | "UNKNOWN";
+
+export type FileSensitivity =
+  | "NONE"
+  | "POSSIBLE_SECRET"
+  | "CONFIG_SENSITIVE"
+  | "CONFIRMED_SECRET";
+
+export type FileImportance = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+
+export interface RepositoryFile {
+  id: string;
+  project_id: string;
+  snapshot_id: string;
+  path: string;
+  extension: string;
+  size_bytes: number;
+  sha256_hash?: string;
+  file_type: FileClassificationType;
+  language?: string;
+  importance: FileImportance;
+  sensitivity: FileSensitivity;
+  is_ignored: boolean;
+  ignore_reason?: string;
+  analysis_status: "PENDING" | "ANALYZED" | "SKIPPED" | "FAILED";
+  created_at: string;
+}
+
+export type SymbolKind =
+  | "FUNCTION"
+  | "COMPONENT"
+  | "HOOK"
+  | "ROUTE_HANDLER"
+  | "CLASS"
+  | "INTERFACE"
+  | "TYPE"
+  | "SERVICE"
+  | "SCHEMA"
+  | "CONSTANT";
+
+export interface RepositorySymbol {
+  id: string;
+  project_id: string;
+  snapshot_id: string;
+  file_id: string;
+  file_path: string;
+  name: string;
+  kind: SymbolKind;
+  start_line: number;
+  end_line: number;
+  is_exported: boolean;
+  signature?: string;
+  documentation?: string;
+  dependencies: string[];
+  created_at: string;
+}
+
+export interface RepositoryChunk {
+  id: string;
+  project_id: string;
+  snapshot_id: string;
+  file_id: string;
+  symbol_id?: string;
+  file_path: string;
+  chunk_type: string;
+  start_line: number;
+  end_line: number;
+  content: string; // Guaranteed redacted
+  character_count: number;
+  estimated_tokens: number;
+  content_hash: string;
+  created_at: string;
+}
+
+export interface RepositoryRelation {
+  id: string;
+  project_id: string;
+  snapshot_id: string;
+  source_path: string;
+  target_path: string;
+  relation_type: "IMPORTS" | "CALLS" | "EXPOSES_ROUTE" | "USES_SCHEMA" | "MOUNTS_COMPONENT";
+  details?: Record<string, any>;
+  created_at: string;
+}
+
+export type ArchitectureConfidence =
+  | "CONFIRMED_BY_SOURCE"
+  | "STRONGLY_INFERRED"
+  | "POSSIBLY_INFERRED"
+  | "UNKNOWN";
+
+export interface DetectedArchitecture {
+  framework: string;
+  frameworkConfidence: ArchitectureConfidence;
+  languages: string[];
+  packageManager?: string;
+  database?: string;
+  databaseConfidence: ArchitectureConfidence;
+  authentication?: string;
+  authConfidence: ArchitectureConfidence;
+  apiPattern?: string;
+  uiLibraries: string[];
+  testFrameworks: string[];
+  buildTool?: string;
+  architecturePattern: string; // e.g., "Full-Stack Server-Rendered (Next.js App Router)"
+  architectureConfidence: ArchitectureConfidence;
+}
+
+export interface ArchitectureDriftObservation {
+  domain: string;
+  planned: string;
+  actual: string;
+  differenceSummary: string;
+  implication: string;
+  recommendation: string;
+}
+
+export interface DuplicateSystemWarning {
+  systemType: string; // "AUTHENTICATION", "DATABASE", "API_ROUTING", "STATE"
+  systemsFound: string[];
+  warningMessage: string;
+  recommendation: string;
+}
+
+export interface RepositoryRoute {
+  path: string;
+  filePath: string;
+  routeType: "PAGE" | "API" | "LAYOUT" | "MIDDLEWARE";
+  httpMethods?: string[];
+  isProtected?: boolean;
+  authIndicator?: string;
+}
+
+export interface RepositoryProjectArea {
+  name: string;
+  category: string;
+  description: string;
+  paths: string[];
+  confidence: ArchitectureConfidence;
+}
+
+export interface RepositoryManifest {
+  projectName: string;
+  sourceType: ConnectionSourceType;
+  sourceReference?: string;
+  branch?: string;
+  revision?: string;
+  architecture: DetectedArchitecture;
+  routes: RepositoryRoute[];
+  areas: RepositoryProjectArea[];
+  majorDependencies: Array<{ name: string; version?: string; role: string }>;
+  existingCapabilities: Array<{ capability: string; evidence: string; paths: string[] }>;
+  driftObservations: ArchitectureDriftObservation[];
+  duplicateWarnings: DuplicateSystemWarning[];
+  analysisQuality: {
+    frameworkDetected: boolean;
+    routesMapped: boolean;
+    databaseDetected: boolean;
+    authDetected: boolean;
+    evidenceNotes: string[];
+  };
+}
+
+export interface RepositorySnapshot {
+  id: string;
+  project_id: string;
+  connection_id?: string;
+  revision?: string;
+  status: SnapshotStatus;
+  file_count: number;
+  analyzed_file_count: number;
+  ignored_file_count: number;
+  is_active: boolean;
+  warnings: string[];
+  errors: string[];
+  manifest: RepositoryManifest;
+  project_map: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RepositoryFeatureMapping {
+  id: string;
+  project_id: string;
+  snapshot_id: string;
+  feature_key: string;
+  feature_title: string;
+  code_area: string;
+  related_paths: string[];
+  confidence: ArchitectureConfidence;
+  observation?: string;
+  created_at: string;
+}
+
+export type TaskFileRelevanceLevel =
+  | "DIRECT"
+  | "RELATED"
+  | "DEPENDENCY"
+  | "REFERENCE"
+  | "IRRELEVANT"
+  | "UNKNOWN";
+
+export interface TaskRelevantFile {
+  filePath: string;
+  fileType: FileClassificationType;
+  relevance: TaskFileRelevanceLevel;
+  reason: string;
+  relevantSymbols?: string[];
+  confidence: ArchitectureConfidence;
+}
+
+export interface TaskRelevantChunk {
+  chunkId: string;
+  filePath: string;
+  symbolName?: string;
+  startLine: number;
+  endLine: number;
+  content: string;
+  reason: string;
+  estimatedTokens: number;
+}
+
+export interface TaskRepositoryContext {
+  snapshotId: string;
+  revision?: string;
+  detectedStack: string;
+  relevantFiles: TaskRelevantFile[];
+  relevantChunks: TaskRelevantChunk[];
+  excludedFiles: Array<{ filePath: string; reason: string }>;
+  existingCapabilitiesToPreserve: string[];
+  driftObservations: ArchitectureDriftObservation[];
+  duplicateWarnings: DuplicateSystemWarning[];
+  warnings: string[];
+  isSnapshotStale?: boolean;
+}
+
+export interface TaskContextOverride {
+  id: string;
+  project_id: string;
+  task_id: string;
+  file_path: string;
+  override_action: "FORCE_INCLUDE" | "FORCE_EXCLUDE" | "MARK_IMPORTANT";
+  user_rationale?: string;
+  created_at: string;
+}
+
+// ==========================================
+// PHASE 7 — PROJECT AUDIT + FINDINGS + EVIDENCE
+// ==========================================
+
+export type AuditScope =
+  | "FULL"
+  | "PRODUCT"
+  | "UX"
+  | "UI"
+  | "ENGINEERING"
+  | "SECURITY"
+  | "PERFORMANCE"
+  | "TESTING";
+
+export type AuditDimension =
+  | "PRODUCT"
+  | "UX"
+  | "UI"
+  | "FRONTEND"
+  | "BACKEND"
+  | "API"
+  | "DATABASE"
+  | "AUTHENTICATION"
+  | "AUTHORIZATION"
+  | "SECURITY"
+  | "PERFORMANCE"
+  | "ACCESSIBILITY"
+  | "TESTING";
+
+export type FindingState =
+  | "VERIFIED"
+  | "PASS_WITH_NOTES"
+  | "NEEDS_REVIEW"
+  | "ISSUE"
+  | "CRITICAL"
+  | "NOT_VERIFIABLE"
+  | "NOT_APPLICABLE";
+
+export type FindingSeverityLevel = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INFO";
+
+export type RequirementCoverageStatus =
+  | "VERIFIED"
+  | "PARTIALLY_SUPPORTED"
+  | "MISSING"
+  | "CONFLICTING"
+  | "UNABLE_TO_VERIFY"
+  | "NOT_APPLICABLE";
+
+export interface FindingEvidence {
+  filePath?: string;
+  symbolName?: string;
+  route?: string;
+  lineRange?: [number, number];
+  snippet?: string;
+  blueprintRef?: string;
+  engineeringRef?: string;
+  observedDiff?: string;
+}
+
+export interface Phase7Finding {
+  id: string;
+  projectId: string;
+  auditId: string;
+  findingCode: string; // e.g. "AUTH-001", "SEC-002", "UX-003", "PROD-001"
+  category: AuditDimension;
+  severity: FindingSeverityLevel;
+  status: FindingState;
+  title: string;
+  summary: string; // Simple explanation for vibe coders
+  description: string; // Technical explanation
+  impact: string; // Real world consequence
+  evidence: FindingEvidence;
+  expectedBehavior: string;
+  observedBehavior: string;
+  recommendation: string;
+  verificationCriteria: string[];
+  confidence: "HIGH" | "MEDIUM" | "LOW";
+  affectedFeature?: string;
+  affectedScreen?: string;
+  affectedWorkflow?: string;
+  affectedFile?: string;
+  affectedSymbol?: string;
+  sourceRequirement?: string;
+  fixStatus: "OPEN" | "FIX_PROMPT_READY" | "HANDED_OFF" | "AWAITING_VERIFICATION";
+  previousFindingId?: string;
+  regressionCount?: number;
+  resolvedAt?: string;
+  verificationId?: string;
+  verificationStatus?: VerificationStatus;
+  userOverride?: {
+    action: "DISMISSED" | "MARKED_NA" | "MANUAL_REVIEW";
+    rationale: string;
+    timestamp: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RequirementCoverageItem {
+  id: string;
+  projectId: string;
+  auditId: string;
+  requirementId: string;
+  requirementType: "FEATURE" | "WORKFLOW" | "SECURITY_RULE" | "DATA_ENTITY" | "API_CONTRACT";
+  title: string;
+  coverageStatus: RequirementCoverageStatus;
+  evidencePaths: string[];
+  observations?: string;
+}
+
+export interface AuditSnapshot {
+  id: string;
+  projectId: string;
+  repositorySnapshotId?: string;
+  blueprintRevision?: string;
+  engineeringRevision?: string;
+  auditScope: AuditScope;
+  status: "QUEUED" | "ANALYZING" | "COMPLETED" | "PARTIAL" | "FAILED";
+  summary: {
+    criticalCount: number;
+    highCount: number;
+    mediumCount: number;
+    lowCount: number;
+    infoCount: number;
+    verifiedCount: number;
+    totalFindings: number;
+    biggestIssue?: string;
+    nextRecommendedAction?: string;
+    dimensionSummaries?: Record<string, { status: FindingState; findingCount: number; notes: string }>;
+  };
+  coverage: {
+    totalRequirements: number;
+    verifiedRequirements: number;
+    partiallySupported: number;
+    missingRequirements: number;
+    unableToVerify: number;
+    coveragePercentage: number;
+  };
+  findings: Phase7Finding[];
+  requirementCoverage: RequirementCoverageItem[];
+  warnings: string[];
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface AuditFixTask {
+  id: string;
+  projectId: string;
+  auditId?: string;
+  findingId: string;
+  taskId?: string;
+  title: string;
+  fixPromptId?: string;
+  fixStatus: "OPEN" | "FIX_PROMPT_READY" | "HANDED_OFF" | "AWAITING_VERIFICATION";
+  targetAgent: string;
+  contextPack?: Record<string, any>;
+  promptText?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ==========================================
+// PHASE 8 — RE-AUDIT, VERIFICATION, REGRESSION & HEALTH
+// ==========================================
+
+export type VerificationStatus =
+  | "RESOLVED"
+  | "PARTIALLY_RESOLVED"
+  | "STILL_PRESENT"
+  | "REGRESSED"
+  | "UNABLE_TO_VERIFY"
+  | "NEEDS_MANUAL_REVIEW";
+
+export type VerificationMethod =
+  | "STATIC_ANALYSIS"
+  | "CODE_REVIEW"
+  | "TEST_EVIDENCE"
+  | "STRUCTURAL_CHECK"
+  | "SEMANTIC_ANALYSIS"
+  | "USER_CONFIRMED"
+  | "MANUAL_REVIEW";
+
+export type VerificationScope =
+  | "TARGETED_FINDING"
+  | "FEATURE"
+  | "AREA"
+  | "FULL";
+
+export type VerificationConfidence = "HIGH" | "MEDIUM" | "LOW";
+
+export interface AuditVerification {
+  id: string;
+  projectId: string;
+  findingId: string;
+  auditId?: string;
+  repositorySnapshotId?: string;
+  verificationScope: VerificationScope;
+  expectedBehavior: string;
+  observedBehavior: string;
+  originalEvidence: FindingEvidence;
+  currentEvidence: FindingEvidence;
+  verificationMethod: VerificationMethod;
+  status: VerificationStatus;
+  confidence: VerificationConfidence;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ProjectHealthStatus =
+  | "HEALTHY_WITHIN_SCOPE"
+  | "NEEDS_ATTENTION"
+  | "HIGH_RISK"
+  | "INCOMPLETE"
+  | "STALE"
+  | "UNKNOWN";
+
+export type BlueprintAlignmentStatus =
+  | "ALIGNED"
+  | "PARTIALLY_ALIGNED"
+  | "DIFFERENT"
+  | "UNKNOWN";
+
+export interface ProjectHealthSnapshot {
+  id: string;
+  projectId: string;
+  auditId?: string;
+  repositorySnapshotId?: string;
+  healthStatus: ProjectHealthStatus;
+  healthScope: string;
+  criticalCount: number;
+  highCount: number;
+  mediumCount: number;
+  regressionCount: number;
+  verifiedCount: number;
+  unverifiedCount: number;
+  blueprintAlignment: BlueprintAlignmentStatus;
+  metrics: {
+    totalFindings: number;
+    resolvedFindings: number;
+    coveragePercentage: number;
+    lastAuditTimestamp?: string;
+    isStale: boolean;
+    sharedDependencyWarnings?: string[];
+    dimensionHealth?: Record<string, { status: string; findingCount: number }>;
+  };
+  recommendedNextAction?: string;
+  createdAt: string;
+}
+
+
+

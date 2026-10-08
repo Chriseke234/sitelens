@@ -53,13 +53,6 @@ export default async function ProjectsPage() {
 
         <div className="flex items-center gap-3">
           <Link
-            href="/templates"
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 btn-interactive"
-          >
-            <span>Browse Templates</span>
-          </Link>
-
-          <Link
             href="/projects/new"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-700 active:scale-95 btn-interactive"
           >
@@ -87,14 +80,7 @@ export default async function ProjectsPage() {
               className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-blue-700 btn-interactive"
             >
               <Plus className="h-4 w-4" />
-              <span>Create Blank Workspace</span>
-            </Link>
-            <Link
-              href="/templates"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 btn-interactive"
-            >
-              <span>Explore Starter Templates</span>
-              <ArrowRight className="h-4 w-4" />
+              <span>Start New Workspace</span>
             </Link>
           </div>
         </div>

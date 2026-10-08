@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { runMultiAgentProjectAudit } from "@/lib/ai/project-audit";
+import { getActiveSnapshot } from "@/lib/repository/store";
+import { runProjectAuditPipeline } from "@/lib/audit/pipeline";
+import { persistAuditSnapshot, loadLatestAuditSnapshot } from "@/lib/audit/store";
+import { SoftwareBlueprint, EngineeringBlueprint, AuditScope } from "@/types";
 
 export async function GET(
   request: Request,
@@ -17,22 +20,11 @@ export async function GET(
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
 
-    const [auditsRes, findingsRes] = await Promise.all([
-      supabase
-        .from("project_audits")
-        .select("*")
-        .eq("project_id", id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("audit_findings")
-        .select("*")
-        .eq("project_id", id)
-        .order("created_at", { ascending: false }),
-    ]);
+    const audit = await loadLatestAuditSnapshot(id);
 
     return NextResponse.json({
-      audits: auditsRes.data || [],
-      findings: findingsRes.data || [],
+      audit,
+      findings: audit?.findings || [],
     });
   } catch (err) {
     console.error("Project Audit GET error:", err);
@@ -67,63 +59,75 @@ export async function POST(
     }
 
     const body = await request.json().catch(() => ({}));
-    const codeContext = body?.codeContext || body?.repoUrl || body?.deployedUrl || "";
+    const scope: AuditScope = body?.scope || "FULL";
 
-    const auditResult = await runMultiAgentProjectAudit(
-      project.name,
-      project.description,
-      codeContext
-    );
+    // 1. Load active repository snapshot & code artifacts
+    const { snapshot, files, symbols, chunks } = await getActiveSnapshot(id);
 
-    // Save project audit record
-    const { data: auditRecord } = await supabase
-      .from("project_audits")
-      .insert({
-        project_id: id,
-        status: "completed",
-        readiness_scores: auditResult.readinessScores,
-        completed_at: new Date().toISOString(),
-      })
-      .select("*")
-      .single();
-
-    // Insert findings with complete Phase 6-7 metadata
-    if (auditResult.findings && auditResult.findings.length > 0) {
-      const findingsToInsert = auditResult.findings.map((f) => ({
-        project_id: id,
-        project_audit_id: auditRecord?.id || null,
-        finding_code: f.findingCode,
-        category: f.category,
-        severity: f.severity,
-        title: f.title,
-        simple_explanation: f.simpleExplanation,
-        technical_explanation: f.technicalExplanation,
-        evidence: f.evidence,
-        affected_file_or_route: f.affectedFileOrRoute,
-        potential_impact: f.potentialImpact,
-        recommended_fix: f.recommendedFix,
-        verification_method: f.verificationMethod,
-        confidence: f.confidence || "likely",
-        related_files: f.relatedFiles,
-        status: "open",
-        lifecycle_status: "open",
-      }));
-
-      await supabase.from("audit_findings").insert(findingsToInsert);
+    if (!snapshot) {
+      return NextResponse.json(
+        {
+          error:
+            "No connected repository snapshot found. Please connect your project folder or repository on the Project Intelligence page first.",
+        },
+        { status: 400 }
+      );
     }
 
-    const { data: allFindings } = await supabase
-      .from("audit_findings")
-      .select("*")
+    // 2. Load Software Blueprint
+    let blueprint: SoftwareBlueprint | null = null;
+    const { data: spec } = await supabase
+      .from("product_specs")
+      .select("problem_statement")
       .eq("project_id", id)
-      .order("created_at", { ascending: false });
+      .maybeSingle();
+
+    if (spec?.problem_statement && spec.problem_statement.startsWith("{")) {
+      try {
+        blueprint = JSON.parse(spec.problem_statement);
+      } catch (err) {
+        console.warn("Could not parse Software Blueprint:", err);
+      }
+    }
+
+    // 3. Load Engineering Blueprint
+    let engineeringBlueprint: EngineeringBlueprint | null = null;
+    const { data: archDoc } = await supabase
+      .from("architecture_docs")
+      .select("frontend")
+      .eq("project_id", id)
+      .maybeSingle();
+
+    if (archDoc?.frontend) {
+      engineeringBlueprint = archDoc.frontend as EngineeringBlueprint;
+    }
+
+    // 4. Run Audit Pipeline (Deterministic First + Targeted Semantic)
+    const audit = await runProjectAuditPipeline({
+      projectId: id,
+      scope,
+      blueprint,
+      engineeringBlueprint,
+      snapshot,
+      files,
+      symbols,
+      chunks,
+    });
+
+    // 5. Persist audit snapshot
+    await persistAuditSnapshot(audit);
 
     return NextResponse.json({
-      audit: auditRecord,
-      findings: allFindings || [],
+      audit,
+      findings: audit.findings,
+      coverage: audit.coverage,
+      summary: audit.summary,
     });
   } catch (err) {
-    console.error("Project Audit POST error:", err);
-    return NextResponse.json({ error: "An unexpected server error occurred." }, { status: 500 });
+    console.error("Run project audit error:", err);
+    return NextResponse.json(
+      { error: "Failed to run audit analysis." },
+      { status: 500 }
+    );
   }
 }

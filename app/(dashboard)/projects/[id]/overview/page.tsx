@@ -8,17 +8,19 @@ import {
   AlertTriangle,
   ArrowRight,
   Sparkles,
-  Users,
+  BookMarked,
   Activity,
   Layers,
   FileCode2,
   TrendingUp,
+  Compass,
+  Terminal,
 } from "lucide-react";
 import { Project } from "@/types";
 
 export const metadata = {
   title: "Project Overview | Aigenstra",
-  description: "Product status, build readiness indicators, open issues, and agent activity.",
+  description: "Product status, build readiness indicators, open issues, and tour guide next actions.",
 };
 
 export default async function ProjectOverviewPage({
@@ -55,10 +57,8 @@ export default async function ProjectOverviewPage({
     findingsRes,
     decisionsRes,
     discoveryRes,
-    researchRes,
-    journeyRes,
     productRes,
-    designRes,
+    journeyRes,
     archRes,
     secRes,
     promptsRes,
@@ -66,10 +66,8 @@ export default async function ProjectOverviewPage({
     supabase.from("audit_findings").select("*").eq("project_id", id),
     supabase.from("agent_decisions").select("*").eq("project_id", id).order("created_at", { ascending: false }).limit(3),
     supabase.from("discovery_qna").select("*").eq("project_id", id),
-    supabase.from("research_documents").select("id").eq("project_id", id).limit(1),
-    supabase.from("user_journeys").select("id").eq("project_id", id).limit(1),
     supabase.from("product_specs").select("id").eq("project_id", id).limit(1),
-    supabase.from("design_specs").select("id").eq("project_id", id).limit(1),
+    supabase.from("user_journeys").select("id").eq("project_id", id).limit(1),
     supabase.from("architecture_docs").select("id").eq("project_id", id).limit(1),
     supabase.from("security_plans").select("id").eq("project_id", id).limit(1),
     supabase.from("prompts").select("*").eq("project_id", id),
@@ -78,10 +76,8 @@ export default async function ProjectOverviewPage({
   const findings = findingsRes.data || [];
   const decisions = decisionsRes.data || [];
   const qnaList = discoveryRes.data || [];
-  const hasResearch = (researchRes.data?.length || 0) > 0;
-  const hasJourney = (journeyRes.data?.length || 0) > 0;
   const hasProduct = (productRes.data?.length || 0) > 0;
-  const hasDesign = (designRes.data?.length || 0) > 0;
+  const hasJourney = (journeyRes.data?.length || 0) > 0;
   const hasArch = (archRes.data?.length || 0) > 0;
   const hasSecurity = (secRes.data?.length || 0) > 0;
   const prompts = promptsRes.data || [];
@@ -89,20 +85,16 @@ export default async function ProjectOverviewPage({
   const answeredCount = qnaList.filter((q) => q.answer && q.answer.trim().length > 0).length;
   const hasDiscovery = answeredCount >= 2;
 
-  // Calculate real progress percentage (10 stages)
+  // Calculate real progress percentage
   const stageWeights = [
-    hasDiscovery ? 10 : answeredCount > 0 ? 5 : 0,
-    hasResearch ? 10 : 0,
-    hasJourney ? 10 : 0,
-    hasProduct ? 10 : 0,
-    hasDesign ? 10 : 0,
-    hasArch ? 10 : 0,
-    hasSecurity ? 10 : 0,
-    decisions.length > 0 ? 10 : 0,
-    prompts.length > 0 ? 10 : 0,
+    hasDiscovery ? 20 : answeredCount > 0 ? 10 : 0,
+    hasProduct ? 20 : 0,
+    hasArch ? 20 : 0,
+    decisions.length > 0 ? 15 : 0,
+    prompts.length > 0 ? 15 : 0,
     findings.length > 0 ? 10 : 0,
   ];
-  const totalProgressPct = stageWeights.reduce((a, b) => a + b, 0);
+  const totalProgressPct = Math.min(100, stageWeights.reduce((a, b) => a + b, 0));
 
   const openIssues = {
     critical: findings.filter((f) => f.severity === "critical" && f.status === "open").length,
@@ -113,56 +105,47 @@ export default async function ProjectOverviewPage({
 
   // Readiness categories based on actual database stage records
   const readinessCategories = [
-    { name: "Product Spec", status: hasProduct ? "READY" : "NEEDS ATTENTION", score: hasProduct ? 100 : answeredCount >= 2 ? 50 : 20, href: `/projects/${id}/product` },
-    { name: "UX Journeys", status: hasJourney ? "READY" : "NEEDS ATTENTION", score: hasJourney ? 100 : 20, href: `/projects/${id}/journey` },
-    { name: "Design System", status: hasDesign ? "READY" : "NEEDS ATTENTION", score: hasDesign ? 100 : 20, href: `/projects/${id}/design` },
-    { name: "Architecture", status: hasArch ? "READY" : "NEEDS ATTENTION", score: hasArch ? 100 : 20, href: `/projects/${id}/architecture` },
-    { name: "Security Architecture", status: hasSecurity && openIssues.critical === 0 ? "READY" : "NEEDS ATTENTION", score: hasSecurity ? (openIssues.critical === 0 ? 100 : 50) : 20, href: `/projects/${id}/security` },
-    { name: "Agent Council & ADRs", status: decisions.length > 0 ? "READY" : "NEEDS ATTENTION", score: decisions.length > 0 ? 100 : 20, href: `/projects/${id}/council` },
-    { name: "Vibe Build Prompts", status: prompts.length > 0 ? "READY" : "NEEDS ATTENTION", score: prompts.length > 0 ? 100 : 20, href: `/projects/${id}/prompts` },
-    { name: "Code & Quality Audit", status: findings.length > 0 ? "READY" : "NEEDS ATTENTION", score: findings.length > 0 ? 100 : 20, href: `/projects/${id}/audit` },
+    { name: "Discovery & Decisions", status: hasDiscovery ? "DECIDED" : "IN PROGRESS", score: hasDiscovery ? 100 : answeredCount > 0 ? 50 : 20, href: `/projects/${id}/discovery` },
+    { name: "Software Blueprint", status: hasProduct ? "READY" : "NEEDS ATTENTION", score: hasProduct ? 100 : answeredCount >= 2 ? 50 : 20, href: `/projects/${id}/product` },
+    { name: "Architecture & Security", status: hasArch ? "READY" : "NEEDS ATTENTION", score: hasArch ? 100 : 20, href: `/projects/${id}/architecture` },
+    { name: "Decision Log & ADRs", status: decisions.length > 0 ? "RECORDED" : "EMPTY", score: decisions.length > 0 ? 100 : 20, href: `/projects/${id}/decisions` },
+    { name: "Coding Prompts", status: prompts.length > 0 ? "COMPILED" : "NOT GENERATED", score: prompts.length > 0 ? 100 : 20, href: `/projects/${id}/prompts` },
+    { name: "Code Audit & Fixes", status: findings.length > 0 ? "AUDITED" : "READY TO AUDIT", score: findings.length > 0 ? 100 : 20, href: `/projects/${id}/audit` },
   ];
 
-  // Dynamic next recommended action
+  // Dynamic next recommended action based on tour guide stages
   let nextAction = {
-    title: "Complete Product Discovery Q&A",
-    desc: `Answer remaining discovery questions (${answeredCount}/${qnaList.length || 5} completed) to help your AI PM Agent formulate the Product Specification.`,
+    title: "Clarify Key Product Decisions",
+    desc: `Answer essential discovery questions (${answeredCount}/${qnaList.length || 4} decided) to shape your software blueprint.`,
     href: `/projects/${id}/discovery`,
     cta: "Go to Discovery Engine",
   };
 
   if (!hasProduct && answeredCount >= 2) {
     nextAction = {
-      title: "Synthesize Product Requirements (PRD)",
-      desc: "Your discovery answers are ready. Formulate personas, FRs, NFRs, edge cases, and anti-bloat scope boundaries.",
+      title: "Synthesize Software Blueprint",
+      desc: "Your discovery answers are ready. Formulate journeys, screen specs, data entities, and security rules.",
       href: `/projects/${id}/product`,
-      cta: "Generate PRD",
+      cta: "Generate Blueprint",
     };
   } else if (!hasArch && hasProduct) {
     nextAction = {
-      title: "Design Technical Architecture & Security Model",
-      desc: "Generate your database entities, API endpoints, auth model, and zero-trust security plan.",
+      title: "Review Technical Architecture & Security",
+      desc: "Inspect database entities, API endpoints, auth model, and server-side zero-trust security.",
       href: `/projects/${id}/architecture`,
-      cta: "Plan Architecture",
+      cta: "View Architecture",
     };
-  } else if (decisions.length === 0 && hasArch) {
+  } else if (prompts.length === 0 && (hasArch || hasProduct)) {
     nextAction = {
-      title: "Consult Multi-Agent Council & Record ADRs",
-      desc: "Have the 7 specialized agents debate architecture trade-offs and record formal Architecture Decision Records.",
-      href: `/projects/${id}/council`,
-      cta: "Convene Agent Council",
-    };
-  } else if (prompts.length === 0 && decisions.length > 0) {
-    nextAction = {
-      title: "Generate 11-Part Vibe-Coding Implementation Prompts",
-      desc: "Transform your PRD, Architecture, and Council Decisions into structured prompts for Cursor, Claude Code, and Lovable.",
+      title: "Generate Precision Coding Prompts",
+      desc: `Compile context-optimized 16-part prompts specifically formatted for ${project.coding_environment || "your coding agent"}.`,
       href: `/projects/${id}/prompts`,
-      cta: "Generate Build Prompts",
+      cta: "Open Prompt Studio",
     };
   } else if (findings.length > 0) {
     nextAction = {
       title: "Review Audit Findings & Generate Fix Prompts",
-      desc: `Address ${openIssues.critical} Critical and ${openIssues.high} High severity findings by generating precise fix prompts for your coding AI.`,
+      desc: `Address ${openIssues.critical} Critical and ${openIssues.high} High severity findings with targeted remediation prompts.`,
       href: `/projects/${id}/fix-queue`,
       cta: "Open Fix Queue",
     };
@@ -180,14 +163,14 @@ export default async function ProjectOverviewPage({
               </span>
               <span className="text-xs text-slate-400">•</span>
               <span className="text-xs text-slate-500 font-medium">
-                Environment: {project.coding_environment || "Cursor"}
+                Target AI: {project.coding_environment || "Cursor"}
               </span>
             </div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
               {project.name}
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl">
-              {project.description || project.raw_idea || "AI-assisted product engineering workspace."}
+              {project.description || project.raw_idea || "AI-assisted product engineering and prompt generation workspace."}
             </p>
           </div>
 
@@ -195,7 +178,7 @@ export default async function ProjectOverviewPage({
           <div className="flex flex-col items-start sm:items-end rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 dark:border-indigo-950 dark:bg-indigo-950/20">
             <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">
               <TrendingUp className="h-3.5 w-3.5" />
-              Project Readiness
+              Build Readiness
             </div>
             <div className="text-3xl font-black text-slate-900 dark:text-white mt-0.5">
               {totalProgressPct}%
@@ -216,7 +199,7 @@ export default async function ProjectOverviewPage({
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-0.5 text-xs font-bold text-white backdrop-blur-sm">
               <Activity className="h-3.5 w-3.5" />
-              Recommended Next Action
+              Aigenstra Tour Guide — Next Step
             </div>
             <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">
               {nextAction.title}
@@ -228,7 +211,7 @@ export default async function ProjectOverviewPage({
 
           <Link
             href={nextAction.href}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-bold text-indigo-700 shadow-md transition-all hover:bg-indigo-50 active:scale-95"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-bold text-indigo-700 shadow-md transition-all hover:bg-indigo-50 active:scale-95 btn-interactive"
           >
             {nextAction.cta}
             <ArrowRight className="h-4 w-4" />
@@ -273,8 +256,8 @@ export default async function ProjectOverviewPage({
 
         <div className="rounded-2xl border border-indigo-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between text-indigo-600 dark:text-indigo-400">
-            <span className="text-xs font-bold uppercase tracking-wider">Agent Decisions</span>
-            <Users className="h-5 w-5" />
+            <span className="text-xs font-bold uppercase tracking-wider">Logged Decisions</span>
+            <BookMarked className="h-5 w-5" />
           </div>
           <div className="mt-3 text-3xl font-black text-slate-900 dark:text-white">
             {decisions.length}
@@ -288,7 +271,7 @@ export default async function ProjectOverviewPage({
         <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
           <div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              System Build Readiness Indicators
+              Product Blueprint & Readiness Indicators
             </h3>
             <p className="text-xs text-slate-500">
               Evaluated across core product engineering domains
@@ -296,19 +279,19 @@ export default async function ProjectOverviewPage({
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {readinessCategories.map((cat) => (
             <Link
               key={cat.name}
               href={cat.href}
-              className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition-all hover:border-indigo-500/50 hover:bg-white hover:shadow-md dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-900"
+              className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition-all hover:border-indigo-500/50 hover:bg-white hover:shadow-md dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-900 btn-interactive"
             >
               <div>
                 <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
                   <span>{cat.name}</span>
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
-                      cat.status === "READY"
+                      cat.score >= 80
                         ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
                         : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
                     }`}
@@ -336,20 +319,20 @@ export default async function ProjectOverviewPage({
         </div>
       </div>
 
-      {/* Agent Activity Log */}
+      {/* Decision Log Summary */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            <BookMarked className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              Recent AI Agent Decisions & ADRs
+              Recent Decisions & Assumptions
             </h3>
           </div>
           <Link
-            href={`/projects/${id}/council`}
+            href={`/projects/${id}/decisions`}
             className="text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
           >
-            View Council →
+            View Decision Log →
           </Link>
         </div>
 
@@ -358,7 +341,7 @@ export default async function ProjectOverviewPage({
             <Sparkles className="h-6 w-6 text-slate-400" />
             <p className="mt-2 font-semibold">No decisions recorded yet.</p>
             <p className="mt-1 max-w-sm text-slate-400">
-              Convene the 7-Agent Council to evaluate trade-offs (e.g. guest checkout, authentication structure, database indexes).
+              Answer questions in the Discovery Engine to log decisions and provisional assumptions.
             </p>
           </div>
         ) : (
@@ -370,7 +353,7 @@ export default async function ProjectOverviewPage({
               >
                 <div>
                   <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                    <span>ADR-{String(dec.decision_number).padStart(3, "0")}</span>
+                    <span>DEC-{String(dec.decision_number).padStart(3, "0")}</span>
                     <span className="text-slate-400">•</span>
                     <span className="text-slate-900 dark:text-white">{dec.topic}</span>
                   </div>

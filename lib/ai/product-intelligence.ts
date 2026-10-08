@@ -1,41 +1,86 @@
 import { getGeminiApiKey } from "./client";
-import { UserPersona, FunctionalRequirement, NonFunctionalRequirement } from "@/types";
+import {
+  UserPersona,
+  FunctionalRequirement,
+  NonFunctionalRequirement,
+  AdaptiveDiscoveryQuestion,
+  QuestionPriority,
+} from "@/types";
 
 /**
- * Generate Discovery Q&A follow-ups based on initial idea and previous answers.
+ * Generate Adaptive Discovery Questions classified by MUST KNOW, HELPFUL, and OPTIONAL.
+ * Includes "Why we're asking" rationale and sensible defaults for "I don't know" answers.
  */
-export async function generateDiscoveryQuestions(
+export async function generateAdaptiveDiscoveryQuestions(
   projectName: string,
   productDescription: string,
   previousQnA: Array<{ question: string; answer?: string | null }>
-): Promise<string[]> {
+): Promise<AdaptiveDiscoveryQuestion[]> {
   const apiKey = getGeminiApiKey();
 
+  const fallbackQuestions: AdaptiveDiscoveryQuestion[] = [
+    {
+      question: "Will customers need accounts to log in and track their orders or saved items?",
+      priority: "MUST_KNOW",
+      whyItMatters: "Determines whether authentication, session management, and private user databases are required.",
+      suggestedOptions: ["Yes, accounts required", "Guest flow with tracking links", "No accounts needed"],
+      defaultRecommendation: "Yes, accounts with optional guest checkout",
+      defaultAssumption: "Customers will have accounts to access their order history securely.",
+    },
+    {
+      question: "Will different types of people have different levels of access (e.g. Customers vs Staff vs Admins)?",
+      priority: "MUST_KNOW",
+      whyItMatters: "Directly shapes data ownership rules, dashboard permissions, and security policies.",
+      suggestedOptions: ["Multiple roles (Customer, Staff, Admin)", "Single role (All users equal)", "Admin portal only"],
+      defaultRecommendation: "Two primary roles: Customer and Administrator",
+      defaultAssumption: "Platform has standard Customer and Administrator permission boundaries.",
+    },
+    {
+      question: "Will you accept online payments directly inside the application?",
+      priority: "HELPFUL",
+      whyItMatters: "Influences webhook architecture, payment provider integrations, and checkout state machines.",
+      suggestedOptions: ["Yes, direct card/online payments", "Manual offline payment on fulfillment", "Free platform / Monetized later"],
+      defaultRecommendation: "Direct online payments via standard checkout gateway",
+      defaultAssumption: "Transactions will be processed via integrated payment provider.",
+    },
+    {
+      question: "Do users need automated notifications (e.g. Email or SMS updates when status changes)?",
+      priority: "OPTIONAL",
+      whyItMatters: "Adds notification triggers and transactional messaging services.",
+      suggestedOptions: ["Yes, email and SMS", "Email only", "In-app notifications only"],
+      defaultRecommendation: "Email alerts for major status milestones",
+      defaultAssumption: "Order state changes will send automated email notifications.",
+    },
+  ];
+
   if (!apiKey) {
-    return [
-      "Who experiences the core problem most frequently?",
-      "When and where does the problem typically occur (context)?",
-      "What does an ideal, effortless outcome look like for the user?",
-      "What critical assumptions are we currently making about user behavior?",
-      "What potential business or technical risks could cause this product to fail?",
-    ];
+    return fallbackQuestions;
   }
+
+  const answeredTexts = (previousQnA || []).map((q) => q.question.toLowerCase());
 
   const prompt = `
 System Instruction:
-You are an expert AI Product Manager conducting a discovery session for Aigenstra.
-Analyze the project details and previous answers. Identify missing critical product information.
-Break discovery down into:
-- Problem (What problem is the product attempting to solve?)
-- Users (Who experiences the problem?)
-- Context (When and where does it happen?)
-- Desired outcome (What does success look like?)
-- Assumptions (What are we currently assuming?)
-- Unknowns (What don't we know yet?)
-- Risks (What could make the product fail?)
-
-Generate 3 to 5 clear, progressive follow-up questions to clarify scope.
-Do NOT ask technical stack questions.
+You are the Principal Discovery AI Guide for Aigenstra.
+Analyze the user's project idea and previous Q&A. Generate 3 to 4 prioritized, progressive, human questions.
+CRITICAL RULES FOR ADAPTIVE QUESTIONS:
+1. DEDUPLICATION: DO NOT ask about topics already covered or answered in previous Q&A or obvious from the description.
+   Previous questions asked: ${JSON.stringify(answeredTexts)}
+2. CATEGORIES TO REASON ACROSS:
+   - ACTORS: Who are the different types of users?
+   - ACCESS: Do users need accounts or can they browse as guests?
+   - GOAL & WORKFLOW: What is the primary action a user performs?
+   - PAYMENTS: Are direct in-app payments required?
+   - COMMUNICATION: Are notifications (email/SMS) needed on status changes?
+   - DATA & CONTENT: What major records need to be created and tracked?
+   - INTEGRATIONS: Does the product depend on outside APIs/services?
+   - ADMIN: Does a platform manager need a dedicated oversight portal?
+3. CLASSIFICATION:
+   - MUST_KNOW: Critical architecture decisions that materially change data models, auth, or core workflows.
+   - HELPFUL: Decisions that clarify UX and feature scope without blocking initial architecture.
+   - OPTIONAL: Nice-to-have features or future scale considerations.
+4. TONE: Human, friendly, beginner-accessible plain English (never use technical jargon like "RBAC", "RLS", "Webhooks", "Stateless auth").
+5. Provide "whyItMatters", sensible "defaultRecommendation", and "defaultAssumption" for each question.
 
 Project: ${projectName}
 Description: ${productDescription}
@@ -43,7 +88,17 @@ Description: ${productDescription}
 Previous Q&A Context:
 ${JSON.stringify(previousQnA, null, 2)}
 
-Respond ONLY with a JSON array of string questions, e.g. ["Question 1?", "Question 2?"]
+Return a valid JSON array of objects with this schema:
+[
+  {
+    "question": "Plain English question?",
+    "priority": "MUST_KNOW" | "HELPFUL" | "OPTIONAL",
+    "whyItMatters": "Why this matters for your product in simple terms",
+    "suggestedOptions": ["Option A", "Option B", "Option C"],
+    "defaultRecommendation": "Recommended choice for this type of product",
+    "defaultAssumption": "Provisional assumption to use if user is unsure"
+  }
+]
 `;
 
   try {
@@ -56,7 +111,7 @@ Respond ONLY with a JSON array of string questions, e.g. ["Question 1?", "Questi
           contents: [{ role: "user", parts: [{ text: prompt }] }],
           generationConfig: {
             response_mime_type: "application/json",
-            temperature: 0.3,
+            temperature: 0.2,
           },
         }),
       }
@@ -65,16 +120,23 @@ Respond ONLY with a JSON array of string questions, e.g. ["Question 1?", "Questi
     const resData = await res.json();
     const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
     const parsed = JSON.parse(rawText);
-    return Array.isArray(parsed) ? parsed : [parsed.question || "What is the primary action a user takes?"];
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallbackQuestions;
   } catch (err) {
-    console.error("Discovery question generation error:", err);
-    return [
-      "Who experiences the core problem most frequently?",
-      "What does an ideal, effortless outcome look like for the user?",
-      "What critical assumptions are we currently making about user behavior?",
-      "What potential risks could cause this product to fail?",
-    ];
+    console.error("Adaptive question generation error:", err);
+    return fallbackQuestions;
   }
+}
+
+/**
+ * Backward compatibility wrapper for string question arrays.
+ */
+export async function generateDiscoveryQuestions(
+  projectName: string,
+  productDescription: string,
+  previousQnA: Array<{ question: string; answer?: string | null }>
+): Promise<string[]> {
+  const adaptive = await generateAdaptiveDiscoveryQuestions(projectName, productDescription, previousQnA);
+  return adaptive.map((q) => q.question);
 }
 
 /**

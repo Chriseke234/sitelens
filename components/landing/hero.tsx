@@ -39,10 +39,10 @@ export function Hero() {
               </Button>
             </Link>
 
-            <Link href="#templates" className="w-full sm:w-auto">
+            <Link href="/login" className="w-full sm:w-auto">
               <Button variant="outline" size="lg" className="w-full sm:w-auto gap-2 px-8 rounded-full border-slate-300 text-slate-700 hover:bg-slate-100 font-bold dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 btn-interactive">
-                <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Browse Starter Templates</span>
+                <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span>Explore Workspace</span>
               </Button>
             </Link>
           </div>
