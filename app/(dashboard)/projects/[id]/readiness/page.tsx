@@ -31,18 +31,37 @@ export default function ReadinessPage() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      <div className="flex h-64 items-center justify-center border-[3px] border-[#080808] bg-white shadow-[6px_6px_0px_#080808]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#080808]" />
       </div>
     );
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-      <ReadinessDashboardView
-        projectId={projectId}
-        projectName={projectName}
-      />
+    <div className="space-y-6 font-mono">
+      {/* Stage Header Banner */}
+      <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#B7FF6A] px-2.5 py-0.5 text-[11px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+              <span>STAGE 05 · SHIP & READINESS</span>
+            </div>
+            <h1 className="text-2xl font-black uppercase tracking-tight text-[#080808]">
+              Ship Readiness & Verification
+            </h1>
+            <p className="text-xs font-medium text-[#080808]/75">
+              Comprehensive release checklist, architecture sign-off, and final build verification before shipping to users.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="min-w-0">
+        <ReadinessDashboardView
+          projectId={projectId}
+          projectName={projectName}
+        />
+      </div>
     </div>
   );
 }

@@ -189,25 +189,50 @@ export default function PromptsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      <div className="flex h-64 items-center justify-center border-[3px] border-[#080808] bg-white shadow-[6px_6px_0px_#080808]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#080808]" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Task Selector Bar */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="space-y-6 font-mono">
+      {/* Stage Header Banner */}
+      <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#FFE500] px-2.5 py-0.5 text-[11px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+              <Terminal className="h-3.5 w-3.5 stroke-[2.5]" />
+              <span>STAGE 03 · PROMPT STUDIO</span>
+            </div>
+            <h1 className="text-2xl font-black uppercase tracking-tight text-[#080808]">
+              Agent Prompt Studio
+            </h1>
+            <p className="text-xs font-medium text-[#080808]/75">
+              Generate 12-section context-engineered prompts tailored specifically for {selectedAgent || "your AI agent"}.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="border-2 border-[#080808] bg-[#F8F6EC] px-3 py-2 text-right shadow-[2px_2px_0px_#080808]">
+              <div className="text-[10px] font-black uppercase text-[#080808]/60">Target Agent</div>
+              <div className="text-xs font-black uppercase text-[#080808]">{selectedAgent}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Task Selector Bento Bar */}
+      <div className="border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808]">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <span className="text-xs font-black uppercase text-[#080808] shrink-0">
               Select Task Target:
             </span>
             <select
               value={selectedTaskId || ""}
               onChange={(e) => handleSelectTask(e.target.value)}
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              className="w-full sm:w-auto border-2 border-[#080808] bg-[#F8F6EC] px-3 py-2 text-xs font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] focus:bg-white focus:outline-none"
             >
               {tasks.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -224,15 +249,15 @@ export default function PromptsPage() {
               if (currentTask) handleCompilePromptForTask(currentTask, selectedAgent);
             }}
             disabled={compiling}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-95 disabled:opacity-50"
+            className="inline-flex shrink-0 items-center justify-center gap-2 border-2 border-[#080808] bg-[#FFE500] px-4 py-2 text-xs font-black uppercase text-[#080808] shadow-[2.5px_2.5px_0px_#080808] hover:bg-[#080808] hover:text-[#FFE500] active:translate-y-0.5 disabled:opacity-50"
           >
             {compiling ? (
               <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Compiling Prompt...
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Compiling...
               </>
             ) : (
               <>
-                <Sparkles className="h-3.5 w-3.5" /> Recompile Prompt
+                <Sparkles className="h-3.5 w-3.5 stroke-[2.5]" /> Recompile Prompt
               </>
             )}
           </button>
@@ -252,12 +277,12 @@ export default function PromptsPage() {
           onUpdateTaskStatus={handleUpdateTaskStatus}
         />
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
-          <Terminal className="h-10 w-10 text-indigo-600" />
-          <h3 className="mt-3 text-sm font-bold text-slate-900 dark:text-white">
+        <div className="flex flex-col items-center justify-center border-2 border-dashed border-[#080808] bg-[#F8F6EC] p-12 text-center">
+          <Terminal className="h-10 w-10 stroke-[2] text-[#080808]" />
+          <h3 className="mt-3 text-sm font-black uppercase text-[#080808]">
             No Prompt Compiled
           </h3>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs font-medium text-[#080808]/70">
             Select a task above to formulate your 12-section context-aware prompt.
           </p>
         </div>

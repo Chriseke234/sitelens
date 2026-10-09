@@ -66,48 +66,60 @@ export default function ProductBlueprintPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      {/* Workspace Stage Navigation */}
-      <ProjectWorkspaceNav projectId={projectId} />
+    <div className="space-y-6 font-mono">
+      {/* Stage Subheader & Bento Tabs */}
+      <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#B7FF6A] px-2.5 py-0.5 text-[11px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+              <FileCode2 className="h-3.5 w-3.5 stroke-[2.5]" />
+              <span>STAGE 02 · BLUEPRINT & ARCHITECTURE</span>
+            </div>
+            <h1 className="text-2xl font-black uppercase tracking-tight text-[#080808]">
+              Software Blueprint
+            </h1>
+            <p className="text-xs font-medium text-[#080808]/75">
+              Comprehensive specifications, data entities, user journeys, and execution sequence for your AI agent.
+            </p>
+          </div>
 
-      {/* Subheader & Tab Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActiveTab("blueprint")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === "blueprint"
-                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-slate-300"
-            }`}
-          >
-            <FileCode2 className="w-4 h-4" />
-            Software Blueprint (13 Sections)
-          </button>
-          <button
-            onClick={() => setActiveTab("buildMap")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === "buildMap"
-                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-slate-300"
-            }`}
-          >
-            <MapPin className="w-4 h-4" />
-            Build Map & Sequence
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setActiveTab("blueprint")}
+              className={`flex items-center gap-2 border-[2.5px] border-[#080808] px-3.5 py-2 text-xs font-black uppercase transition-all ${
+                activeTab === "blueprint"
+                  ? "bg-[#FFE500] text-[#080808] shadow-[3px_3px_0px_#080808] -translate-y-0.5"
+                  : "bg-white text-[#080808]/70 hover:bg-[#F8F6EC] hover:text-[#080808]"
+              }`}
+            >
+              <FileCode2 className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Full Blueprint</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("buildMap")}
+              className={`flex items-center gap-2 border-[2.5px] border-[#080808] px-3.5 py-2 text-xs font-black uppercase transition-all ${
+                activeTab === "buildMap"
+                  ? "bg-[#FFE500] text-[#080808] shadow-[3px_3px_0px_#080808] -translate-y-0.5"
+                  : "bg-white text-[#080808]/70 hover:bg-[#F8F6EC] hover:text-[#080808]"
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Build Map Sequence</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm space-y-4">
-          <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto" />
+        <div className="border-[3px] border-[#080808] bg-white p-12 text-center shadow-[5px_5px_0px_#080808] space-y-4">
+          <Loader2 className="w-8 h-8 text-[#080808] animate-spin mx-auto stroke-[2.5]" />
           <div className="space-y-1">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+            <h3 className="text-base font-black uppercase text-[#080808]">
               Synthesizing Software Blueprint & Build Map
             </h3>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Analyzing discovery insights, role hierarchies, user journeys, and data schemas...
+            <p className="text-xs font-medium text-[#080808]/70 max-w-md mx-auto">
+              Compiling discovery insights, role hierarchies, user journeys, and data schemas...
             </p>
           </div>
         </div>
@@ -115,26 +127,26 @@ export default function ProductBlueprintPage() {
 
       {/* Error State */}
       {!loading && error && (
-        <div className="bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900 rounded-2xl p-8 text-center shadow-sm space-y-4">
-          <AlertCircle className="w-8 h-8 text-rose-600 mx-auto" />
+        <div className="border-[3px] border-[#080808] bg-white p-8 text-center shadow-[5px_5px_0px_#080808] space-y-4">
+          <AlertCircle className="w-8 h-8 text-[#FF4F9A] mx-auto stroke-[2.5]" />
           <div className="space-y-1">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+            <h3 className="text-base font-black uppercase text-[#080808]">
               Unable to Load Blueprint
             </h3>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">{error}</p>
+            <p className="text-xs font-medium text-[#080808]/70 max-w-md mx-auto">{error}</p>
           </div>
           <button
             onClick={loadProjectData}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-xl text-xs font-semibold hover:opacity-90 transition"
+            className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#FFE500] px-4 py-2 text-xs font-black uppercase text-[#080808] shadow-[2.5px_2.5px_0px_#080808] hover:bg-white"
           >
-            <RefreshCw className="w-3.5 h-3.5" /> Retry Loading
+            <RefreshCw className="w-3.5 h-3.5 stroke-[2.5]" /> Retry Loading
           </button>
         </div>
       )}
 
       {/* Main Views */}
       {!loading && !error && blueprint && healthReport && (
-        <>
+        <div className="min-w-0">
           {activeTab === "blueprint" && (
             <BlueprintView
               projectId={projectId}
@@ -153,7 +165,7 @@ export default function ProductBlueprintPage() {
               onBackToBlueprint={() => setActiveTab("blueprint")}
             />
           )}
-        </>
+        </div>
       )}
     </div>
   );

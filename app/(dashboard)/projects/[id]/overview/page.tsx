@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Compass,
   Terminal,
+  SearchCheck,
 } from "lucide-react";
 import { Project } from "@/types";
 
@@ -152,216 +153,380 @@ export default async function ProjectOverviewPage({
   }
 
   return (
-    <div className="space-y-8">
-      {/* Project Header with Progress Indicator */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="rounded-md bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                {project.product_type || "SaaS"}
-              </span>
-              <span className="text-xs text-slate-400">•</span>
-              <span className="text-xs text-slate-500 font-medium">
-                Target AI: {project.coding_environment || "Cursor"}
-              </span>
+    <div className="space-y-6 font-mono">
+      {/* 1. Next Recommended Action Hero Bento Card */}
+      <div className="border-[3px] border-[#080808] bg-[#FFE500] p-6 shadow-[6px_6px_0px_#080808]">
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2 max-w-3xl">
+            <div className="inline-flex items-center gap-2 border-2 border-[#080808] bg-white px-2.5 py-0.5 text-[11px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+              <Activity className="h-3.5 w-3.5 stroke-[2.5]" />
+              <span>Recommended Next Step for Your Project</span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
-              {project.name}
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl">
-              {project.description || project.raw_idea || "AI-assisted product engineering and prompt generation workspace."}
-            </p>
-          </div>
-
-          {/* Real Stage Completion Metric */}
-          <div className="flex flex-col items-start sm:items-end rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 dark:border-indigo-950 dark:bg-indigo-950/20">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-              <TrendingUp className="h-3.5 w-3.5" />
-              Build Readiness
-            </div>
-            <div className="text-3xl font-black text-slate-900 dark:text-white mt-0.5">
-              {totalProgressPct}%
-            </div>
-            <div className="mt-2 h-1.5 w-32 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
-              <div
-                className="h-full bg-indigo-600 transition-all duration-500"
-                style={{ width: `${totalProgressPct}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recommended Next Action Banner */}
-      <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-600 to-purple-700 p-6 text-white shadow-xl">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-0.5 text-xs font-bold text-white backdrop-blur-sm">
-              <Activity className="h-3.5 w-3.5" />
-              Aigenstra Tour Guide — Next Step
-            </div>
-            <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">
+            <h2 className="text-xl font-black uppercase tracking-tight text-[#080808] sm:text-2xl">
               {nextAction.title}
             </h2>
-            <p className="max-w-2xl text-xs sm:text-sm text-indigo-100">
+            <p className="text-xs font-medium text-[#080808]/85 sm:text-sm">
               {nextAction.desc}
             </p>
           </div>
 
+          <div className="flex items-center gap-4 shrink-0">
+            <Link
+              href={nextAction.href}
+              className="inline-flex items-center gap-2 border-[3px] border-[#080808] bg-[#080808] px-5 py-3 text-xs font-black uppercase text-[#FFE500] shadow-[4px_4px_0px_rgba(0,0,0,0.25)] transition-all hover:bg-white hover:text-[#080808] hover:shadow-[5px_5px_0px_#080808] active:translate-x-0.5 active:translate-y-0.5"
+            >
+              <span>{nextAction.cta}</span>
+              <ArrowRight className="h-4 w-4 stroke-[3]" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Global Progress Bar */}
+        <div className="mt-6 border-t-2 border-[#080808] pt-4">
+          <div className="flex items-center justify-between text-xs font-black uppercase text-[#080808] mb-2">
+            <span className="flex items-center gap-1.5">
+              <TrendingUp className="h-4 w-4 stroke-[2.5]" />
+              Overall Build Readiness
+            </span>
+            <span className="border-2 border-[#080808] bg-white px-2 py-0.5 shadow-[2px_2px_0px_#080808]">
+              {totalProgressPct}% COMPLETE
+            </span>
+          </div>
+          <div className="h-4 w-full border-2 border-[#080808] bg-white p-0.5 shadow-[2px_2px_0px_#080808]">
+            <div
+              className="h-full bg-[#080808] transition-all duration-500"
+              style={{ width: `${totalProgressPct}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 2. The 5 Bento Stage Cards */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-black uppercase tracking-wider text-[#080808] flex items-center gap-2">
+            <span className="border-2 border-[#080808] bg-[#080808] text-white px-1.5 py-0.5 text-[10px]">
+              STEP-BY-STEP
+            </span>
+            The 5 Core Bento Stages
+          </h3>
+          <span className="text-[10px] text-[#080808]/60 font-bold uppercase hidden sm:inline">
+            Click any stage to inspect or edit
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {/* Stage 01: Understand */}
           <Link
-            href={nextAction.href}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-bold text-indigo-700 shadow-md transition-all hover:bg-indigo-50 active:scale-95 btn-interactive"
+            href={`/projects/${id}/discovery`}
+            className="group flex flex-col justify-between border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#080808]"
           >
-            {nextAction.cta}
-            <ArrowRight className="h-4 w-4" />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="border-2 border-[#080808] bg-[#FFE500] px-2 py-0.5 text-[10px] font-black uppercase shadow-[1.5px_1.5px_0px_#080808]">
+                  01 · UNDERSTAND
+                </span>
+                <Compass className="h-4 w-4 stroke-[2.5] text-[#080808]" />
+              </div>
+
+              <div>
+                <h4 className="text-sm font-black uppercase text-[#080808] group-hover:underline">
+                  Discovery & Q&A
+                </h4>
+                <p className="mt-1 text-[11px] font-medium text-[#080808]/75 leading-tight">
+                  Clarify the core problem, user personas, and product scope.
+                </p>
+              </div>
+
+              <div className="border border-[#080808] bg-[#F8F6EC] p-2 text-[10px] font-bold">
+                <div className="flex justify-between text-[#080808]">
+                  <span>Decisions:</span>
+                  <span className="font-black">{answeredCount} of {qnaList.length || 4}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t-2 border-[#080808]/15 flex items-center justify-between text-[11px] font-black uppercase">
+              <span
+                className={`border border-[#080808] px-1.5 py-0.5 text-[9px] ${
+                  hasDiscovery ? "bg-[#B7FF6A] text-[#080808]" : "bg-white text-[#080808]"
+                }`}
+              >
+                {hasDiscovery ? "DONE" : "IN PROGRESS"}
+              </span>
+              <ArrowRight className="h-3.5 w-3.5 stroke-[2.5] transition-transform group-hover:translate-x-1" />
+            </div>
+          </Link>
+
+          {/* Stage 02: Blueprint */}
+          <Link
+            href={`/projects/${id}/product`}
+            className="group flex flex-col justify-between border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#080808]"
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="border-2 border-[#080808] bg-[#B7FF6A] px-2 py-0.5 text-[10px] font-black uppercase shadow-[1.5px_1.5px_0px_#080808]">
+                  02 · BLUEPRINT
+                </span>
+                <FileCode2 className="h-4 w-4 stroke-[2.5] text-[#080808]" />
+              </div>
+
+              <div>
+                <h4 className="text-sm font-black uppercase text-[#080808] group-hover:underline">
+                  Specs & Architecture
+                </h4>
+                <p className="mt-1 text-[11px] font-medium text-[#080808]/75 leading-tight">
+                  Screen breakdown, user journeys, data model, and security rules.
+                </p>
+              </div>
+
+              <div className="border border-[#080808] bg-[#F8F6EC] p-2 text-[10px] font-bold">
+                <div className="flex justify-between text-[#080808]">
+                  <span>Specs Status:</span>
+                  <span className="font-black">{hasProduct ? "Synthesized" : "Pending"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t-2 border-[#080808]/15 flex items-center justify-between text-[11px] font-black uppercase">
+              <span
+                className={`border border-[#080808] px-1.5 py-0.5 text-[9px] ${
+                  hasProduct ? "bg-[#B7FF6A] text-[#080808]" : "bg-white text-[#080808]"
+                }`}
+              >
+                {hasProduct ? "READY" : "NEEDS ACTION"}
+              </span>
+              <ArrowRight className="h-3.5 w-3.5 stroke-[2.5] transition-transform group-hover:translate-x-1" />
+            </div>
+          </Link>
+
+          {/* Stage 03: Prompts */}
+          <Link
+            href={`/projects/${id}/prompts`}
+            className="group flex flex-col justify-between border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#080808]"
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="border-2 border-[#080808] bg-[#FFE500] px-2 py-0.5 text-[10px] font-black uppercase shadow-[1.5px_1.5px_0px_#080808]">
+                  03 · PROMPTS
+                </span>
+                <Terminal className="h-4 w-4 stroke-[2.5] text-[#080808]" />
+              </div>
+
+              <div>
+                <h4 className="text-sm font-black uppercase text-[#080808] group-hover:underline">
+                  Agent Prompt Studio
+                </h4>
+                <p className="mt-1 text-[11px] font-medium text-[#080808]/75 leading-tight">
+                  High-precision prompt compiler tailored for {project.coding_environment || "AI"}.
+                </p>
+              </div>
+
+              <div className="border border-[#080808] bg-[#F8F6EC] p-2 text-[10px] font-bold">
+                <div className="flex justify-between text-[#080808]">
+                  <span>Compiled:</span>
+                  <span className="font-black">{prompts.length} Prompts</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t-2 border-[#080808]/15 flex items-center justify-between text-[11px] font-black uppercase">
+              <span
+                className={`border border-[#080808] px-1.5 py-0.5 text-[9px] ${
+                  prompts.length > 0 ? "bg-[#B7FF6A] text-[#080808]" : "bg-white text-[#080808]"
+                }`}
+              >
+                {prompts.length > 0 ? "READY" : "AWAITING"}
+              </span>
+              <ArrowRight className="h-3.5 w-3.5 stroke-[2.5] transition-transform group-hover:translate-x-1" />
+            </div>
+          </Link>
+
+          {/* Stage 04: Audit */}
+          <Link
+            href={`/projects/${id}/audit`}
+            className="group flex flex-col justify-between border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#080808]"
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="border-2 border-[#080808] bg-[#FF4F9A] px-2 py-0.5 text-[10px] font-black uppercase text-white shadow-[1.5px_1.5px_0px_#080808]">
+                  04 · AUDIT
+                </span>
+                <SearchCheck className="h-4 w-4 stroke-[2.5] text-[#080808]" />
+              </div>
+
+              <div>
+                <h4 className="text-sm font-black uppercase text-[#080808] group-hover:underline">
+                  Audit & Fixes
+                </h4>
+                <p className="mt-1 text-[11px] font-medium text-[#080808]/75 leading-tight">
+                  Verify what your agent built and generate immediate targeted fix prompts.
+                </p>
+              </div>
+
+              <div className="border border-[#080808] bg-[#F8F6EC] p-2 text-[10px] font-bold">
+                <div className="flex justify-between text-[#080808]">
+                  <span>Open Issues:</span>
+                  <span className="font-black text-[#FF4F9A]">
+                    {openIssues.critical + openIssues.high} Urgent
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t-2 border-[#080808]/15 flex items-center justify-between text-[11px] font-black uppercase">
+              <span
+                className={`border border-[#080808] px-1.5 py-0.5 text-[9px] ${
+                  findings.length > 0 ? "bg-[#FFE500] text-[#080808]" : "bg-white text-[#080808]"
+                }`}
+              >
+                {findings.length > 0 ? "AUDITED" : "READY"}
+              </span>
+              <ArrowRight className="h-3.5 w-3.5 stroke-[2.5] transition-transform group-hover:translate-x-1" />
+            </div>
+          </Link>
+
+          {/* Stage 05: Ship */}
+          <Link
+            href={`/projects/${id}/readiness`}
+            className="group flex flex-col justify-between border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#080808]"
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="border-2 border-[#080808] bg-[#B7FF6A] px-2 py-0.5 text-[10px] font-black uppercase shadow-[1.5px_1.5px_0px_#080808]">
+                  05 · SHIP
+                </span>
+                <CheckCircle2 className="h-4 w-4 stroke-[2.5] text-[#080808]" />
+              </div>
+
+              <div>
+                <h4 className="text-sm font-black uppercase text-[#080808] group-hover:underline">
+                  Ship Readiness
+                </h4>
+                <p className="mt-1 text-[11px] font-medium text-[#080808]/75 leading-tight">
+                  Security checklist, deployment health check, and final release signoff.
+                </p>
+              </div>
+
+              <div className="border border-[#080808] bg-[#F8F6EC] p-2 text-[10px] font-bold">
+                <div className="flex justify-between text-[#080808]">
+                  <span>Ship Score:</span>
+                  <span className="font-black">{totalProgressPct}%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t-2 border-[#080808]/15 flex items-center justify-between text-[11px] font-black uppercase">
+              <span
+                className={`border border-[#080808] px-1.5 py-0.5 text-[9px] ${
+                  totalProgressPct >= 80 ? "bg-[#B7FF6A] text-[#080808]" : "bg-white text-[#080808]"
+                }`}
+              >
+                {totalProgressPct >= 80 ? "READY" : "IN PROGRESS"}
+              </span>
+              <ArrowRight className="h-3.5 w-3.5 stroke-[2.5] transition-transform group-hover:translate-x-1" />
+            </div>
           </Link>
         </div>
       </div>
 
-      {/* Open Issues & Status Overview */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-        <div className="rounded-2xl border border-rose-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center justify-between text-rose-600 dark:text-rose-400">
-            <span className="text-xs font-bold uppercase tracking-wider">Critical Issues</span>
-            <ShieldAlert className="h-5 w-5" />
+      {/* 3. Open Issues & Architecture Metrics Bento Bar */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808]">
+          <div className="flex items-center justify-between text-xs font-black uppercase text-[#080808]">
+            <span>Critical Issues</span>
+            <ShieldAlert className="h-4 w-4 stroke-[2.5] text-[#FF4F9A]" />
           </div>
-          <div className="mt-3 text-3xl font-black text-slate-900 dark:text-white">
+          <div className="mt-2 text-3xl font-black text-[#080808]">
             {openIssues.critical}
           </div>
-          <p className="mt-1 text-xs text-slate-500">Must fix before deployment</p>
+          <p className="mt-1 text-[10px] font-bold uppercase text-[#080808]/60">Must fix before shipping</p>
         </div>
 
-        <div className="rounded-2xl border border-amber-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center justify-between text-amber-600 dark:text-amber-400">
-            <span className="text-xs font-bold uppercase tracking-wider">High Severity</span>
-            <AlertTriangle className="h-5 w-5" />
+        <div className="border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808]">
+          <div className="flex items-center justify-between text-xs font-black uppercase text-[#080808]">
+            <span>High Severity</span>
+            <AlertTriangle className="h-4 w-4 stroke-[2.5] text-[#FFE500]" />
           </div>
-          <div className="mt-3 text-3xl font-black text-slate-900 dark:text-white">
+          <div className="mt-2 text-3xl font-black text-[#080808]">
             {openIssues.high}
           </div>
-          <p className="mt-1 text-xs text-slate-500">High priority risks</p>
+          <p className="mt-1 text-[10px] font-bold uppercase text-[#080808]/60">High priority risks</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
-            <span className="text-xs font-bold uppercase tracking-wider">Medium / Low</span>
-            <Layers className="h-5 w-5" />
+        <div className="border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808]">
+          <div className="flex items-center justify-between text-xs font-black uppercase text-[#080808]">
+            <span>Secondary Issues</span>
+            <Layers className="h-4 w-4 stroke-[2.5]" />
           </div>
-          <div className="mt-3 text-3xl font-black text-slate-900 dark:text-white">
+          <div className="mt-2 text-3xl font-black text-[#080808]">
             {openIssues.medium + openIssues.low}
           </div>
-          <p className="mt-1 text-xs text-slate-500">Secondary enhancements</p>
+          <p className="mt-1 text-[10px] font-bold uppercase text-[#080808]/60">Medium & low enhancements</p>
         </div>
 
-        <div className="rounded-2xl border border-indigo-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center justify-between text-indigo-600 dark:text-indigo-400">
-            <span className="text-xs font-bold uppercase tracking-wider">Logged Decisions</span>
-            <BookMarked className="h-5 w-5" />
+        <div className="border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808]">
+          <div className="flex items-center justify-between text-xs font-black uppercase text-[#080808]">
+            <span>Decisions Logged</span>
+            <BookMarked className="h-4 w-4 stroke-[2.5]" />
           </div>
-          <div className="mt-3 text-3xl font-black text-slate-900 dark:text-white">
+          <div className="mt-2 text-3xl font-black text-[#080808]">
             {decisions.length}
           </div>
-          <p className="mt-1 text-xs text-slate-500">Agreed architecture records</p>
+          <p className="mt-1 text-[10px] font-bold uppercase text-[#080808]/60">Accepted architectural ADRs</p>
         </div>
       </div>
 
-      {/* Build Readiness Grid */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              Product Blueprint & Readiness Indicators
-            </h3>
-            <p className="text-xs text-slate-500">
-              Evaluated across core product engineering domains
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {readinessCategories.map((cat) => (
-            <Link
-              key={cat.name}
-              href={cat.href}
-              className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition-all hover:border-indigo-500/50 hover:bg-white hover:shadow-md dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-900 btn-interactive"
-            >
-              <div>
-                <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
-                  <span>{cat.name}</span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
-                      cat.score >= 80
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-                        : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                    }`}
-                  >
-                    {cat.status}
-                  </span>
-                </div>
-
-                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      cat.score >= 80 ? "bg-emerald-500" : "bg-amber-500"
-                    }`}
-                    style={{ width: `${cat.score}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center justify-between text-[11px] text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                <span>Score: {cat.score}%</span>
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Decision Log Summary */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+      {/* 4. Recent Architecture Decisions in Bento Box */}
+      <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808]">
+        <div className="flex items-center justify-between border-b-2 border-[#080808] pb-4">
           <div className="flex items-center gap-2">
-            <BookMarked className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              Recent Decisions & Assumptions
+            <BookMarked className="h-5 w-5 stroke-[2.5] text-[#080808]" />
+            <h3 className="text-sm font-black uppercase text-[#080808]">
+              Recent Product & Architecture Decisions
             </h3>
           </div>
           <Link
             href={`/projects/${id}/decisions`}
-            className="text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+            className="border-2 border-[#080808] bg-[#F8F6EC] px-3 py-1 text-[11px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:bg-[#FFE500]"
           >
-            View Decision Log →
+            View All Decisions →
           </Link>
         </div>
 
         {decisions.length === 0 ? (
-          <div className="mt-6 flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 p-8 text-center text-xs text-slate-500 dark:border-slate-800">
-            <Sparkles className="h-6 w-6 text-slate-400" />
-            <p className="mt-2 font-semibold">No decisions recorded yet.</p>
-            <p className="mt-1 max-w-sm text-slate-400">
-              Answer questions in the Discovery Engine to log decisions and provisional assumptions.
+          <div className="mt-6 flex flex-col items-center justify-center border-2 border-dashed border-[#080808] bg-[#F8F6EC] p-8 text-center text-xs">
+            <Sparkles className="h-6 w-6 stroke-[2] text-[#080808]" />
+            <p className="mt-2 font-black uppercase text-[#080808]">No decisions recorded yet</p>
+            <p className="mt-1 max-w-sm text-[11px] font-medium text-[#080808]/70">
+              Answer the discovery questions in Stage 01 to automatically record your architecture decisions.
             </p>
+            <Link
+              href={`/projects/${id}/discovery`}
+              className="mt-4 border-2 border-[#080808] bg-[#FFE500] px-4 py-2 text-xs font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:bg-white"
+            >
+              Start Discovery Q&A →
+            </Link>
           </div>
         ) : (
           <div className="mt-4 space-y-3">
             {decisions.map((dec) => (
               <div
                 key={dec.id}
-                className="flex flex-col gap-2 rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-2 border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2px_2px_0px_#080808] sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                    <span>DEC-{String(dec.decision_number).padStart(3, "0")}</span>
-                    <span className="text-slate-400">•</span>
-                    <span className="text-slate-900 dark:text-white">{dec.topic}</span>
+                  <div className="flex items-center gap-2 text-xs font-black uppercase text-[#080808]">
+                    <span className="border border-[#080808] bg-white px-1.5 py-0.5 text-[10px]">
+                      DEC-{String(dec.decision_number).padStart(3, "0")}
+                    </span>
+                    <span>{dec.topic}</span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+                  <p className="mt-1 text-xs font-medium text-[#080808]/80">
                     {dec.decision}
                   </p>
                 </div>
-                <div className="text-right text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                <div className="border border-[#080808] bg-[#B7FF6A] px-2 py-0.5 text-[10px] font-black uppercase text-[#080808] shrink-0 self-start sm:self-center">
                   {dec.status || "ACCEPTED"}
                 </div>
               </div>
