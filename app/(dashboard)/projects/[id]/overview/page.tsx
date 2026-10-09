@@ -10,18 +10,18 @@ import {
   Sparkles,
   BookMarked,
   Activity,
-  Layers,
   FileCode2,
   TrendingUp,
   Compass,
   Terminal,
   SearchCheck,
+  Rocket,
 } from "lucide-react";
 import { Project } from "@/types";
 
 export const metadata = {
   title: "Project Overview | Aigenstra",
-  description: "Product status, build readiness indicators, open issues, and tour guide next actions.",
+  description: "Factual workspace status, verified build milestones, and guided next actions.",
 };
 
 export default async function ProjectOverviewPage({
@@ -53,49 +53,41 @@ export default async function ProjectOverviewPage({
 
   const project = projectData as Project;
 
-  // Fetch actual project artifacts in parallel to compute real progress
+  // Fetch actual project artifacts in parallel — ZERO FICTION DATA
   const [
     findingsRes,
+    auditSnapshotsRes,
     decisionsRes,
     discoveryRes,
     productRes,
-    journeyRes,
     archRes,
-    secRes,
     promptsRes,
+    checklistRes,
   ] = await Promise.all([
     supabase.from("audit_findings").select("*").eq("project_id", id),
+    supabase.from("audit_snapshots").select("id, created_at, score").eq("project_id", id).order("created_at", { ascending: false }).limit(1),
     supabase.from("agent_decisions").select("*").eq("project_id", id).order("created_at", { ascending: false }).limit(3),
     supabase.from("discovery_qna").select("*").eq("project_id", id),
     supabase.from("product_specs").select("id").eq("project_id", id).limit(1),
-    supabase.from("user_journeys").select("id").eq("project_id", id).limit(1),
-    supabase.from("architecture_docs").select("id").eq("project_id", id).limit(1),
-    supabase.from("security_plans").select("id").eq("project_id", id).limit(1),
+    supabase.from("architecture_docs").select("id, storage").eq("project_id", id).limit(1),
     supabase.from("prompts").select("*").eq("project_id", id),
+    supabase.from("production_checklists").select("id, is_checked").eq("project_id", id),
   ]);
 
   const findings = findingsRes.data || [];
+  const hasAudit = (auditSnapshotsRes.data?.length || 0) > 0;
   const decisions = decisionsRes.data || [];
   const qnaList = discoveryRes.data || [];
   const hasProduct = (productRes.data?.length || 0) > 0;
-  const hasJourney = (journeyRes.data?.length || 0) > 0;
-  const hasArch = (archRes.data?.length || 0) > 0;
-  const hasSecurity = (secRes.data?.length || 0) > 0;
+  const archDoc = archRes.data?.[0];
+  const storedTasks = (archDoc?.storage as any)?.tasks || [];
   const prompts = promptsRes.data || [];
+  const checklist = checklistRes.data || [];
 
   const answeredCount = qnaList.filter((q) => q.answer && q.answer.trim().length > 0).length;
   const hasDiscovery = answeredCount >= 2;
-
-  // Calculate real progress percentage
-  const stageWeights = [
-    hasDiscovery ? 20 : answeredCount > 0 ? 10 : 0,
-    hasProduct ? 20 : 0,
-    hasArch ? 20 : 0,
-    decisions.length > 0 ? 15 : 0,
-    prompts.length > 0 ? 15 : 0,
-    findings.length > 0 ? 10 : 0,
-  ];
-  const totalProgressPct = Math.min(100, stageWeights.reduce((a, b) => a + b, 0));
+  const verifiedChecks = checklist.filter((c) => c.is_checked).length;
+  const totalChecks = checklist.length;
 
   const openIssues = {
     critical: findings.filter((f) => f.severity === "critical" && f.status === "open").length,
@@ -104,51 +96,73 @@ export default async function ProjectOverviewPage({
     low: findings.filter((f) => f.severity === "low" && f.status === "open").length,
   };
 
-  // Readiness categories based on actual database stage records
-  const readinessCategories = [
-    { name: "Discovery & Decisions", status: hasDiscovery ? "DECIDED" : "IN PROGRESS", score: hasDiscovery ? 100 : answeredCount > 0 ? 50 : 20, href: `/projects/${id}/discovery` },
-    { name: "Software Blueprint", status: hasProduct ? "READY" : "NEEDS ATTENTION", score: hasProduct ? 100 : answeredCount >= 2 ? 50 : 20, href: `/projects/${id}/product` },
-    { name: "Architecture & Security", status: hasArch ? "READY" : "NEEDS ATTENTION", score: hasArch ? 100 : 20, href: `/projects/${id}/architecture` },
-    { name: "Decision Log & ADRs", status: decisions.length > 0 ? "RECORDED" : "EMPTY", score: decisions.length > 0 ? 100 : 20, href: `/projects/${id}/decisions` },
-    { name: "Coding Prompts", status: prompts.length > 0 ? "COMPILED" : "NOT GENERATED", score: prompts.length > 0 ? 100 : 20, href: `/projects/${id}/prompts` },
-    { name: "Code Audit & Fixes", status: findings.length > 0 ? "AUDITED" : "READY TO AUDIT", score: findings.length > 0 ? 100 : 20, href: `/projects/${id}/audit` },
+  // Real Milestone Completion (Zero arbitrary score points)
+  const milestoneChecks = [
+    hasDiscovery,
+    hasProduct,
+    prompts.length > 0,
+    hasAudit,
+    totalChecks > 0 && verifiedChecks === totalChecks,
   ];
+  const completedMilestones = milestoneChecks.filter(Boolean).length;
+  const milestoneProgressPct = Math.round((completedMilestones / 5) * 100);
 
-  // Dynamic next recommended action based on tour guide stages
+  // Factual Next Recommended Action
   let nextAction = {
-    title: "Clarify Key Product Decisions",
-    desc: `Answer essential discovery questions (${answeredCount}/${qnaList.length || 4} decided) to shape your software blueprint.`,
+    stepNumber: "01",
+    title: "Clarify Key Decisions",
+    desc: `Answer essential questions (${answeredCount}/${qnaList.length || 4} decided) to shape your software blueprint.`,
     href: `/projects/${id}/discovery`,
-    cta: "Go to Discovery Engine",
+    cta: "Start Discovery Q&A",
   };
 
-  if (!hasProduct && answeredCount >= 2) {
+  if (!hasProduct && hasDiscovery) {
     nextAction = {
+      stepNumber: "02",
       title: "Synthesize Software Blueprint",
-      desc: "Your discovery answers are ready. Formulate journeys, screen specs, data entities, and security rules.",
+      desc: "Discovery requirements are ready. Generate your product specifications, data schema, and build map.",
       href: `/projects/${id}/product`,
       cta: "Generate Blueprint",
     };
-  } else if (!hasArch && hasProduct) {
+  } else if (prompts.length === 0 && hasProduct) {
     nextAction = {
-      title: "Review Technical Architecture & Security",
-      desc: "Inspect database entities, API endpoints, auth model, and server-side zero-trust security.",
-      href: `/projects/${id}/architecture`,
-      cta: "View Architecture",
-    };
-  } else if (prompts.length === 0 && (hasArch || hasProduct)) {
-    nextAction = {
-      title: "Generate Precision Coding Prompts",
-      desc: `Compile context-optimized 16-part prompts specifically formatted for ${project.coding_environment || "your coding agent"}.`,
+      stepNumber: "03",
+      title: "Compile Coding Prompts",
+      desc: `Compile precision prompt instructions specifically formatted for ${project.coding_environment || "your coding agent"}.`,
       href: `/projects/${id}/prompts`,
       cta: "Open Prompt Studio",
     };
-  } else if (findings.length > 0) {
+  } else if (!hasAudit && prompts.length > 0) {
     nextAction = {
-      title: "Review Audit Findings & Generate Fix Prompts",
-      desc: `Address ${openIssues.critical} Critical and ${openIssues.high} High severity findings with targeted remediation prompts.`,
-      href: `/projects/${id}/fix-queue`,
-      cta: "Open Fix Queue",
+      stepNumber: "04",
+      title: "Run Code & Security Audit",
+      desc: "Verify what your AI agent built against your original blueprint specifications and security rules.",
+      href: `/projects/${id}/audit`,
+      cta: "Run First Audit",
+    };
+  } else if (hasAudit && (openIssues.critical > 0 || openIssues.high > 0)) {
+    nextAction = {
+      stepNumber: "04",
+      title: "Address Critical Audit Findings",
+      desc: `${openIssues.critical} Critical and ${openIssues.high} High severity issues detected. Generate targeted fix prompts.`,
+      href: `/projects/${id}/audit`,
+      cta: "View Audit & Fixes",
+    };
+  } else if (totalChecks > 0 && verifiedChecks < totalChecks) {
+    nextAction = {
+      stepNumber: "05",
+      title: "Complete Release Checklist",
+      desc: `${verifiedChecks} of ${totalChecks} production checks verified. Complete remaining items before launch.`,
+      href: `/projects/${id}/readiness`,
+      cta: "Check Readiness",
+    };
+  } else if (completedMilestones === 5) {
+    nextAction = {
+      stepNumber: "05",
+      title: "Project Verified & Ready to Ship",
+      desc: "All 5 development milestones and verification checks have been completed.",
+      href: `/projects/${id}/readiness`,
+      cta: "View Release State",
     };
   }
 
@@ -160,7 +174,7 @@ export default async function ProjectOverviewPage({
           <div className="space-y-2 max-w-3xl">
             <div className="inline-flex items-center gap-2 border-2 border-[#080808] bg-white px-2.5 py-0.5 text-[11px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
               <Activity className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>Recommended Next Step for Your Project</span>
+              <span>Next Recommended Action · Step {nextAction.stepNumber}</span>
             </div>
             <h2 className="text-xl font-black uppercase tracking-tight text-[#080808] sm:text-2xl">
               {nextAction.title}
@@ -181,37 +195,37 @@ export default async function ProjectOverviewPage({
           </div>
         </div>
 
-        {/* Global Progress Bar */}
+        {/* Factual Milestone Progress Bar */}
         <div className="mt-6 border-t-2 border-[#080808] pt-4">
           <div className="flex items-center justify-between text-xs font-black uppercase text-[#080808] mb-2">
             <span className="flex items-center gap-1.5">
               <TrendingUp className="h-4 w-4 stroke-[2.5]" />
-              Overall Build Readiness
+              Factual Project Progress
             </span>
             <span className="border-2 border-[#080808] bg-white px-2 py-0.5 shadow-[2px_2px_0px_#080808]">
-              {totalProgressPct}% COMPLETE
+              {completedMilestones} OF 5 MILESTONES COMPLETED ({milestoneProgressPct}%)
             </span>
           </div>
           <div className="h-4 w-full border-2 border-[#080808] bg-white p-0.5 shadow-[2px_2px_0px_#080808]">
             <div
-              className="h-full bg-[#080808] transition-all duration-500"
-              style={{ width: `${totalProgressPct}%` }}
+              className="h-full bg-[#080808] transition-all duration-300"
+              style={{ width: `${milestoneProgressPct}%` }}
             />
           </div>
         </div>
       </div>
 
-      {/* 2. The 5 Bento Stage Cards */}
+      {/* 2. The 5 Core Bento Stage Cards (Zero Fiction Data) */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-black uppercase tracking-wider text-[#080808] flex items-center gap-2">
             <span className="border-2 border-[#080808] bg-[#080808] text-white px-1.5 py-0.5 text-[10px]">
-              STEP-BY-STEP
+              STAGES
             </span>
-            The 5 Core Bento Stages
+            The 5 Guided Bento Stages
           </h3>
           <span className="text-[10px] text-[#080808]/60 font-bold uppercase hidden sm:inline">
-            Click any stage to inspect or edit
+            Direct access to each stage
           </span>
         </div>
 
@@ -234,13 +248,13 @@ export default async function ProjectOverviewPage({
                   Discovery & Q&A
                 </h4>
                 <p className="mt-1 text-[11px] font-medium text-[#080808]/75 leading-tight">
-                  Clarify the core problem, user personas, and product scope.
+                  Clarify the core problem, user personas, and scope.
                 </p>
               </div>
 
               <div className="border border-[#080808] bg-[#F8F6EC] p-2 text-[10px] font-bold">
                 <div className="flex justify-between text-[#080808]">
-                  <span>Decisions:</span>
+                  <span>Decided:</span>
                   <span className="font-black">{answeredCount} of {qnaList.length || 4}</span>
                 </div>
               </div>
@@ -249,10 +263,10 @@ export default async function ProjectOverviewPage({
             <div className="mt-4 pt-3 border-t-2 border-[#080808]/15 flex items-center justify-between text-[11px] font-black uppercase">
               <span
                 className={`border border-[#080808] px-1.5 py-0.5 text-[9px] ${
-                  hasDiscovery ? "bg-[#B7FF6A] text-[#080808]" : "bg-white text-[#080808]"
+                  hasDiscovery ? "bg-[#B7FF6A] text-[#080808]" : answeredCount > 0 ? "bg-[#FFE500] text-[#080808]" : "bg-white text-[#080808]"
                 }`}
               >
-                {hasDiscovery ? "DONE" : "IN PROGRESS"}
+                {hasDiscovery ? "COMPLETED" : answeredCount > 0 ? "IN PROGRESS" : "NOT STARTED"}
               </span>
               <ArrowRight className="h-3.5 w-3.5 stroke-[2.5] transition-transform group-hover:translate-x-1" />
             </div>
@@ -273,17 +287,17 @@ export default async function ProjectOverviewPage({
 
               <div>
                 <h4 className="text-sm font-black uppercase text-[#080808] group-hover:underline">
-                  Specs & Architecture
+                  Software Specs
                 </h4>
                 <p className="mt-1 text-[11px] font-medium text-[#080808]/75 leading-tight">
-                  Screen breakdown, user journeys, data model, and security rules.
+                  Screens, user journeys, data model, and architecture.
                 </p>
               </div>
 
               <div className="border border-[#080808] bg-[#F8F6EC] p-2 text-[10px] font-bold">
                 <div className="flex justify-between text-[#080808]">
-                  <span>Specs Status:</span>
-                  <span className="font-black">{hasProduct ? "Synthesized" : "Pending"}</span>
+                  <span>Blueprint State:</span>
+                  <span className="font-black">{hasProduct ? "Synthesized" : "Not Generated"}</span>
                 </div>
               </div>
             </div>
@@ -294,7 +308,7 @@ export default async function ProjectOverviewPage({
                   hasProduct ? "bg-[#B7FF6A] text-[#080808]" : "bg-white text-[#080808]"
                 }`}
               >
-                {hasProduct ? "READY" : "NEEDS ACTION"}
+                {hasProduct ? "COMPLETED" : "NOT STARTED"}
               </span>
               <ArrowRight className="h-3.5 w-3.5 stroke-[2.5] transition-transform group-hover:translate-x-1" />
             </div>
@@ -315,17 +329,17 @@ export default async function ProjectOverviewPage({
 
               <div>
                 <h4 className="text-sm font-black uppercase text-[#080808] group-hover:underline">
-                  Agent Prompt Studio
+                  Agent Prompts
                 </h4>
                 <p className="mt-1 text-[11px] font-medium text-[#080808]/75 leading-tight">
-                  High-precision prompt compiler tailored for {project.coding_environment || "AI"}.
+                  High-precision prompt studio tailored for {project.coding_environment || "AI"}.
                 </p>
               </div>
 
               <div className="border border-[#080808] bg-[#F8F6EC] p-2 text-[10px] font-bold">
                 <div className="flex justify-between text-[#080808]">
-                  <span>Compiled:</span>
-                  <span className="font-black">{prompts.length} Prompts</span>
+                  <span>Compiled Prompts:</span>
+                  <span className="font-black">{prompts.length}</span>
                 </div>
               </div>
             </div>
@@ -333,10 +347,10 @@ export default async function ProjectOverviewPage({
             <div className="mt-4 pt-3 border-t-2 border-[#080808]/15 flex items-center justify-between text-[11px] font-black uppercase">
               <span
                 className={`border border-[#080808] px-1.5 py-0.5 text-[9px] ${
-                  prompts.length > 0 ? "bg-[#B7FF6A] text-[#080808]" : "bg-white text-[#080808]"
+                  prompts.length > 0 ? "bg-[#B7FF6A] text-[#080808]" : storedTasks.length > 0 ? "bg-[#FFE500] text-[#080808]" : "bg-white text-[#080808]"
                 }`}
               >
-                {prompts.length > 0 ? "READY" : "AWAITING"}
+                {prompts.length > 0 ? "COMPILED" : storedTasks.length > 0 ? "TASKS READY" : "NOT STARTED"}
               </span>
               <ArrowRight className="h-3.5 w-3.5 stroke-[2.5] transition-transform group-hover:translate-x-1" />
             </div>
@@ -360,15 +374,15 @@ export default async function ProjectOverviewPage({
                   Audit & Fixes
                 </h4>
                 <p className="mt-1 text-[11px] font-medium text-[#080808]/75 leading-tight">
-                  Verify what your agent built and generate immediate targeted fix prompts.
+                  Verify built code and generate targeted fix prompts.
                 </p>
               </div>
 
               <div className="border border-[#080808] bg-[#F8F6EC] p-2 text-[10px] font-bold">
                 <div className="flex justify-between text-[#080808]">
-                  <span>Open Issues:</span>
-                  <span className="font-black text-[#FF4F9A]">
-                    {openIssues.critical + openIssues.high} Urgent
+                  <span>Audit Status:</span>
+                  <span className={`font-black ${hasAudit ? (openIssues.critical + openIssues.high > 0 ? "text-[#FF4F9A]" : "text-[#080808]") : "text-[#080808]/60"}`}>
+                    {hasAudit ? `${findings.length} Findings` : "Not Run Yet"}
                   </span>
                 </div>
               </div>
@@ -377,10 +391,10 @@ export default async function ProjectOverviewPage({
             <div className="mt-4 pt-3 border-t-2 border-[#080808]/15 flex items-center justify-between text-[11px] font-black uppercase">
               <span
                 className={`border border-[#080808] px-1.5 py-0.5 text-[9px] ${
-                  findings.length > 0 ? "bg-[#FFE500] text-[#080808]" : "bg-white text-[#080808]"
+                  hasAudit ? (openIssues.critical + openIssues.high > 0 ? "bg-[#FF4F9A] text-white" : "bg-[#B7FF6A] text-[#080808]") : "bg-white text-[#080808]"
                 }`}
               >
-                {findings.length > 0 ? "AUDITED" : "READY"}
+                {hasAudit ? (openIssues.critical + openIssues.high > 0 ? "FIXES NEEDED" : "AUDITED") : "NOT RUN"}
               </span>
               <ArrowRight className="h-3.5 w-3.5 stroke-[2.5] transition-transform group-hover:translate-x-1" />
             </div>
@@ -396,22 +410,22 @@ export default async function ProjectOverviewPage({
                 <span className="border-2 border-[#080808] bg-[#B7FF6A] px-2 py-0.5 text-[10px] font-black uppercase shadow-[1.5px_1.5px_0px_#080808]">
                   05 · SHIP
                 </span>
-                <CheckCircle2 className="h-4 w-4 stroke-[2.5] text-[#080808]" />
+                <Rocket className="h-4 w-4 stroke-[2.5] text-[#080808]" />
               </div>
 
               <div>
                 <h4 className="text-sm font-black uppercase text-[#080808] group-hover:underline">
-                  Ship Readiness
+                  Release Checklist
                 </h4>
                 <p className="mt-1 text-[11px] font-medium text-[#080808]/75 leading-tight">
-                  Security checklist, deployment health check, and final release signoff.
+                  Security, reliability, and deployment verification.
                 </p>
               </div>
 
               <div className="border border-[#080808] bg-[#F8F6EC] p-2 text-[10px] font-bold">
                 <div className="flex justify-between text-[#080808]">
-                  <span>Ship Score:</span>
-                  <span className="font-black">{totalProgressPct}%</span>
+                  <span>Verified Checks:</span>
+                  <span className="font-black">{verifiedChecks} of {totalChecks}</span>
                 </div>
               </div>
             </div>
@@ -419,10 +433,10 @@ export default async function ProjectOverviewPage({
             <div className="mt-4 pt-3 border-t-2 border-[#080808]/15 flex items-center justify-between text-[11px] font-black uppercase">
               <span
                 className={`border border-[#080808] px-1.5 py-0.5 text-[9px] ${
-                  totalProgressPct >= 80 ? "bg-[#B7FF6A] text-[#080808]" : "bg-white text-[#080808]"
+                  totalChecks > 0 && verifiedChecks === totalChecks ? "bg-[#B7FF6A] text-[#080808]" : verifiedChecks > 0 ? "bg-[#FFE500] text-[#080808]" : "bg-white text-[#080808]"
                 }`}
               >
-                {totalProgressPct >= 80 ? "READY" : "IN PROGRESS"}
+                {totalChecks > 0 && verifiedChecks === totalChecks ? "SHIP READY" : verifiedChecks > 0 ? "IN PROGRESS" : "NOT STARTED"}
               </span>
               <ArrowRight className="h-3.5 w-3.5 stroke-[2.5] transition-transform group-hover:translate-x-1" />
             </div>
@@ -430,68 +444,23 @@ export default async function ProjectOverviewPage({
         </div>
       </div>
 
-      {/* 3. Open Issues & Architecture Metrics Bento Bar */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808]">
-          <div className="flex items-center justify-between text-xs font-black uppercase text-[#080808]">
-            <span>Critical Issues</span>
-            <ShieldAlert className="h-4 w-4 stroke-[2.5] text-[#FF4F9A]" />
-          </div>
-          <div className="mt-2 text-3xl font-black text-[#080808]">
-            {openIssues.critical}
-          </div>
-          <p className="mt-1 text-[10px] font-bold uppercase text-[#080808]/60">Must fix before shipping</p>
-        </div>
-
-        <div className="border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808]">
-          <div className="flex items-center justify-between text-xs font-black uppercase text-[#080808]">
-            <span>High Severity</span>
-            <AlertTriangle className="h-4 w-4 stroke-[2.5] text-[#FFE500]" />
-          </div>
-          <div className="mt-2 text-3xl font-black text-[#080808]">
-            {openIssues.high}
-          </div>
-          <p className="mt-1 text-[10px] font-bold uppercase text-[#080808]/60">High priority risks</p>
-        </div>
-
-        <div className="border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808]">
-          <div className="flex items-center justify-between text-xs font-black uppercase text-[#080808]">
-            <span>Secondary Issues</span>
-            <Layers className="h-4 w-4 stroke-[2.5]" />
-          </div>
-          <div className="mt-2 text-3xl font-black text-[#080808]">
-            {openIssues.medium + openIssues.low}
-          </div>
-          <p className="mt-1 text-[10px] font-bold uppercase text-[#080808]/60">Medium & low enhancements</p>
-        </div>
-
-        <div className="border-[3px] border-[#080808] bg-white p-4 shadow-[4px_4px_0px_#080808]">
-          <div className="flex items-center justify-between text-xs font-black uppercase text-[#080808]">
-            <span>Decisions Logged</span>
-            <BookMarked className="h-4 w-4 stroke-[2.5]" />
-          </div>
-          <div className="mt-2 text-3xl font-black text-[#080808]">
-            {decisions.length}
-          </div>
-          <p className="mt-1 text-[10px] font-bold uppercase text-[#080808]/60">Accepted architectural ADRs</p>
-        </div>
-      </div>
-
-      {/* 4. Recent Architecture Decisions in Bento Box */}
+      {/* 3. Real Decisions & ADR Block (Zero Placeholder) */}
       <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808]">
         <div className="flex items-center justify-between border-b-2 border-[#080808] pb-4">
           <div className="flex items-center gap-2">
             <BookMarked className="h-5 w-5 stroke-[2.5] text-[#080808]" />
             <h3 className="text-sm font-black uppercase text-[#080808]">
-              Recent Product & Architecture Decisions
+              Product & Architecture Decisions
             </h3>
           </div>
-          <Link
-            href={`/projects/${id}/decisions`}
-            className="border-2 border-[#080808] bg-[#F8F6EC] px-3 py-1 text-[11px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:bg-[#FFE500]"
-          >
-            View All Decisions →
-          </Link>
+          {decisions.length > 0 && (
+            <Link
+              href={`/projects/${id}/decisions`}
+              className="border-2 border-[#080808] bg-[#F8F6EC] px-3 py-1 text-[11px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:bg-[#FFE500]"
+            >
+              View Decision Log →
+            </Link>
+          )}
         </div>
 
         {decisions.length === 0 ? (
@@ -499,7 +468,7 @@ export default async function ProjectOverviewPage({
             <Sparkles className="h-6 w-6 stroke-[2] text-[#080808]" />
             <p className="mt-2 font-black uppercase text-[#080808]">No decisions recorded yet</p>
             <p className="mt-1 max-w-sm text-[11px] font-medium text-[#080808]/70">
-              Answer the discovery questions in Stage 01 to automatically record your architecture decisions.
+              Answer the discovery questions in Stage 01 to record your architectural decisions in Supabase.
             </p>
             <Link
               href={`/projects/${id}/discovery`}

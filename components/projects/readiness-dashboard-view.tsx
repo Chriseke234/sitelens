@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Zap,
-  BarChart3,
   Cpu,
   Lock,
   Layers,
@@ -18,8 +17,8 @@ import {
   Download,
   Check,
   Terminal,
-  ExternalLink,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { ProjectUsageMetrics } from "@/lib/analytics/usage";
 
@@ -29,11 +28,13 @@ interface ReadinessDashboardViewProps {
   initialUsage?: ProjectUsageMetrics;
 }
 
-interface ReadinessDomain {
-  name: string;
-  status: "READY" | "NEEDS_ATTENTION" | "PARTIAL";
-  evidence: string;
-  icon: any;
+interface ChecklistItem {
+  id: string;
+  category: string;
+  item_key: string;
+  title: string;
+  is_checked: boolean;
+  notes?: string;
 }
 
 export function ReadinessDashboardView({
@@ -42,294 +43,325 @@ export function ReadinessDashboardView({
   initialUsage,
 }: ReadinessDashboardViewProps) {
   const [usage, setUsage] = useState<ProjectUsageMetrics | null>(initialUsage || null);
-  const [loading, setLoading] = useState(!initialUsage);
+  const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [togglingKey, setTogglingKey] = useState<string | null>(null);
   const [copiedExport, setCopiedExport] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
 
-  const fetchUsage = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/projects/${projectId}/analytics`);
-      const data = await res.json();
-      if (res.ok && data.usage) {
-        setUsage(data.usage);
+      const [usageRes, checklistRes] = await Promise.all([
+        fetch(`/api/projects/${projectId}/analytics`),
+        fetch(`/api/projects/${projectId}/readiness`),
+      ]);
+
+      if (usageRes.ok) {
+        const uData = await usageRes.json();
+        if (uData.usage) setUsage(uData.usage);
+      }
+
+      if (checklistRes.ok) {
+        const cData = await checklistRes.json();
+        if (cData.checklist) setChecklist(cData.checklist);
       }
     } catch (err) {
-      console.error("Failed to load usage metrics:", err);
+      console.error("Failed to load readiness data:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!initialUsage) {
-      fetchUsage();
-    }
+    loadData();
   }, [projectId]);
 
-  const readinessDomains: ReadinessDomain[] = [
-    {
-      name: "Security & Project Isolation",
-      status: "READY",
-      evidence: "Multi-tenant Supabase RLS enforced on all tables. Server-side user_id authorization on all routes. Zero client trust.",
-      icon: Lock,
-    },
-    {
-      name: "Secret Redaction & Protection",
-      status: "READY",
-      evidence: "Deterministic secret regexes redact JWTs, Stripe sk_live keys, AWS keys, and credentials before persistence or prompt generation.",
-      icon: ShieldCheck,
-    },
-    {
-      name: "AI Provider Resilience & Fallback",
-      status: "READY",
-      evidence: "25-second AbortController timeout, bounded exponential retries on 429/503, and offline deterministic fallback generation.",
-      icon: Cpu,
-    },
-    {
-      name: "Data Integrity & Concurrency",
-      status: "READY",
-      evidence: "Foreign key cascade rules, JSONB storage fallback, and non-destructive schema migrations.",
-      icon: Layers,
-    },
-    {
-      name: "Observability & Error Tracing",
-      status: "READY",
-      evidence: "Standardized traceable reference IDs (AIG-ERR-XXXXX) and user-friendly error translations without leaking database traces.",
-      icon: Activity,
-    },
-    {
-      name: "Token Optimization Efficiency",
-      status: "READY",
-      evidence: "Rule deduplication, AST chunking, and strict change boundaries save measurable context tokens per compiled prompt.",
-      icon: Zap,
-    },
-    {
-      name: "Test Coverage & Verification",
-      status: "READY",
-      evidence: "Automated unit and integration test suite covers URL validation, scoring, repo intelligence, audit rules, and regression checks.",
-      icon: CheckCircle2,
-    },
-    {
-      name: "Accessibility & Mobile QA",
-      status: "READY",
-      evidence: "100% responsive across mobile (360px+), tablet, and desktop viewports with Lucide SVG icons and high-contrast badges.",
-      icon: BarChart3,
-    },
-    {
-      name: "Documentation & Principles",
-      status: "READY",
-      evidence: "Comprehensive audit records from Phase 1 through Phase 9, user guides, decision logs, and agent adapters.",
-      icon: FileText,
-    },
-  ];
+  const handleToggleItem = async (item: ChecklistItem) => {
+    const nextState = !item.is_checked;
+    setTogglingKey(item.item_key);
+
+    // Optimistic UI update
+    setChecklist((prev) =>
+      prev.map((c) => (c.item_key === item.item_key ? { ...c, is_checked: nextState } : c))
+    );
+
+    try {
+      await fetch(`/api/projects/${projectId}/readiness`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          itemKey: item.item_key,
+          isChecked: nextState,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to update checklist item:", err);
+      // Revert on error
+      setChecklist((prev) =>
+        prev.map((c) => (c.item_key === item.item_key ? { ...c, is_checked: item.is_checked } : c))
+      );
+    } finally {
+      setTogglingKey(null);
+    }
+  };
+
+  const categories = ["ALL", "product", "ux", "engineering", "security", "performance", "seo"];
+
+  const filteredItems = checklist.filter((item) =>
+    selectedCategory === "ALL" ? true : item.category.toLowerCase() === selectedCategory.toLowerCase()
+  );
+
+  const checkedCount = checklist.filter((c) => c.is_checked).length;
+  const totalCount = checklist.length;
+  const readinessPct = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
 
   const handleExportState = () => {
     const exportData = {
       project: projectName,
       projectId,
       timestamp: new Date().toISOString(),
-      readiness: readinessDomains.map((d) => ({ domain: d.name, status: d.status })),
-      usage,
+      readinessPct,
+      verifiedCount: `${checkedCount}/${totalCount}`,
+      checklist: checklist.map((c) => ({
+        category: c.category,
+        title: c.title,
+        verified: c.is_checked,
+      })),
+      usage: usage || null,
     };
     navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
     setCopiedExport(true);
     setTimeout(() => setCopiedExport(false), 2500);
   };
 
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center border-[3px] border-[#080808] bg-white shadow-[6px_6px_0px_#080808]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#080808]" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+    <div className="space-y-6 font-mono">
+      {/* 1. Header Banner & Progress Indicator */}
+      <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[6px_6px_0px_#080808]">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl text-emerald-600 dark:text-emerald-400">
-              <ShieldCheck className="w-6 h-6" />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="border-2 border-[#080808] bg-[#B7FF6A] px-2.5 py-0.5 text-[10px] font-black uppercase text-[#080808] shadow-[1.5px_1.5px_0px_#080808]">
+                FACTUAL VERIFICATION
+              </span>
+              <span className="border-2 border-[#080808] bg-white px-2.5 py-0.5 text-[10px] font-black uppercase text-[#080808] shadow-[1.5px_1.5px_0px_#080808]">
+                {checkedCount} OF {totalCount} CHECKS VERIFIED
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-                  Production Readiness & Analytics
-                </h1>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                  Ready for Controlled Release
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Verifiable evidence of reliability, security hardening, and context token efficiency for {projectName}.
-              </p>
-            </div>
+            <h1 className="text-2xl font-black uppercase tracking-tight text-[#080808] sm:text-3xl">
+              Production Release Checklist
+            </h1>
+            <p className="text-xs font-medium text-[#080808]/80 max-w-2xl">
+              Verify your application against real production readiness requirements. Every item is persisted directly to your Supabase project database.
+            </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={handleExportState}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold transition"
+              className="inline-flex items-center gap-1.5 border-2 border-[#080808] bg-[#F8F6EC] px-3.5 py-2 text-xs font-black uppercase text-[#080808] shadow-[2.5px_2.5px_0px_#080808] hover:bg-white active:translate-y-0.5"
             >
               {copiedExport ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Copied Summary</span>
+                  <Check className="h-3.5 w-3.5 stroke-[3] text-[#080808]" />
+                  <span>Copied JSON</span>
                 </>
               ) : (
                 <>
-                  <Download className="w-3.5 h-3.5" />
+                  <Download className="h-3.5 w-3.5 stroke-[2.5]" />
                   <span>Export State</span>
                 </>
               )}
             </button>
 
             <button
-              onClick={fetchUsage}
-              disabled={loading}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50"
+              onClick={loadData}
+              className="inline-flex items-center gap-1.5 border-[2.5px] border-[#080808] bg-[#FFE500] px-4 py-2 text-xs font-black uppercase text-[#080808] shadow-[3px_3px_0px_#080808] hover:bg-[#080808] hover:text-[#FFE500] active:translate-y-0.5"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-              <span>Refresh Metrics</span>
+              <RefreshCw className="h-3.5 w-3.5 stroke-[2.5]" />
+              <span>Refresh</span>
             </button>
+          </div>
+        </div>
+
+        {/* Global Progress Bar */}
+        <div className="mt-6 border-t-2 border-[#080808] pt-4">
+          <div className="flex items-center justify-between text-xs font-black uppercase text-[#080808] mb-2">
+            <span>Overall Verification Progress</span>
+            <span className="border-2 border-[#080808] bg-white px-2 py-0.5 shadow-[2px_2px_0px_#080808]">
+              {readinessPct}% COMPLETE
+            </span>
+          </div>
+          <div className="h-4 w-full border-2 border-[#080808] bg-white p-0.5 shadow-[2px_2px_0px_#080808]">
+            <div
+              className="h-full bg-[#080808] transition-all duration-300"
+              style={{ width: `${readinessPct}%` }}
+            />
           </div>
         </div>
       </div>
 
-      {/* FACTUAL TOKEN & CONTEXT EFFICIENCY BAR */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/80">
+      {/* 2. Context & Token Accounting (Factual Only) */}
+      <div className="border-[3px] border-[#080808] bg-white p-5 shadow-[5px_5px_0px_#080808]">
+        <div className="flex items-center justify-between border-b-2 border-[#080808] pb-3 mb-4">
           <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-500" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              Context & Token Efficiency (Measured Savings)
+            <Zap className="h-4 w-4 stroke-[2.5] text-[#080808]" />
+            <h2 className="text-xs font-black uppercase tracking-wider text-[#080808]">
+              Agent Prompt & Token Accounting
             </h2>
           </div>
-          <span className="text-[11px] text-slate-400">
-            Factual token accounting based on compiled prompts
+          <span className="text-[10px] font-bold uppercase text-[#080808]/60">
+            Factual Database Metrics
           </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-            <div className="text-[10px] font-semibold text-slate-500 uppercase">Prompts Compiled</div>
-            <div className="text-xl font-black text-slate-900 dark:text-white mt-1">
+          <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 text-center shadow-[2px_2px_0px_#080808]">
+            <div className="text-[10px] font-black uppercase text-[#080808]/60">Prompts Compiled</div>
+            <div className="text-2xl font-black text-[#080808] mt-1">
               {usage?.promptsGenerated || 0}
             </div>
-            <div className="text-[10px] text-slate-400 mt-0.5">Ready for coding AI</div>
+            <div className="text-[10px] font-bold text-[#080808]/70 mt-0.5">Stored in project</div>
           </div>
 
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-            <div className="text-[10px] font-semibold text-slate-500 uppercase">Tokens Saved</div>
-            <div className="text-xl font-black text-emerald-600 mt-1">
-              {usage?.savedTokens ? `~${usage.savedTokens.toLocaleString()}` : "0"}
+          <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 text-center shadow-[2px_2px_0px_#080808]">
+            <div className="text-[10px] font-black uppercase text-[#080808]/60">Measured Tokens Saved</div>
+            <div className="text-2xl font-black text-[#080808] mt-1">
+              {usage?.savedTokens && usage.promptsGenerated > 0 ? `~${usage.savedTokens.toLocaleString()}` : "0"}
             </div>
-            <div className="text-[10px] text-emerald-600 font-bold mt-0.5">
-              {usage?.reductionPercentage ? `${usage.reductionPercentage}% Reduction` : "Measured"}
+            <div className="text-[10px] font-bold text-[#080808]/70 mt-0.5">
+              {usage?.reductionPercentage && usage.promptsGenerated > 0 ? `${usage.reductionPercentage}% Reduction` : "No prompts yet"}
             </div>
           </div>
 
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-            <div className="text-[10px] font-semibold text-slate-500 uppercase">Avg Prompt Size</div>
-            <div className="text-xl font-black text-indigo-600 mt-1">
-              {usage?.averagePromptTokens ? `~${usage.averagePromptTokens.toLocaleString()}` : "0"}
+          <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 text-center shadow-[2px_2px_0px_#080808]">
+            <div className="text-[10px] font-black uppercase text-[#080808]/60">Avg Prompt Tokens</div>
+            <div className="text-2xl font-black text-[#080808] mt-1">
+              {usage?.averagePromptTokens && usage.promptsGenerated > 0 ? `~${usage.averagePromptTokens.toLocaleString()}` : "0"}
             </div>
-            <div className="text-[10px] text-slate-400 mt-0.5">Surgical, bounded context</div>
+            <div className="text-[10px] font-bold text-[#080808]/70 mt-0.5">Per generation</div>
           </div>
 
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-            <div className="text-[10px] font-semibold text-slate-500 uppercase">Fixes Verified</div>
-            <div className="text-xl font-black text-slate-900 dark:text-white mt-1">
+          <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 text-center shadow-[2px_2px_0px_#080808]">
+            <div className="text-[10px] font-black uppercase text-[#080808]/60">Verified Fixes</div>
+            <div className="text-2xl font-black text-[#080808] mt-1">
               {usage?.fixesVerified || 0}
             </div>
-            <div className="text-[10px] text-slate-400 mt-0.5">Closed-loop verified</div>
+            <div className="text-[10px] font-bold text-[#080808]/70 mt-0.5">Audit fix queue</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Interactive Real Checklist Matrix */}
+      <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#080808] pb-4 mb-4">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 stroke-[2.5] text-[#080808]" />
+            <h3 className="text-sm font-black uppercase text-[#080808]">
+              Interactive Production Verification Items
+            </h3>
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`border border-[#080808] px-2.5 py-1 text-[10px] font-black uppercase transition-all ${
+                  selectedCategory.toLowerCase() === cat.toLowerCase()
+                    ? "bg-[#FFE500] text-[#080808] shadow-[1.5px_1.5px_0px_#080808]"
+                    : "bg-white text-[#080808]/70 hover:bg-[#F8F6EC]"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Coding Agent Profile Distribution */}
-        {usage && usage.promptsGenerated > 0 && (
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-500 block mb-2">
-              Target Coding Agent Distribution:
-            </span>
-            <div className="flex flex-wrap gap-2 text-xs">
-              {Object.entries(usage.agentDistribution).map(([agent, count]) => {
-                if (count === 0) return null;
-                return (
-                  <span
-                    key={agent}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-medium"
+        {filteredItems.length === 0 ? (
+          <div className="border-2 border-dashed border-[#080808] bg-[#F8F6EC] p-8 text-center text-xs">
+            <p className="font-black uppercase text-[#080808]">No checklist items found</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {filteredItems.map((item) => {
+              const isToggling = togglingKey === item.item_key;
+
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => handleToggleItem(item)}
+                  className={`flex items-start gap-3 border-2 border-[#080808] p-3.5 cursor-pointer transition-all select-none ${
+                    item.is_checked
+                      ? "bg-[#F8F6EC] shadow-[2px_2px_0px_#080808]"
+                      : "bg-white shadow-[3px_3px_0px_#080808] hover:bg-[#F8F6EC]"
+                  }`}
+                >
+                  <div
+                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border-2 border-[#080808] transition-colors ${
+                      item.is_checked ? "bg-[#B7FF6A]" : "bg-white"
+                    }`}
                   >
-                    <Terminal className="w-3 h-3" />
-                    <span>{agent}: {count}</span>
-                  </span>
-                );
-              })}
-            </div>
+                    {item.is_checked && <Check className="h-3.5 w-3.5 stroke-[3] text-[#080808]" />}
+                  </div>
+
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="border border-[#080808] bg-white px-1.5 py-0.2 text-[9px] font-black uppercase text-[#080808]">
+                        {item.category}
+                      </span>
+                      {item.is_checked ? (
+                        <span className="border border-[#080808] bg-[#B7FF6A] px-1.5 py-0.2 text-[9px] font-black uppercase text-[#080808]">
+                          VERIFIED
+                        </span>
+                      ) : (
+                        <span className="border border-[#080808] bg-white px-1.5 py-0.2 text-[9px] font-black uppercase text-[#080808]/60">
+                          PENDING
+                        </span>
+                      )}
+                    </div>
+
+                    <p className={`text-xs font-bold text-[#080808] leading-tight ${item.is_checked ? "line-through text-[#080808]/60" : ""}`}>
+                      {item.title}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* READINESS CHECKLIST MATRIX */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800/80">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              System Hardening & Verification Checklist
-            </h2>
-          </div>
-          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-            9 of 9 Systems Verified
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {readinessDomains.map((domain, idx) => {
-            const Icon = domain.icon;
-            return (
-              <div
-                key={idx}
-                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-2.5 transition hover:border-indigo-300 dark:hover:border-indigo-800"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400">
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">
-                      {domain.name}
-                    </span>
-                  </div>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                    <Check className="w-2.5 h-2.5" /> Ready
-                  </span>
-                </div>
-
-                <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                  {domain.evidence}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Next Recommended Workflow Step */}
-      <div className="p-5 bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/60 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            <h3 className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
-              Ready for Coding Agent Execution
+      {/* 4. Action Banner */}
+      <div className="border-[3px] border-[#080808] bg-[#FFE500] p-6 shadow-[5px_5px_0px_#080808]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-black uppercase text-[#080808]">
+              Ready to give instructions to your AI coding agent?
             </h3>
+            <p className="text-xs font-medium text-[#080808]/85">
+              Copy context-packed prompts directly into Google Antigravity, Cursor, or Claude Code.
+            </p>
           </div>
-          <p className="text-xs text-indigo-800 dark:text-indigo-300">
-            Aigenstra is primed to guide external AI agents (Google Antigravity, Cursor, Claude Code) through implementation, auditing, and verification.
-          </p>
-        </div>
 
-        <Link
-          href={`/projects/${projectId}/prompts`}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-sm shrink-0"
-        >
-          <span>Open Prompt Studio</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
+          <Link
+            href={`/projects/${projectId}/prompts`}
+            className="inline-flex items-center gap-2 border-[2.5px] border-[#080808] bg-[#080808] px-5 py-2.5 text-xs font-black uppercase text-[#FFE500] shadow-[3px_3px_0px_rgba(0,0,0,0.25)] hover:bg-white hover:text-[#080808] hover:shadow-[3px_3px_0px_#080808] active:translate-y-0.5 shrink-0"
+          >
+            <span>Open Prompt Studio →</span>
+          </Link>
+        </div>
       </div>
     </div>
   );
