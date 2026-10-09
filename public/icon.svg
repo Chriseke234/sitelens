@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <!-- Container with Brand Yellow and Crisp Black Border -->
+  <rect width="40" height="40" rx="9" fill="#FFE500" stroke="#080808" stroke-width="2.5" />
+  
+  <!-- Subtle Hard Shadow accent inside vector -->
+  <path d="M7 33L20 8L33 33H26.5L23.5 26.5H16.5L13.5 33H7Z" fill="#080808" />
+  
+  <!-- Inner Apex Core Lens Triangle -->
+  <path d="M20 14L17.5 21H22.5L20 14Z" fill="#FFE500" />
+  
+  <!-- Synapse Horizontal Bar Accent in Hot Pink -->
+  <rect x="15" y="23" width="10" height="2" rx="0.5" fill="#FF4F9A" />
+  
+  <!-- Radiant Apex Point in Lime Green -->
+  <circle cx="20" cy="8.5" r="1.75" fill="#B7FF6A" stroke="#080808" stroke-width="0.75" />
+  
+  <!-- Base Corner Nodes -->
+  <circle cx="7" cy="33" r="1.25" fill="#FF4F9A" />
+  <circle cx="33" cy="33" r="1.25" fill="#B7FF6A" />
+</svg>
