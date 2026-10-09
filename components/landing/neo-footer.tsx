@@ -46,8 +46,8 @@ export function NeoFooter() {
               </h3>
               <ul className="mt-4 space-y-2.5 font-mono text-xs font-bold">
                 <li>
-                  <Link href="#blueprint" className="hover:underline">
-                    Prompt Blueprints
+                  <Link href="#problem" className="hover:underline">
+                    Why Aigenstra
                   </Link>
                 </li>
                 <li>
@@ -56,13 +56,13 @@ export function NeoFooter() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#audit" className="hover:underline">
-                    Production Audit
+                  <Link href="#who-its-for" className="hover:underline">
+                    For Builders
                   </Link>
                 </li>
                 <li>
-                  <Link href="#who-its-for" className="hover:underline">
-                    For Builders
+                  <Link href="#ecosystem" className="hover:underline">
+                    Supported Tools
                   </Link>
                 </li>
               </ul>

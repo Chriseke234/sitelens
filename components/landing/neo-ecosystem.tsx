@@ -36,7 +36,7 @@ export function NeoEcosystem() {
   ];
 
   return (
-    <section className="border-b-[3px] border-[#080808] bg-[#F8F6EC] py-16 md:py-24">
+    <section id="ecosystem" className="border-b-[3px] border-[#080808] bg-[#F8F6EC] py-16 md:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}

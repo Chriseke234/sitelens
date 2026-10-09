@@ -34,10 +34,10 @@ export function NeoNavbar() {
           {/* Center/Left Desktop Navigation Links */}
           <nav className="hidden items-center gap-6 lg:flex" aria-label="Main Navigation">
             <Link
-              href="#capabilities"
+              href="#problem"
               className="text-xs font-black uppercase tracking-wider text-[#080808] transition-colors hover:text-[#FF4F9A]"
             >
-              Product
+              Why Aigenstra
             </Link>
             <Link
               href="#how-it-works"
@@ -49,13 +49,7 @@ export function NeoNavbar() {
               href="#who-its-for"
               className="text-xs font-black uppercase tracking-wider text-[#080808] transition-colors hover:text-[#FF4F9A]"
             >
-              For Vibecoders
-            </Link>
-            <Link
-              href="#blueprint"
-              className="text-xs font-black uppercase tracking-wider text-[#080808] transition-colors hover:text-[#FF4F9A]"
-            >
-              The Blueprint
+              For Builders
             </Link>
           </nav>
         </div>
@@ -102,11 +96,11 @@ export function NeoNavbar() {
         <div className="border-t-[3px] border-[#080808] bg-[#F8F6EC] px-4 py-6 sm:hidden">
           <nav className="flex flex-col space-y-4 font-mono font-bold">
             <Link
-              href="#capabilities"
+              href="#problem"
               onClick={() => setMobileMenuOpen(false)}
               className="border-2 border-[#080808] bg-white p-3 text-sm uppercase text-[#080808] shadow-[3px_3px_0px_#080808]"
             >
-              Product
+              Why Aigenstra
             </Link>
             <Link
               href="#how-it-works"
@@ -120,14 +114,7 @@ export function NeoNavbar() {
               onClick={() => setMobileMenuOpen(false)}
               className="border-2 border-[#080808] bg-white p-3 text-sm uppercase text-[#080808] shadow-[3px_3px_0px_#080808]"
             >
-              For Vibecoders
-            </Link>
-            <Link
-              href="#blueprint"
-              onClick={() => setMobileMenuOpen(false)}
-              className="border-2 border-[#080808] bg-white p-3 text-sm uppercase text-[#080808] shadow-[3px_3px_0px_#080808]"
-            >
-              The Blueprint
+              For Builders
             </Link>
             <div className="pt-2 flex flex-col gap-3">
               <Link

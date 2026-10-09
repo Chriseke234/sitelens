@@ -4,8 +4,6 @@ import { NeoNavbar } from "@/components/landing/neo-navbar";
 import { NeoHero } from "@/components/landing/neo-hero";
 import { NeoProblem } from "@/components/landing/neo-problem";
 import { NeoWorkflow } from "@/components/landing/neo-workflow";
-import { NeoBlueprint } from "@/components/landing/neo-blueprint";
-import { NeoAudit } from "@/components/landing/neo-audit";
 import { NeoAudience } from "@/components/landing/neo-audience";
 import { NeoEcosystem } from "@/components/landing/neo-ecosystem";
 import { NeoFinalCTA } from "@/components/landing/neo-final-cta";
@@ -87,13 +85,7 @@ export default function Home() {
         {/* 4. Section 3: How It Works (Consolidated Workflow) */}
         <NeoWorkflow />
 
-        {/* 5. Section 4: The Build Blueprint */}
-        <NeoBlueprint />
-
-        {/* 6. Section 5: Audit & Verification */}
-        <NeoAudit />
-
-        {/* 7. Section 6: Who Aigenstra Is For */}
+        {/* 5. Section 4: Who Aigenstra Is For */}
         <NeoAudience />
 
         {/* 8. Section 7: Works With Your Workflow */}
