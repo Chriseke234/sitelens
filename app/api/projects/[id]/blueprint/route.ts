@@ -45,40 +45,68 @@ export async function GET(
       .eq("project_id", id)
       .maybeSingle();
 
-    let blueprint: SoftwareBlueprint;
+    const { searchParams } = new URL(request.url);
+    const forceRefresh = searchParams.get("refresh") === "true";
 
-    if (existingSpec && existingSpec.problem_statement && existingSpec.problem_statement.startsWith("{")) {
+    const projectDetails = {
+      problemStatement: project.problem_statement,
+      targetAudience: project.target_audience,
+      goal: project.goal,
+      techStack: project.tech_stack,
+      codingEnvironment: project.coding_environment,
+    };
+
+    let blueprint: SoftwareBlueprint | null = null;
+    let shouldResynthesize = forceRefresh;
+
+    if (!shouldResynthesize && existingSpec && existingSpec.problem_statement && existingSpec.problem_statement.startsWith("{")) {
       try {
-        blueprint = JSON.parse(existingSpec.problem_statement) as SoftwareBlueprint;
-        const health = evaluateBlueprintHealth(blueprint);
-        blueprint.healthScore = health.score;
-        blueprint.healthWarnings = health.issues.map((i) => i.message);
+        const parsed = JSON.parse(existingSpec.problem_statement) as SoftwareBlueprint;
+        const serialized = existingSpec.problem_statement;
+        // Invalidate if old fictional placeholders exist
+        const hasFictionalData =
+          serialized.includes("Users currently lack a unified") ||
+          serialized.includes("CoreResource") ||
+          serialized.includes("Standard Item Lifecycle") ||
+          parsed.overview?.problemStatement === "Users currently lack a unified, streamlined way to manage their workflows effectively.";
+
+        // Check if any answered discovery QnAs exist
+        const hasAnsweredQnas = (qnas || []).some((q) => q.answer && q.answer.trim().length > 0);
+
+        if (hasFictionalData || hasAnsweredQnas) {
+          shouldResynthesize = true;
+        } else {
+          blueprint = parsed;
+          const health = evaluateBlueprintHealth(blueprint);
+          blueprint.healthScore = health.score;
+          blueprint.healthWarnings = health.issues.map((i) => i.message);
+        }
       } catch {
-        blueprint = await generateSoftwareBlueprint(
-          id,
-          project.name,
-          project.product_type || "SaaS",
-          project.raw_idea || project.description,
-          null,
-          qnas || []
-        );
+        shouldResynthesize = true;
       }
     } else {
+      shouldResynthesize = true;
+    }
+
+    if (shouldResynthesize || !blueprint) {
       blueprint = await generateSoftwareBlueprint(
         id,
         project.name,
         project.product_type || "SaaS",
         project.raw_idea || project.description,
         null,
-        qnas || []
+        qnas || [],
+        null,
+        projectDetails
       );
 
-      // Save initial blueprint to product_specs
+      // Save fresh real-time blueprint to product_specs
       if (existingSpec) {
         await supabase
           .from("product_specs")
           .update({
             problem_statement: JSON.stringify(blueprint),
+            target_users: blueprint.overview.targetOutcome ? [blueprint.overview.targetOutcome] : [],
             updated_at: new Date().toISOString(),
           })
           .eq("id", existingSpec.id);
@@ -144,13 +172,23 @@ export async function POST(
         .eq("project_id", id)
         .order("step_order", { ascending: true });
 
+      const projectDetails = {
+        problemStatement: project.problem_statement,
+        targetAudience: project.target_audience,
+        goal: project.goal,
+        techStack: project.tech_stack,
+        codingEnvironment: project.coding_environment,
+      };
+
       const newBlueprint = await generateSoftwareBlueprint(
         id,
         project.name,
         project.product_type || "SaaS",
         project.raw_idea || project.description,
         null,
-        qnas || []
+        qnas || [],
+        null,
+        projectDetails
       );
 
       const health = evaluateBlueprintHealth(newBlueprint);

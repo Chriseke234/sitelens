@@ -5,21 +5,21 @@ import { useParams, useRouter } from "next/navigation";
 import {
   Settings,
   Trash2,
-  Save,
   Loader2,
   ShieldAlert,
   Terminal,
   Rocket,
   SearchCheck,
+  FileText,
+  Layers,
 } from "lucide-react";
+import { DeleteProjectModal } from "@/components/projects/delete-project-modal";
 
 export default function WorkspaceSettingsPage() {
   const params = useParams();
-  const router = useRouter();
   const projectId = params?.id as string;
 
   const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState(false);
   const [project, setProject] = useState<any | null>(null);
 
   useEffect(() => {
@@ -40,104 +40,131 @@ export default function WorkspaceSettingsPage() {
     }
   };
 
-  const handleDeleteProject = async () => {
-    if (!confirm("Are you sure you want to delete this AI workspace? This action cannot be undone.")) {
-      return;
-    }
-
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/projects/${projectId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        router.push("/projects");
-      }
-    } catch (err) {
-      console.error("Delete project error:", err);
-      setDeleting(false);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="flex h-64 items-center justify-center border-[3px] border-[#080808] bg-white shadow-[6px_6px_0px_#080808]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#080808]" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 font-mono">
       {/* Header */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300">
-            <Settings className="h-3.5 w-3.5" />
-            Workspace Settings
+      <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[6px_6px_0px_#080808]">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#FFE500] px-2.5 py-0.5 text-[11px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+            <Settings className="h-3.5 w-3.5 stroke-[2.5]" />
+            WORKSPACE SETTINGS
           </div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
+          <h1 className="text-2xl font-black uppercase tracking-tight text-[#080808] sm:text-3xl">
             Workspace Configuration
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-            Manage workspace metadata, coding environment preferences, and project deletion.
+          <p className="text-xs font-medium text-[#080808]/75">
+            Manage project parameters, coding environment preferences, and project deletion.
           </p>
         </div>
       </div>
 
       {project && (
         <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 pb-3 dark:border-slate-800">
-              General Details
-            </h3>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-500">Project Name</label>
-              <div className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{project.name}</div>
+          {/* General Details Bento Card */}
+          <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[6px_6px_0px_#080808] space-y-5">
+            <div className="flex items-center justify-between border-b-2 border-[#080808] pb-3">
+              <span className="text-sm font-black uppercase text-[#080808]">
+                General Metadata
+              </span>
+              <span className="border border-[#080808] bg-[#B7FF6A] px-2 py-0.5 text-[10px] font-black uppercase">
+                Active Baseline
+              </span>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-500">Product Description</label>
-              <div className="mt-1 text-xs text-slate-700 dark:text-slate-300">{project.description}</div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500">Target Environment</label>
-                <div className="mt-1 text-xs font-semibold text-slate-900 dark:text-white">{project.coding_environment}</div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2px_2px_0px_#080808]">
+                <label className="block text-[10px] font-black uppercase text-[#080808]/60">
+                  Project Workspace Name
+                </label>
+                <div className="mt-1 text-sm font-black uppercase text-[#080808]">
+                  {project.name}
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500">Current Stage</label>
-                <div className="mt-1 text-xs font-semibold capitalize text-slate-900 dark:text-white">{project.stage.replace("_", " ")}</div>
+
+              <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2px_2px_0px_#080808]">
+                <label className="block text-[10px] font-black uppercase text-[#080808]/60">
+                  Product Type
+                </label>
+                <div className="mt-1 text-sm font-black uppercase text-[#080808]">
+                  {project.product_type || "SaaS"}
+                </div>
+              </div>
+            </div>
+
+            <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2px_2px_0px_#080808]">
+              <label className="block text-[10px] font-black uppercase text-[#080808]/60">
+                Core Concept / Description
+              </label>
+              <div className="mt-1 text-xs font-bold leading-relaxed text-[#080808]">
+                {project.description || project.raw_idea || "No description provided."}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2px_2px_0px_#080808]">
+                <label className="block text-[10px] font-black uppercase text-[#080808]/60">
+                  Target Agent
+                </label>
+                <div className="mt-1 flex items-center gap-1.5 text-xs font-black uppercase text-[#080808]">
+                  <Terminal className="h-3.5 w-3.5" />
+                  <span>{project.coding_environment}</span>
+                </div>
+              </div>
+
+              <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2px_2px_0px_#080808]">
+                <label className="block text-[10px] font-black uppercase text-[#080808]/60">
+                  Workspace Mode
+                </label>
+                <div className="mt-1 flex items-center gap-1.5 text-xs font-black uppercase text-[#080808]">
+                  {project.mode === "build" ? (
+                    <Rocket className="h-3.5 w-3.5 text-[#080808]" />
+                  ) : (
+                    <SearchCheck className="h-3.5 w-3.5 text-[#080808]" />
+                  )}
+                  <span>{project.mode === "build" ? "Mode A: Build" : "Mode B: Audit"}</span>
+                </div>
+              </div>
+
+              <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2px_2px_0px_#080808]">
+                <label className="block text-[10px] font-black uppercase text-[#080808]/60">
+                  Current Stage
+                </label>
+                <div className="mt-1 text-xs font-black uppercase text-[#080808]">
+                  {project.stage?.replace("_", " ")}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Danger Zone */}
-          <div className="rounded-2xl border border-rose-200 bg-rose-50/40 p-6 dark:border-rose-950/50 dark:bg-slate-900">
-            <div className="flex items-center gap-2 font-bold text-rose-900 dark:text-rose-200 text-sm">
-              <ShieldAlert className="h-5 w-5 text-rose-600" />
-              Danger Zone
+          {/* Danger Zone: Neo-Brutalist Card */}
+          <div className="border-[3px] border-[#080808] bg-[#F8F6EC] p-6 shadow-[6px_6px_0px_#080808] space-y-4">
+            <div className="flex items-center gap-2 border-b-2 border-[#080808] pb-3">
+              <span className="border border-[#080808] bg-[#FF4F9A] px-2 py-0.5 text-[11px] font-black uppercase text-white shadow-[1.5px_1.5px_0px_#080808]">
+                DANGER ZONE
+              </span>
+              <span className="text-sm font-black uppercase text-[#080808]">
+                Permanent Deletion
+              </span>
             </div>
-            <p className="mt-1 text-xs text-rose-700 dark:text-rose-400">
-              Deleting this AI workspace will permanently erase all associated discovery questions, research documents, user journeys, prompts, and audit findings.
+
+            <p className="text-xs font-medium leading-relaxed text-[#080808]/85 max-w-2xl">
+              Permanently removes this project workspace along with all generated blueprints, discovery question-and-answers, task backlogs, agent prompt studios, and verification audits.
             </p>
 
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={handleDeleteProject}
-                disabled={deleting}
-                className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-5 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:bg-rose-700 active:scale-95 disabled:opacity-50"
-              >
-                {deleting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
-                )}
-                Delete Workspace
-              </button>
+            <div className="pt-2">
+              <DeleteProjectModal
+                projectId={projectId}
+                projectName={project.name}
+                variant="button"
+              />
             </div>
           </div>
         </div>

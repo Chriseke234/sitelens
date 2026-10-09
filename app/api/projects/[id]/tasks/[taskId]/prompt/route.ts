@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { compileTaskPrompt } from "@/lib/ai/prompt-compiler";
+import { generateSoftwareBlueprint } from "@/lib/ai/blueprint-engine";
 import {
   AigenstraTask,
   ContextPack,
@@ -48,8 +49,8 @@ export async function POST(
       (project.coding_environment as CodingAgentProfile) ||
       "Antigravity";
 
-    // Fetch existing architecture / task intelligence
-    const [specRes, archRes] = await Promise.all([
+    // Fetch existing architecture, discovery QnAs, and product specs
+    const [specRes, archRes, qnaRes] = await Promise.all([
       supabase
         .from("product_specs")
         .select("*")
@@ -60,9 +61,44 @@ export async function POST(
         .select("*")
         .eq("project_id", projectId)
         .limit(1),
+      supabase
+        .from("discovery_qna")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("step_order", { ascending: true }),
     ]);
 
-    const softwareBlueprint = specRes.data?.[0] as SoftwareBlueprint | undefined;
+    const projectDetails = {
+      problemStatement: project.problem_statement,
+      targetAudience: project.target_audience,
+      goal: project.goal,
+      techStack: project.tech_stack,
+      codingEnvironment: project.coding_environment,
+    };
+
+    let softwareBlueprint: SoftwareBlueprint | null = null;
+    const rawSpec = specRes.data?.[0];
+    if (rawSpec && rawSpec.problem_statement && rawSpec.problem_statement.startsWith("{")) {
+      try {
+        softwareBlueprint = JSON.parse(rawSpec.problem_statement);
+      } catch (err) {
+        console.error("Failed to parse stored blueprint in prompt route:", err);
+      }
+    }
+
+    if (!softwareBlueprint) {
+      softwareBlueprint = await generateSoftwareBlueprint(
+        projectId,
+        project.name,
+        project.product_type || "SaaS",
+        project.raw_idea || project.description,
+        null,
+        qnaRes.data || [],
+        null,
+        projectDetails
+      );
+    }
+
     const engineeringBlueprint = archRes.data?.[0] as
       | EngineeringBlueprint
       | undefined;

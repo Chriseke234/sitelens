@@ -203,17 +203,22 @@ function createDeterministicTasks(
   softwareBlueprint: SoftwareBlueprint,
   engineeringBlueprint?: EngineeringBlueprint | null
 ): { tasks: AigenstraTask[]; recommendation: TaskRecommendation } {
-  const entityNames = softwareBlueprint.dataEntities?.map((e) => e.entityName) || ["UserProfile", "CoreResource"];
-  const screenPaths = softwareBlueprint.screens?.map((s) => s.routePath) || ["/dashboard"];
+  const primaryRole = softwareBlueprint.usersRoles?.[0]?.roleName || `${projectName} User`;
+  const domainEntity = softwareBlueprint.dataEntities?.find((e) => e.entityName !== "UserProfile")?.entityName || "WorkspaceItem";
+  const domainPlural = domainEntity.toLowerCase() + "s";
+  const entityNames = softwareBlueprint.dataEntities?.map((e) => e.entityName) || ["UserProfile", domainEntity];
+  const screenPaths = softwareBlueprint.screens?.map((s) => s.routePath) || ["/dashboard", `/dashboard/${domainPlural}/new`];
+  const coreFeature = softwareBlueprint.features?.[0]?.title || `${domainEntity} Creation & Flow`;
+  const corePurpose = softwareBlueprint.features?.[0]?.simpleDescription || softwareBlueprint.overview?.problemStatement || `Enables ${primaryRole} to execute their core workflow.`;
 
   const tasks: AigenstraTask[] = [
     {
       id: "task_01_schema",
       project_id: projectId,
-      title: "Set Up Database Schemas & Row-Level Security",
-      short_description: "Initialize PostgreSQL tables with foreign keys and RLS policies for multi-tenant data isolation.",
-      purpose: "Establishes secure, multi-tenant relational storage required for all subsequent features.",
-      user_value: "Guarantees account data and private resources are strictly protected.",
+      title: `Set Up Database Schemas & RLS for ${domainEntity}`,
+      short_description: `Initialize PostgreSQL tables with RLS policies for UserProfile and ${domainEntity} isolation.`,
+      purpose: `Establishes secure, multi-tenant relational storage required for ${domainEntity} persistence.`,
+      user_value: `Guarantees account data and private ${domainPlural} are strictly protected by Row-Level Security.`,
       task_type: "DATABASE",
       category: "Foundation",
       priority: "CRITICAL",
@@ -232,9 +237,9 @@ function createDeterministicTasks(
       affected_entities: entityNames,
       affected_apis: [],
       acceptance_criteria: [
-        "PostgreSQL tables created for UserProfile and CoreResource",
-        "Row-Level Security (RLS) policies enabled with auth.uid() matching",
-        "TypeScript shared domain types match the database schema",
+        `PostgreSQL tables created for UserProfile and ${domainEntity}`,
+        "Row-Level Security (RLS) policies enabled with auth.uid() matching user_id",
+        `TypeScript shared domain interfaces match the database schema for ${domainEntity}`,
       ],
       change_boundaries: {
         mustChange: ["supabase/schema.sql", "types/index.ts"],
@@ -247,9 +252,9 @@ function createDeterministicTasks(
     {
       id: "task_02_auth",
       project_id: projectId,
-      title: "Implement User Authentication & Route Guards",
+      title: `Implement ${primaryRole} Authentication & Protected Routes`,
       short_description: "Build login, registration, session token management, and route protection middleware.",
-      purpose: "Allows users to register, sign in securely, and protects private workspace routes.",
+      purpose: `Allows ${primaryRole} to register, sign in securely, and protects private workspace routes.`,
       user_value: "Enables users to sign in and save their personalized work safely.",
       task_type: "AUTH",
       category: "Identity",
@@ -276,7 +281,7 @@ function createDeterministicTasks(
       change_boundaries: {
         mustChange: ["app/(auth)/", "middleware.ts", "components/auth/"],
         mayChange: ["components/dashboard/sidebar.tsx"],
-        mustNotChange: ["app/api/resources/"],
+        mustNotChange: [`app/api/${domainPlural}/`],
       },
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -284,10 +289,10 @@ function createDeterministicTasks(
     {
       id: "task_03_dashboard",
       project_id: projectId,
-      title: "Build Core Activity Dashboard & Metrics",
-      short_description: "Create the main dashboard layout with responsive metric cards, active items, and empty states.",
-      purpose: "Gives users an immediate landing hub to monitor their activity and trigger key actions.",
-      user_value: "Provides a clean visual summary of active items and quick actions.",
+      title: `Build ${projectName} Activity Dashboard & Metrics`,
+      short_description: `Create the main dashboard layout with responsive metric cards, active ${domainPlural}, and empty states.`,
+      purpose: `Gives ${primaryRole} an immediate landing hub to monitor their activity and trigger key actions.`,
+      user_value: `Provides a clean visual summary of active ${domainPlural} and quick actions.`,
       task_type: "FRONTEND",
       category: "Workspace",
       priority: "HIGH",
@@ -304,10 +309,10 @@ function createDeterministicTasks(
       related_assumptions: [],
       affected_screens: ["/dashboard"],
       affected_entities: entityNames,
-      affected_apis: ["/api/resources"],
+      affected_apis: [`/api/${domainPlural}`],
       acceptance_criteria: [
         "Dashboard renders server-side with zero layout shift",
-        "Empty state renders when user has no active items",
+        `Empty state renders when user has no active ${domainPlural}`,
         "Skeleton loader displays during async data loading",
       ],
       change_boundaries: {
@@ -321,10 +326,10 @@ function createDeterministicTasks(
     {
       id: "task_04_core_flow",
       project_id: projectId,
-      title: "Implement Resource Creation & Management Flow",
-      short_description: "Build step-by-step creation form with live Zod validation and optimistic updates.",
-      purpose: "Implements the core business capability allowing users to create and configure resources.",
-      user_value: "Enables users to accomplish their primary task smoothly with instant feedback.",
+      title: `Implement ${coreFeature}`,
+      short_description: `Build step-by-step ${domainEntity} workflow with Zod validation and optimistic updates.`,
+      purpose: corePurpose,
+      user_value: `Enables ${primaryRole} to execute their core workflow smoothly with instant feedback.`,
       task_type: "FEATURE",
       category: "Core Flow",
       priority: "CRITICAL",
@@ -340,15 +345,15 @@ function createDeterministicTasks(
       related_decisions: [],
       related_assumptions: [],
       affected_screens: screenPaths.filter((p) => p !== "/dashboard"),
-      affected_entities: ["CoreResource"],
-      affected_apis: ["/api/resources"],
+      affected_entities: [domainEntity],
+      affected_apis: [`/api/${domainPlural}`],
       acceptance_criteria: [
-        "User can create and publish new resource",
+        `User can create and publish new ${domainEntity}`,
         "Zod validation rejects invalid inputs and highlights field inline",
-        "Resource appears immediately in list upon successful submission",
+        `${domainEntity} appears immediately in list upon successful submission`,
       ],
       change_boundaries: {
-        mustChange: ["app/(dashboard)/items/new/", "app/api/resources/route.ts"],
+        mustChange: [`app/(dashboard)/${domainPlural}/`, `app/api/${domainPlural}/route.ts`],
         mayChange: ["components/forms/"],
         mustNotChange: ["app/(auth)/"],
       },
@@ -359,13 +364,13 @@ function createDeterministicTasks(
 
   const recommendation: TaskRecommendation = {
     recommendedTaskId: "task_01_schema",
-    recommendedTaskTitle: "Set Up Database Schemas & Row-Level Security",
-    whyNext: "Establishing the database models and Row-Level Security (RLS) is the essential architectural prerequisite before building authentication or user dashboards.",
+    recommendedTaskTitle: `Set Up Database Schemas & RLS for ${domainEntity}`,
+    whyNext: `Establishing the database models and Row-Level Security (RLS) is the essential architectural prerequisite before building authentication or ${domainPlural} workflows.`,
     prerequisitesMet: true,
     alternativeReadyTasks: [
       {
         taskId: "task_02_auth",
-        title: "Implement User Authentication & Route Guards",
+        title: `Implement ${primaryRole} Authentication & Route Guards`,
         reason: "Can be planned in parallel once database schemas are locked.",
       },
     ],

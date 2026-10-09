@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProjectWorkspaceNav } from "@/components/projects/workspace-nav";
+import { DeleteProjectModal } from "@/components/projects/delete-project-modal";
 import { Sparkles, Terminal, Rocket, SearchCheck } from "lucide-react";
 import { Project } from "@/types";
 
@@ -78,13 +79,19 @@ export default async function ProjectWorkspaceLayout({
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
             <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 text-right shadow-[3px_3px_0px_#080808]">
               <div className="font-mono text-[10px] font-bold uppercase text-[#080808]/60">Target Goal</div>
               <div className="font-mono text-xs font-black uppercase text-[#080808] line-clamp-1 max-w-[200px]">
                 {project.goal}
               </div>
             </div>
+
+            <DeleteProjectModal
+              projectId={id}
+              projectName={project.name}
+              variant="header"
+            />
           </div>
         </div>
 

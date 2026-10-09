@@ -48,9 +48,31 @@ export async function GET(
     let tasks: AigenstraTask[] = [];
     let recommendation: TaskRecommendation | null = null;
 
-    if (archDoc && (archDoc.storage as any)?.tasks) {
-      tasks = (archDoc.storage as any).tasks;
-      recommendation = (archDoc.storage as any).recommendation;
+    const { data: qnas } = await supabase
+      .from("discovery_qna")
+      .select("*")
+      .eq("project_id", id)
+      .order("step_order", { ascending: true });
+
+    const projectDetails = {
+      problemStatement: project.problem_statement,
+      targetAudience: project.target_audience,
+      goal: project.goal,
+      techStack: project.tech_stack,
+      codingEnvironment: project.coding_environment,
+    };
+
+    const storedTasks = (archDoc?.storage as any)?.tasks as AigenstraTask[] | undefined;
+    const hasFictionalTasks = storedTasks?.some(
+      (t) =>
+        t.title.includes("CoreResource") ||
+        t.title.includes("Resource Creation") ||
+        t.affected_entities.includes("CoreResource")
+    );
+
+    if (storedTasks && storedTasks.length > 0 && !hasFictionalTasks) {
+      tasks = storedTasks;
+      recommendation = (archDoc?.storage as any)?.recommendation;
     } else {
       // Load Software Blueprint & Build Map
       let softwareBlueprint: SoftwareBlueprint;
@@ -68,7 +90,11 @@ export async function GET(
             id,
             project.name,
             project.product_type || "SaaS",
-            project.raw_idea || project.description
+            project.raw_idea || project.description,
+            null,
+            qnas || [],
+            null,
+            projectDetails
           );
         }
       } else {
@@ -76,7 +102,11 @@ export async function GET(
           id,
           project.name,
           project.product_type || "SaaS",
-          project.raw_idea || project.description
+          project.raw_idea || project.description,
+          null,
+          qnas || [],
+          null,
+          projectDetails
         );
       }
 

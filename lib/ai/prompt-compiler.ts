@@ -185,10 +185,24 @@ function createDeterministicSections(
     {
       key: "PROJECT_CONTEXT",
       title: "3. PROJECT CONTEXT & ARCHITECTURE",
-      purpose: "Provides project-level background and tech stack.",
-      content: contextPack?.repository?.detectedStack
-        ? `Project Name: ${projectName}\nSummary: ${productDescription}\nDetected Tech Stack: ${contextPack.repository.detectedStack}\nIcons: SVG Lucide icons exclusively (zero emojis).`
-        : `Project Name: ${projectName}\nSummary: ${productDescription}\nTech Stack: Next.js 15 (App Router, Server Components), TypeScript, Tailwind CSS, Supabase PostgreSQL with Row Level Security (RLS).\nIcons: SVG Lucide icons exclusively (zero emojis).`,
+      purpose: "Provides project-level background, user problem, and tech stack.",
+      content: [
+        `Project Name: ${projectName}`,
+        `Product Description: ${productDescription}`,
+        softwareBlueprint?.overview?.problemStatement
+          ? `Problem Solved: ${softwareBlueprint.overview.problemStatement}`
+          : null,
+        softwareBlueprint?.overview?.targetOutcome
+          ? `Target Success Outcome: ${softwareBlueprint.overview.targetOutcome}`
+          : null,
+        softwareBlueprint?.usersRoles?.[0]?.roleName
+          ? `Target Customer / Role: ${softwareBlueprint.usersRoles[0].roleName}`
+          : null,
+        `Tech Stack: ${contextPack?.repository?.detectedStack || "Next.js 15 (App Router, Server Components), TypeScript, Tailwind CSS, Supabase PostgreSQL with Row Level Security (RLS)"}`,
+        `Design Constraints: SVG Lucide icons exclusively (zero emojis), fully responsive (360px+ mobile).`,
+      ]
+        .filter(Boolean)
+        .join("\n"),
     },
     {
       key: "CURRENT_STATE",
@@ -202,13 +216,13 @@ function createDeterministicSections(
       key: "RELEVANT_CONTEXT",
       title: "5. RELEVANT CONTEXT & DEPENDENCIES",
       purpose: "Selected architectural context, schemas, and screens needed for this task.",
-      content: `Selected Context Items:\n${contextBullets}\n\nAffected Screens: ${task.affected_screens?.join(", ") || "None specified"}\nAffected Entities: ${task.affected_entities?.join(", ") || "None specified"}\nAffected APIs: ${task.affected_apis?.join(", ") || "None specified"}`,
+      content: `Selected Context Items:\n${contextBullets}\n\nAffected Screens: ${task.affected_screens && task.affected_screens.length > 0 ? task.affected_screens.join(", ") : (softwareBlueprint?.screens?.map((s) => s.routePath).join(", ") || "Standard App Router layout")}\nAffected Entities: ${task.affected_entities && task.affected_entities.length > 0 ? task.affected_entities.join(", ") : (softwareBlueprint?.dataEntities?.map((e) => e.entityName).join(", ") || "UserProfile")}\nAffected APIs: ${task.affected_apis && task.affected_apis.length > 0 ? task.affected_apis.join(", ") : "REST / Server Actions"}`,
     },
     {
       key: "REQUIREMENTS",
       title: "6. FUNCTIONAL & UX REQUIREMENTS",
       purpose: "Step-by-step functional scope, UI states, and responsive viewports.",
-      content: `1. Implement the core workflow for "${task.title}".\n2. Provide complete UI states: Empty state, Loading skeleton/spinner, Error message with retry, and Success feedback.\n3. Ensure fluid responsiveness on mobile viewports (360px minimum width), tablet, and desktop.\n4. Separate client interactive state from server-side database actions.`,
+      content: `1. Implement the core workflow for "${task.title}".\n2. Provide complete UI states: Empty state with actionable callout, Loading skeleton, Error boundary with retry, and Success feedback.\n3. Ensure fluid responsiveness on mobile viewports (360px minimum width), tablet, and desktop.\n4. Strict separation of concerns: Client components handle UI interactivity, while Server Actions / Route Handlers execute database mutations with owner validation.`,
     },
     {
       key: "CHANGE_BOUNDARIES",

@@ -158,32 +158,32 @@ export function BlueprintView({
     switch (source) {
       case "USER_CONFIRMED":
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-            <CheckCircle2 className="w-3 h-3" /> Confirmed by You
+          <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#B7FF6A] text-[#080808] shadow-[1px_1px_0px_#080808]">
+            <CheckCircle2 className="w-3 h-3 stroke-[2.5]" /> Discovery Answer
           </span>
         );
       case "USER_DESCRIBED":
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-            <Edit3 className="w-3 h-3" /> From Your Idea
+          <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#FFE500] text-[#080808] shadow-[1px_1px_0px_#080808]">
+            <Edit3 className="w-3 h-3 stroke-[2.5]" /> Project Setup
           </span>
         );
       case "SYSTEM_INFERRED":
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-            <Sparkles className="w-3 h-3" /> Architecture Inferred
+          <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-white text-[#080808] shadow-[1px_1px_0px_#080808]">
+            <Sparkles className="w-3 h-3 stroke-[2.5]" /> Synthesized
           </span>
         );
       case "SYSTEM_RECOMMENDED":
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-            <Sparkles className="w-3 h-3" /> Recommended
+          <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#F8F6EC] text-[#080808] shadow-[1px_1px_0px_#080808]">
+            <Sparkles className="w-3 h-3 stroke-[2.5]" /> Recommended
           </span>
         );
       case "ASSUMED":
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-            <HelpCircle className="w-3 h-3" /> Provisional Assumption
+          <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#FF4F9A] text-white shadow-[1px_1px_0px_#080808]">
+            <HelpCircle className="w-3 h-3 stroke-[2.5]" /> Provisional
           </span>
         );
       default:
@@ -200,18 +200,18 @@ export function BlueprintView({
             key={st}
             onClick={() => handleStatusChange(section, itemId, st)}
             disabled={isUpdating}
-            className={`text-xs px-2.5 py-1 rounded-md transition-all font-medium border ${
+            className={`text-[10px] px-2.5 py-1 font-black uppercase transition-all border-2 border-[#080808] ${
               isActive
                 ? st === "CONFIRMED"
-                  ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                  ? "bg-[#B7FF6A] text-[#080808] shadow-[2px_2px_0px_#080808]"
                   : st === "NEEDS_DECISION"
-                  ? "bg-amber-500 text-white border-amber-500 shadow-sm"
-                  : "bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent shadow-sm"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300"
+                  ? "bg-[#FF4F9A] text-white shadow-[2px_2px_0px_#080808]"
+                  : "bg-[#080808] text-white shadow-[2px_2px_0px_#080808]"
+                : "bg-white text-[#080808]/70 hover:bg-[#F8F6EC] hover:text-[#080808]"
             }`}
           >
-            {st === "CONFIRMED" && <Check className="w-3 h-3 inline mr-1" />}
-            {st === "CONFIRMED" ? "Confirmed" : st === "PROPOSED" ? "Proposed" : "Needs Decision"}
+            {st === "CONFIRMED" && <Check className="w-3 h-3 inline mr-1 stroke-[2.5]" />}
+            {st === "CONFIRMED" ? "Confirmed" : st === "PROPOSED" ? "Proposed" : "Needs Review"}
           </button>
         );
       })}
@@ -219,36 +219,36 @@ export function BlueprintView({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-mono text-[#080808]">
       {/* Header Banner & Progressive Disclosure Toggle */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+      <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[6px_6px_0px_#080808]">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                Phase 2 Architecture
+              <span className="border-2 border-[#080808] bg-[#FFE500] px-2.5 py-0.5 text-[11px] font-black uppercase text-[#080808] shadow-[1.5px_1.5px_0px_#080808]">
+                STAGE 02 · BLUEPRINT ARCHITECTURE
               </span>
-              <span className="text-xs text-slate-500">
+              <span className="text-[11px] font-bold text-[#080808]/60">
                 Updated {new Date(blueprint.updated_at).toLocaleTimeString()}
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl font-black uppercase tracking-tight text-[#080808]">
               Software Blueprint: {blueprint.overview?.name || projectName}
             </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl">
-              A comprehensive blueprint mapping every role, journey, screen, and data entity your software requires.
+            <p className="text-xs font-medium text-[#080808]/75 mt-1 max-w-2xl">
+              A comprehensive blueprint mapping real user roles, core journeys, screens, and database schemas.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             {/* View Mode Toggle */}
-            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center border-2 border-[#080808] bg-[#F8F6EC] p-1 shadow-[2px_2px_0px_#080808]">
               <button
                 onClick={() => setViewMode("simple")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all ${
                   viewMode === "simple"
-                    ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                    ? "bg-[#FFE500] text-[#080808] border border-[#080808] shadow-[1px_1px_0px_#080808]"
+                    : "text-[#080808]/70 hover:text-[#080808]"
                 }`}
               >
                 <Eye className="w-3.5 h-3.5" />
@@ -256,21 +256,21 @@ export function BlueprintView({
               </button>
               <button
                 onClick={() => setViewMode("technical")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all ${
                   viewMode === "technical"
-                    ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                    ? "bg-[#FFE500] text-[#080808] border border-[#080808] shadow-[1px_1px_0px_#080808]"
+                    : "text-[#080808]/70 hover:text-[#080808]"
                 }`}
               >
                 <Code2 className="w-3.5 h-3.5" />
-                Technical Details
+                Technical
               </button>
             </div>
 
             <button
               onClick={handleRegenerate}
               disabled={isRegenerating}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              className="flex items-center gap-1.5 border-2 border-[#080808] bg-white px-3.5 py-2 text-xs font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:bg-[#FFE500] transition-all"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRegenerating ? "animate-spin" : ""}`} />
               Re-Synthesize
@@ -279,7 +279,7 @@ export function BlueprintView({
             {onContinueToBuildMap && (
               <button
                 onClick={onContinueToBuildMap}
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition"
+                className="flex items-center gap-1.5 border-2 border-[#080808] bg-[#B7FF6A] px-4 py-2 text-xs font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
               >
                 View Build Map
                 <ChevronRight className="w-4 h-4" />
@@ -289,34 +289,20 @@ export function BlueprintView({
         </div>
 
         {/* Blueprint Health Alert / Status Bar */}
-        <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <div className="mt-5 pt-4 border-t-2 border-[#080808] flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-xs font-semibold text-slate-900 dark:text-white">
-                Blueprint Health: {health.score}%
-              </span>
+            <div className="flex items-center gap-1.5 border border-[#080808] bg-[#B7FF6A] px-2 py-0.5 text-xs font-black uppercase">
+              <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Blueprint Health: {health.score}%</span>
             </div>
-            <div className="w-28 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className={`h-full transition-all ${
-                  health.score >= 80
-                    ? "bg-emerald-500"
-                    : health.score >= 60
-                    ? "bg-amber-500"
-                    : "bg-rose-500"
-                }`}
-                style={{ width: `${health.score}%` }}
-              />
-            </div>
-            <span className="text-xs text-slate-500 hidden sm:inline">
+            <span className="text-xs font-bold text-[#080808]/70">
               {health.isReadyForBuild ? "Ready for Build Planning" : "Needs Review"}
             </span>
           </div>
 
           {health.issues.length > 0 && (
-            <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
-              <AlertTriangle className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2 text-xs font-bold text-[#080808]">
+              <AlertTriangle className="w-3.5 h-3.5 text-[#FF4F9A]" />
               <span>{health.issues.length} architecture notes to address</span>
             </div>
           )}
@@ -326,8 +312,8 @@ export function BlueprintView({
       {/* Main Grid: Section Navigation Sidebar + Active Section Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Navigation Sidebar */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2 space-y-1 shadow-sm">
-          <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <div className="lg:col-span-3 border-[3px] border-[#080808] bg-white p-3 space-y-1.5 shadow-[5px_5px_0px_#080808]">
+          <div className="px-2 py-1 text-[11px] font-black uppercase tracking-wider text-[#080808]/60">
             Blueprint Sections
           </div>
           {sectionTabs.map((tab) => {
@@ -336,26 +322,18 @@ export function BlueprintView({
               <button
                 key={tab.id}
                 onClick={() => setActiveSection(tab.id)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
+                className={`w-full flex items-center justify-between border-2 border-[#080808] px-3 py-2 text-xs font-black uppercase transition-all ${
                   isActive
-                    ? "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-semibold shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900"
+                    ? "bg-[#FFE500] text-[#080808] shadow-[2.5px_2.5px_0px_#080808] -translate-y-0.5"
+                    : "bg-[#F8F6EC] text-[#080808] hover:bg-white"
                 }`}
               >
-                <div className="flex items-center gap-2.5">
-                  <span className={isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}>
-                    {tab.icon}
-                  </span>
+                <div className="flex items-center gap-2">
+                  <span>{tab.icon}</span>
                   <span>{tab.label}</span>
                 </div>
                 {tab.count !== undefined && (
-                  <span
-                    className={`text-[11px] px-1.5 py-0.5 rounded-md ${
-                      isActive
-                        ? "bg-blue-200/60 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-500"
-                    }`}
-                  >
+                  <span className="border border-[#080808] bg-white px-1.5 py-0.2 text-[10px] font-black">
                     {tab.count}
                   </span>
                 )}
