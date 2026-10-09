@@ -64,16 +64,16 @@ export function AuditUrlForm({
   return (
     <div className={`w-full ${className}`}>
       {errorMessage && (
-        <div className="mb-3 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
-          <AlertCircle className="h-4 w-4 text-rose-600 flex-shrink-0 mt-0.5" />
+        <div className="mb-3 flex items-start gap-2.5 border-2 border-[#080808] bg-red-100 p-3 font-mono text-xs font-bold text-red-950 shadow-[2px_2px_0px_#080808]">
+          <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5 stroke-[2.5]" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-            <Globe className="h-4 w-4" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[#080808]">
+            <Globe className="h-4 w-4 stroke-[2.5]" />
           </div>
           <input
             type="text"
@@ -82,19 +82,19 @@ export function AuditUrlForm({
             onChange={(e) => setUrl(e.target.value)}
             placeholder="example.com or https://example.com"
             disabled={loading}
-            className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-100 dark:focus:ring-slate-100"
+            className="w-full border-2 border-[#080808] bg-[#F8F6EC] py-2.5 pl-10 pr-4 font-mono text-xs font-bold text-[#080808] placeholder:text-[#080808]/40 shadow-[2px_2px_0px_#080808] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
           />
         </div>
 
         <Button type="submit" disabled={loading} className="gap-2 px-6">
           {loading ? (
             <>
-              <Spinner size="sm" className="text-white dark:text-slate-900" />
+              <Spinner size="sm" className="text-[#080808]" />
               <span>Analyzing...</span>
             </>
           ) : (
             <>
-              <Search className="h-4 w-4" />
+              <Search className="h-4 w-4 stroke-[2.5]" />
               <span>{buttonLabel}</span>
             </>
           )}

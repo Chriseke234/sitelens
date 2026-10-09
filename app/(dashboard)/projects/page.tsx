@@ -8,7 +8,6 @@ import {
   SearchCheck,
   ArrowRight,
   Terminal,
-  Sparkles,
   Calendar,
 } from "lucide-react";
 import { Project } from "@/types";
@@ -35,18 +34,17 @@ export default async function ProjectsPage() {
   }
 
   return (
-    <div className="space-y-8 py-4">
+    <div className="space-y-8 py-2">
       {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-6 dark:border-slate-800">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b-[3px] border-[#080808] pb-6">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
-            <Sparkles className="h-3.5 w-3.5" />
-            AI Product Engineering Hub
+          <div className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#FFE500] px-3 py-0.5 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+            AI PRODUCT ENGINEERING HUB
           </div>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+          <h1 className="mt-3 font-mono text-3xl font-black uppercase tracking-tight text-[#080808] sm:text-4xl">
             AI Workspaces
           </h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-1 font-mono text-xs font-bold text-[#080808]/70">
             Collaborate with your multidisciplinary AI product engineering team to plan, build, and audit your products.
           </p>
         </div>
@@ -54,9 +52,9 @@ export default async function ProjectsPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/projects/new"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-700 active:scale-95 btn-interactive"
+            className="inline-flex items-center justify-center gap-2 border-2 border-[#080808] bg-[#FFE500] px-5 py-2.5 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[4px_4px_0px_#080808] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#080808] active:translate-x-1 active:translate-y-1 active:shadow-none"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4 stroke-[3]" />
             <span>New Workspace</span>
           </Link>
         </div>
@@ -64,22 +62,22 @@ export default async function ProjectsPage() {
 
       {/* Projects List or Empty State */}
       {projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/50">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
-            <FolderKanban className="h-8 w-8" />
+        <div className="flex flex-col items-center justify-center border-2 border-dashed border-[#080808] bg-[#F8F6EC]/80 p-12 text-center shadow-[6px_6px_0px_#080808]">
+          <div className="flex h-16 w-16 items-center justify-center border-2 border-[#080808] bg-[#FFE500] text-[#080808] shadow-[3px_3px_0px_#080808]">
+            <FolderKanban className="h-8 w-8 stroke-[2.5]" />
           </div>
-          <h2 className="mt-4 text-xl font-bold text-slate-900 dark:text-white">
+          <h2 className="mt-4 font-mono text-xl font-black uppercase text-[#080808]">
             No AI Workspaces Yet
           </h2>
-          <p className="mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-2 max-w-md font-mono text-xs font-bold leading-relaxed text-[#080808]/70">
             Start a new workspace to move your idea from discovery, user journeys, and technical architecture to structured build prompts and audits.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
             <Link
               href="/projects/new"
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-blue-700 btn-interactive"
+              className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#FFE500] px-6 py-3 font-mono text-xs font-black uppercase text-[#080808] shadow-[4px_4px_0px_#080808] hover:translate-x-0.5 hover:translate-y-0.5"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 stroke-[3]" />
               <span>Start New Workspace</span>
             </Link>
           </div>
@@ -91,61 +89,61 @@ export default async function ProjectsPage() {
             return (
               <div
                 key={project.id}
-                className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/50 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
+                className="group flex flex-col justify-between border-[3px] border-[#080808] bg-white p-6 shadow-[6px_6px_0px_#080808] transition-all hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[8px_8px_0px_#080808]"
               >
                 <div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between pb-3 border-b-2 border-[#080808]">
                     <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                      className={`inline-flex items-center gap-1.5 border border-[#080808] px-2 py-0.5 font-mono text-[10px] font-black uppercase shadow-[1px_1px_0px_#080808] ${
                         isBuildMode
-                          ? "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
-                          : "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+                          ? "bg-[#FFE500] text-[#080808]"
+                          : "bg-[#B7FF6A] text-[#080808]"
                       }`}
                     >
                       {isBuildMode ? (
-                        <Rocket className="h-3 w-3" />
+                        <Rocket className="h-3 w-3 stroke-[2.5]" />
                       ) : (
-                        <SearchCheck className="h-3 w-3" />
+                        <SearchCheck className="h-3 w-3 stroke-[2.5]" />
                       )}
                       {isBuildMode ? "MODE A — BUILD" : "MODE B — AUDIT"}
                     </span>
 
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500">
-                      <Terminal className="h-3 w-3" />
+                    <span className="inline-flex items-center gap-1 border border-[#080808] bg-[#F8F6EC] px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-[#080808]">
+                      <Terminal className="h-3 w-3 stroke-[2.5]" />
                       {project.coding_environment}
                     </span>
                   </div>
 
-                  <h3 className="mt-4 text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <h3 className="mt-4 font-mono text-xl font-black uppercase text-[#080808] group-hover:text-[#FF4F9A] transition-colors">
                     {project.name}
                   </h3>
 
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+                  <p className="mt-2 font-mono text-xs font-medium text-[#080808]/80 line-clamp-2">
                     {project.description}
                   </p>
                 </div>
 
-                <div className="mt-6 border-t border-slate-100 pt-4 dark:border-slate-800/80">
-                  <div className="flex items-center justify-between text-xs text-slate-500">
+                <div className="mt-6 border-t-2 border-[#080808] pt-4">
+                  <div className="flex items-center justify-between font-mono text-[11px] font-bold text-[#080808]/70">
                     <span className="flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5" />
+                      <Calendar className="h-3.5 w-3.5 stroke-[2]" />
                       {new Date(project.created_at).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
                       })}
                     </span>
-                    <span className="capitalize font-semibold text-slate-700 dark:text-slate-300">
+                    <span className="capitalize font-black text-[#080808]">
                       {project.stage.replace("_", " ")}
                     </span>
                   </div>
 
                   <Link
                     href={`/projects/${project.id}/overview`}
-                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 py-2.5 text-xs font-bold text-slate-900 transition-all group-hover:bg-blue-600 group-hover:text-white dark:bg-slate-800 dark:text-slate-100"
+                    className="mt-4 flex w-full items-center justify-center gap-2 border-2 border-[#080808] bg-[#FFE500] py-2.5 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[3px_3px_0px_#080808] transition-all group-hover:bg-[#080808] group-hover:text-white group-hover:shadow-[2px_2px_0px_#FFE500]"
                   >
-                    Open Workspace
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <span>Open Workspace</span>
+                    <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
                   </Link>
                 </div>
               </div>

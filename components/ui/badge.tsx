@@ -11,21 +11,15 @@ export function Badge({
   ...props
 }: BadgeProps) {
   const baseStyles =
-    "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2";
+    "inline-flex items-center font-mono font-black uppercase text-[10px] tracking-wider border-2 border-[#080808] px-2 py-0.5 shadow-[1.5px_1.5px_0px_#080808]";
 
   const variants = {
-    default:
-      "border-transparent bg-slate-900 text-slate-50 dark:bg-slate-50 dark:text-slate-900",
-    secondary:
-      "border-transparent bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50",
-    outline:
-      "text-slate-950 border-slate-200 dark:border-slate-800 dark:text-slate-50",
-    destructive:
-      "border-transparent bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
-    success:
-      "border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
-    warning:
-      "border-transparent bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
+    default: "bg-[#080808] text-white",
+    secondary: "bg-[#FFE500] text-[#080808]",
+    outline: "bg-white text-[#080808]",
+    destructive: "bg-red-200 text-red-950",
+    success: "bg-[#B7FF6A] text-[#080808]",
+    warning: "bg-[#FFE500] text-[#080808]",
   };
 
   return (

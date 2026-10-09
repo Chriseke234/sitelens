@@ -38,7 +38,7 @@ export function ProjectWorkspaceNav({ projectId }: ProjectWorkspaceNavProps) {
   ];
 
   return (
-    <nav className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none" aria-label="Workspace Stages">
+    <nav className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none font-mono" aria-label="Workspace Stages">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = pathname === item.href || (item.href !== `/projects/${projectId}/overview` && pathname?.startsWith(item.href));
@@ -47,13 +47,13 @@ export function ProjectWorkspaceNav({ projectId }: ProjectWorkspaceNavProps) {
           <Link
             key={item.name}
             href={item.href}
-            className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all whitespace-nowrap btn-interactive ${
+            className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-black uppercase transition-all whitespace-nowrap ${
               isActive
-                ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30 dark:bg-indigo-600 dark:text-white"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                ? "border-2 border-[#080808] bg-[#FFE500] text-[#080808] shadow-[2.5px_2.5px_0px_#080808] -translate-y-0.5"
+                : "border-2 border-transparent text-[#080808]/80 hover:border-[#080808] hover:bg-white hover:text-[#080808] hover:shadow-[2px_2px_0px_#080808]"
             }`}
           >
-            <Icon className="h-3.5 w-3.5 shrink-0" />
+            <Icon className="h-3.5 w-3.5 shrink-0 stroke-[2.5]" />
             <span>{item.name}</span>
           </Link>
         );

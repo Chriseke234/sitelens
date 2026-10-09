@@ -69,38 +69,23 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
     if (!formData.name.trim()) {
-      setError("Please enter a project name.");
+      setError("Please provide a name for your project workspace.");
       return;
     }
-    if (!formData.description.trim()) {
-      setError("Please provide a brief project summary.");
-      return;
-    }
-    if (!formData.target_audience.trim()) {
-      setError("Please define your target audience.");
-      return;
-    }
-    if (!formData.problem_statement.trim()) {
-      setError("Please describe the problem being solved.");
-      return;
-    }
-
+    setError(null);
     setStep(2);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
     if (!formData.raw_idea.trim()) {
       setError("Please describe what you want to build.");
       return;
     }
 
     setLoading(true);
+    setError(null);
 
     try {
       const res = await fetch("/api/projects", {
@@ -108,12 +93,12 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          goal: formData.goal || formData.description,
+          goal: formData.goal || `Build and ship verified ${formData.product_type} product.`,
+          description: formData.description || formData.raw_idea.slice(0, 160),
         }),
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.error || "Failed to create project workspace.");
       }
@@ -132,44 +117,40 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
   };
 
   return (
-    <div className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 md:p-8">
+    <div className="mx-auto max-w-4xl border-[3px] border-[#080808] bg-white p-6 shadow-[8px_8px_0px_#080808] md:p-8">
       {/* Header & Step Indicator */}
-      <div className="border-b border-slate-200 pb-6 dark:border-slate-800">
+      <div className="border-b-[3px] border-[#080808] pb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 self-start">
-            <Sparkles className="h-3.5 w-3.5 text-cyan-500" />
-            Aigenstra Product Workspace
+          <div className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#FFE500] px-3 py-1 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+            <Sparkles className="h-3.5 w-3.5 stroke-[2.5]" />
+            AIGENSTRA WORKSPACE WIZARD
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+          <div className="flex items-center gap-2 font-mono text-xs font-black uppercase text-[#080808]">
             <span
-              className={`flex h-6 w-6 items-center justify-center rounded-full ${
-                step === 1
-                  ? "bg-indigo-600 text-white"
-                  : "bg-emerald-500 text-white"
+              className={`flex h-6 w-6 items-center justify-center border-2 border-[#080808] ${
+                step === 1 ? "bg-[#FFE500] shadow-[1.5px_1.5px_0px_#080808]" : "bg-[#B7FF6A]"
               }`}
             >
               1
             </span>
             <span>Basics</span>
-            <span className="text-slate-300 dark:text-slate-700">──</span>
+            <span>──</span>
             <span
-              className={`flex h-6 w-6 items-center justify-center rounded-full ${
-                step === 2
-                  ? "bg-indigo-600 text-white"
-                  : "bg-slate-100 text-slate-500 dark:bg-slate-800"
+              className={`flex h-6 w-6 items-center justify-center border-2 border-[#080808] ${
+                step === 2 ? "bg-[#FFE500] shadow-[1.5px_1.5px_0px_#080808]" : "bg-white"
               }`}
             >
               2
             </span>
-            <span>Product Idea</span>
+            <span>Idea</span>
           </div>
         </div>
 
-        <h1 className="mt-4 text-2xl font-black tracking-tight text-slate-900 dark:text-white md:text-3xl">
+        <h1 className="mt-4 font-mono text-2xl font-black uppercase tracking-tight text-[#080808] md:text-3xl">
           {step === 1 ? "Step 1 — Project Basics" : "Step 2 — What are you building?"}
         </h1>
-        <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+        <p className="mt-1 font-mono text-xs font-bold text-[#080808]/70">
           {step === 1
             ? "Define your project parameters, product type, target audience, and environment."
             : "Describe your idea in your own words. Rough or unstructured thoughts are completely welcome."}
@@ -177,8 +158,8 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
       </div>
 
       {error && (
-        <div className="mt-6 flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
-          <ShieldAlert className="h-5 w-5 shrink-0 text-rose-600 dark:text-rose-400" />
+        <div className="mt-6 flex items-center gap-3 border-2 border-[#080808] bg-red-100 p-4 font-mono text-xs font-bold text-red-950 shadow-[3px_3px_0px_#080808]">
+          <ShieldAlert className="h-5 w-5 shrink-0 text-red-600 stroke-[2.5]" />
           <p>{error}</p>
         </div>
       )}
@@ -188,30 +169,30 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
         <form onSubmit={handleNext} className="mt-6 space-y-6">
           {/* Mode Selector */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            <label className="block font-mono text-xs font-black uppercase tracking-wider text-[#080808]">
               Workspace Mode
             </label>
             <div className="mt-2.5 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, mode: "build" })}
-                className={`flex items-start gap-3.5 rounded-xl border p-4 text-left transition-all ${
+                className={`flex items-start gap-3.5 border-2 p-4 text-left transition-all ${
                   formData.mode === "build"
-                    ? "border-indigo-600 bg-indigo-50/50 dark:border-indigo-500 dark:bg-indigo-950/30"
-                    : "border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700"
+                    ? "border-[#080808] bg-[#FFE500] shadow-[4px_4px_0px_#080808] translate-y-[-1px]"
+                    : "border-[#080808] bg-white hover:bg-[#F8F6EC]"
                 }`}
               >
-                <div className="rounded-lg bg-indigo-600 p-2 text-white shrink-0">
-                  <Rocket className="h-4 w-4" />
+                <div className="border-2 border-[#080808] bg-white p-2 text-[#080808] shrink-0">
+                  <Rocket className="h-4 w-4 stroke-[2.5]" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white text-sm">
+                  <div className="flex items-center gap-1.5 font-mono text-sm font-black uppercase text-[#080808]">
                     MODE A — PROMPT BUILDER
                     {formData.mode === "build" && (
-                      <CheckCircle2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                      <CheckCircle2 className="h-4 w-4 stroke-[3]" />
                     )}
                   </div>
-                  <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
+                  <p className="mt-1 font-mono text-xs font-bold text-[#080808]/80 leading-snug">
                     Idea → Discovery → Blueprint → Build Map → Context → Coding Prompts.
                   </p>
                 </div>
@@ -220,136 +201,91 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, mode: "audit" })}
-                className={`flex items-start gap-3.5 rounded-xl border p-4 text-left transition-all ${
+                className={`flex items-start gap-3.5 border-2 p-4 text-left transition-all ${
                   formData.mode === "audit"
-                    ? "border-indigo-600 bg-indigo-50/50 dark:border-indigo-500 dark:bg-indigo-950/30"
-                    : "border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700"
+                    ? "border-[#080808] bg-[#B7FF6A] shadow-[4px_4px_0px_#080808] translate-y-[-1px]"
+                    : "border-[#080808] bg-white hover:bg-[#F8F6EC]"
                 }`}
               >
-                <div className="rounded-lg bg-slate-800 p-2 text-white shrink-0">
-                  <SearchCheck className="h-4 w-4" />
+                <div className="border-2 border-[#080808] bg-white p-2 text-[#080808] shrink-0">
+                  <SearchCheck className="h-4 w-4 stroke-[2.5]" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white text-sm">
-                    MODE B — AUDIT & FIX
+                  <div className="flex items-center gap-1.5 font-mono text-sm font-black uppercase text-[#080808]">
+                    MODE B — PROJECT AUDIT
                     {formData.mode === "audit" && (
-                      <CheckCircle2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                      <CheckCircle2 className="h-4 w-4 stroke-[3]" />
                     )}
                   </div>
-                  <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
-                    Connect Built Code → Security & Architecture Audit → Findings → Fix Prompts.
+                  <p className="mt-1 font-mono text-xs font-bold text-[#080808]/80 leading-snug">
+                    Existing Repo / URL → Multi-Agent Audit → Fix Queue → Verification.
                   </p>
                 </div>
               </button>
             </div>
           </div>
 
-          {/* Project Name & Product Type */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div>
-              <label htmlFor="name" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-                Project Name <span className="text-rose-500">*</span>
-              </label>
-              <input
-                id="name"
-                type="text"
-                required
-                placeholder="e.g. OgaWash, Aigenstra, DevPortal"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="product_type" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-                Product Type <span className="text-rose-500">*</span>
-              </label>
-              <select
-                id="product_type"
-                value={formData.product_type}
-                onChange={(e) => setFormData({ ...formData, product_type: e.target.value as ProductType })}
-                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-              >
-                {productTypes.map((pt) => (
-                  <option key={pt} value={pt}>
-                    {pt}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Target Audience & Problem Being Solved */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div>
-              <label htmlFor="target_audience" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-                Target Audience <span className="text-rose-500">*</span>
-              </label>
-              <input
-                id="target_audience"
-                type="text"
-                required
-                placeholder="e.g. Busy urban professionals, indie developers, restaurants"
-                value={formData.target_audience}
-                onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })}
-                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="problem_statement" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-                Problem Being Solved <span className="text-rose-500">*</span>
-              </label>
-              <input
-                id="problem_statement"
-                type="text"
-                required
-                placeholder="e.g. Too much friction managing laundry pickups and order tracking"
-                value={formData.problem_statement}
-                onChange={(e) => setFormData({ ...formData, problem_statement: e.target.value })}
-                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-              />
-            </div>
-          </div>
-
-          {/* Project Summary */}
+          {/* Project Name */}
           <div>
-            <label htmlFor="description" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-              Brief Summary <span className="text-rose-500">*</span>
+            <label htmlFor="name" className="block font-mono text-xs font-black uppercase text-[#080808]">
+              Project Name <span className="text-red-600">*</span>
             </label>
             <input
-              id="description"
+              id="name"
               type="text"
               required
-              placeholder="e.g. A platform connecting busy workers with local laundry services."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              placeholder="e.g. TaskFlow SaaS, Sitelens, StripeBilling Engine"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="mt-2 w-full border-2 border-[#080808] bg-[#F8F6EC] p-3 font-mono text-xs font-bold text-[#080808] shadow-[2px_2px_0px_#080808] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
             />
           </div>
 
-          {/* Coding Environment */}
+          {/* Product Type Buttons */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-              Target Coding Agent
+            <label className="block font-mono text-xs font-black uppercase text-[#080808]">
+              Product Type
             </label>
-            <div className="mt-2.5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              {productTypes.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, product_type: type })}
+                  className={`border-2 px-3 py-1.5 font-mono text-xs font-black uppercase transition-all ${
+                    formData.product_type === type
+                      ? "border-[#080808] bg-[#FFE500] text-[#080808] shadow-[2px_2px_0px_#080808] -translate-y-0.5"
+                      : "border-[#080808] bg-white text-[#080808]/80 hover:bg-[#F8F6EC]"
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Environment Selector */}
+          <div>
+            <label className="block font-mono text-xs font-black uppercase text-[#080808]">
+              Primary AI Coding Environment
+            </label>
+            <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {environments.map((env) => {
                 const IconComp = env.icon;
+                const isSelected = formData.coding_environment === env.value;
                 return (
                   <button
                     key={env.value}
                     type="button"
                     onClick={() => setFormData({ ...formData, coding_environment: env.value })}
-                    className={`flex items-center gap-2.5 rounded-xl border p-3 text-left transition-all ${
-                      formData.coding_environment === env.value
-                        ? "border-indigo-600 bg-indigo-50/50 dark:border-indigo-500 dark:bg-indigo-950/40"
-                        : "border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700"
+                    className={`flex items-center gap-2 border-2 p-2.5 font-mono text-left transition-all ${
+                      isSelected
+                        ? "border-[#080808] bg-[#FFE500] shadow-[2px_2px_0px_#080808] -translate-y-0.5"
+                        : "border-[#080808] bg-white hover:bg-[#F8F6EC]"
                     }`}
                   >
-                    <IconComp className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">
+                    <IconComp className="h-4 w-4 shrink-0 stroke-[2.5]" />
+                    <span className="text-[11px] font-black uppercase text-[#080808]">
                       {env.label}
                     </span>
                   </button>
@@ -359,13 +295,13 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
           </div>
 
           {/* Step 1 Actions */}
-          <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex justify-end pt-4 border-t-2 border-[#080808]">
             <button
               type="submit"
-              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 font-bold text-white shadow-md shadow-indigo-500/25 transition-all hover:bg-indigo-700 active:scale-95 text-xs sm:text-sm btn-interactive"
+              className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#FFE500] px-6 py-3 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[4px_4px_0px_#080808] transition-all hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1"
             >
-              Continue to Product Idea
-              <ArrowRight className="h-4 w-4" />
+              <span>Continue to Product Idea</span>
+              <ArrowRight className="h-4 w-4 stroke-[3]" />
             </button>
           </div>
         </form>
@@ -375,11 +311,11 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
       {step === 2 && (
         <form onSubmit={handleSubmit} className="mt-6 space-y-6">
           <div>
-            <label htmlFor="raw_idea" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-              Describe What You Want to Build <span className="text-rose-500">*</span>
+            <label htmlFor="raw_idea" className="block font-mono text-xs font-black uppercase text-[#080808]">
+              Describe What You Want to Build <span className="text-red-600">*</span>
             </label>
-            <p className="mt-1 text-xs text-slate-500">
-              Write as much or as little as you want. Feel free to use rough notes, bullet points, or unstructured text.
+            <p className="mt-1 font-mono text-xs font-bold text-[#080808]/70">
+              Write as much or as little as you want. Rough notes, bullet points, or unstructured text are completely welcome.
             </p>
             <textarea
               id="raw_idea"
@@ -388,39 +324,39 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
               placeholder="e.g. I want to build a platform where customers can request laundry pickups from local vendors, track status in real-time, and make payments securely..."
               value={formData.raw_idea}
               onChange={(e) => setFormData({ ...formData, raw_idea: e.target.value })}
-              className="mt-3 w-full rounded-2xl border border-slate-300 bg-white p-4 font-mono text-xs leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              className="mt-3 w-full border-2 border-[#080808] bg-[#F8F6EC] p-4 font-mono text-xs font-bold leading-relaxed text-[#080808] shadow-[3px_3px_0px_#080808] placeholder:text-[#080808]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
             />
           </div>
 
-          <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 text-xs text-indigo-900 dark:border-indigo-950/50 dark:bg-indigo-950/30 dark:text-indigo-200">
-            <span className="font-bold">Aigenstra Guide:</span> We store your raw idea first. Aigenstra will guide you through prioritized discovery questions, formulate a complete Software Blueprint, and build precision prompts for your coding AI.
+          <div className="border-2 border-[#080808] bg-[#FFE500]/20 p-4 font-mono text-xs font-bold text-[#080808] shadow-[2px_2px_0px_#080808]">
+            <span className="font-black uppercase">Aigenstra Guide:</span> We store your raw idea first. Aigenstra will guide you through prioritized discovery questions, formulate a complete Software Blueprint, and build precision prompts for your coding AI.
           </div>
 
           {/* Step 2 Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between pt-4 border-t-2 border-[#080808]">
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              className="inline-flex items-center gap-1.5 border-2 border-[#080808] bg-white px-4 py-2 font-mono text-xs font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:bg-[#F8F6EC]"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Basics
+              <ArrowLeft className="h-4 w-4 stroke-[2.5]" />
+              <span>Back to Basics</span>
             </button>
 
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:bg-indigo-700 active:scale-95 text-xs sm:text-sm disabled:opacity-50 btn-interactive"
+              className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#FFE500] px-6 py-3 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[4px_4px_0px_#080808] transition-all hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1 disabled:opacity-50"
             >
               {loading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Creating Workspace...
+                  <Loader2 className="h-4 w-4 animate-spin stroke-[2.5]" />
+                  <span>Creating Workspace...</span>
                 </>
               ) : (
                 <>
-                  Create Project Workspace
-                  <ArrowRight className="h-4 w-4" />
+                  <span>Create Project Workspace</span>
+                  <ArrowRight className="h-4 w-4 stroke-[3]" />
                 </>
               )}
             </button>

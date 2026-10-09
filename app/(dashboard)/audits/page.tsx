@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { AuditUrlForm } from "@/components/audit/audit-url-form";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
-import { FileSearch, ArrowRight, Search, Filter } from "lucide-react";
+import { FileSearch, ArrowRight, Search } from "lucide-react";
 
 interface AuditsPageProps {
   searchParams: Promise<{ q?: string; status?: string }>;
@@ -38,21 +38,24 @@ export default async function AuditsPage({ searchParams }: AuditsPageProps) {
   const hasAudits = audits && audits.length > 0;
 
   return (
-    <div className="space-y-8">
-      <div className="border-b border-slate-200/80 pb-6 dark:border-slate-800">
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+    <div className="space-y-8 py-2">
+      <div className="border-b-[3px] border-[#080808] pb-6">
+        <div className="inline-block border-2 border-[#080808] bg-[#B7FF6A] px-2.5 py-0.5 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+          CODE &amp; LIVE SITE AUDIT
+        </div>
+        <h1 className="mt-3 font-mono text-2xl font-black uppercase tracking-tight text-[#080808] sm:text-3xl">
           Website Audits
         </h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-1 font-mono text-xs font-bold text-[#080808]/70">
           Analyze website technical SEO, performance, accessibility, UX, trust, and conversion metrics.
         </p>
       </div>
 
       {/* URL Submission Form Card */}
-      <Card className="border-slate-200/80 shadow-sm dark:border-slate-800">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-bold">Audit a New Website</CardTitle>
-          <CardDescription className="text-xs">
+          <CardTitle>Audit a New Website</CardTitle>
+          <CardDescription>
             Enter any public website URL to run a deterministic multi-layer audit
           </CardDescription>
         </CardHeader>
@@ -62,11 +65,11 @@ export default async function AuditsPage({ searchParams }: AuditsPageProps) {
       </Card>
 
       {/* Audit History & Filter Card */}
-      <Card className="border-slate-200/80 shadow-sm dark:border-slate-800">
-        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+      <Card>
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle className="text-lg font-bold">Audit History</CardTitle>
-            <CardDescription className="text-xs">
+            <CardTitle>Audit History</CardTitle>
+            <CardDescription>
               All website audits run for your account
             </CardDescription>
           </div>
@@ -74,20 +77,20 @@ export default async function AuditsPage({ searchParams }: AuditsPageProps) {
           {/* Search & Status Filters Form */}
           <form method="GET" className="flex flex-wrap items-center gap-2">
             <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-[#080808]" />
               <input
                 type="text"
                 name="q"
                 defaultValue={q}
                 placeholder="Search URL..."
-                className="rounded-lg border border-slate-200 bg-white pl-8 pr-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+                className="border-2 border-[#080808] bg-[#F8F6EC] pl-8 pr-3 py-1.5 font-mono text-xs font-bold text-[#080808] shadow-[2px_2px_0px_#080808] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#FFE500]"
               />
             </div>
 
             <select
               name="status"
               defaultValue={status}
-              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+              className="border-2 border-[#080808] bg-[#F8F6EC] px-2.5 py-1.5 font-mono text-xs font-bold text-[#080808] shadow-[2px_2px_0px_#080808] focus:bg-white focus:outline-none"
             >
               <option value="all">All Statuses</option>
               <option value="completed">Completed</option>
@@ -97,33 +100,33 @@ export default async function AuditsPage({ searchParams }: AuditsPageProps) {
 
             <button
               type="submit"
-              className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+              className="border-2 border-[#080808] bg-[#FFE500] px-3 py-1.5 font-mono text-xs font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:translate-x-0.5 hover:translate-y-0.5"
             >
               Filter
             </button>
           </form>
         </CardHeader>
 
-        <CardContent className="pt-6">
+        <CardContent>
           {hasAudits ? (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px] text-left text-xs">
+              <table className="w-full min-w-[600px] text-left font-mono text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 dark:border-slate-800">
-                    <th className="pb-3 font-semibold">Website URL</th>
-                    <th className="pb-3 font-semibold">Status</th>
-                    <th className="pb-3 font-semibold">Overall Score</th>
-                    <th className="pb-3 font-semibold">Date</th>
-                    <th className="pb-3 font-semibold text-right">Report</th>
+                  <tr className="border-b-2 border-[#080808] text-[#080808] bg-[#F8F6EC]">
+                    <th className="py-2.5 px-3 font-black uppercase">Website URL</th>
+                    <th className="py-2.5 px-3 font-black uppercase">Status</th>
+                    <th className="py-2.5 px-3 font-black uppercase">Overall Score</th>
+                    <th className="py-2.5 px-3 font-black uppercase">Date</th>
+                    <th className="py-2.5 px-3 font-black uppercase text-right">Report</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                <tbody className="divide-y divide-[#080808]/20">
                   {audits.map((audit) => (
-                    <tr key={audit.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                      <td className="py-3 font-mono font-medium text-slate-900 dark:text-slate-100 max-w-[200px] truncate sm:max-w-none">
+                    <tr key={audit.id} className="hover:bg-[#F8F6EC]/80 transition-colors">
+                      <td className="py-3 px-3 font-bold text-[#080808] max-w-[200px] truncate sm:max-w-none">
                         {audit.url}
                       </td>
-                      <td className="py-3">
+                      <td className="py-3 px-3">
                         <Badge
                           variant={
                             audit.status === "completed"
@@ -132,26 +135,25 @@ export default async function AuditsPage({ searchParams }: AuditsPageProps) {
                               ? "destructive"
                               : "secondary"
                           }
-                          className="capitalize text-[10px]"
                         >
                           {audit.status}
                         </Badge>
                       </td>
-                      <td className="py-3 font-bold text-slate-900 dark:text-slate-100">
+                      <td className="py-3 px-3 font-black text-[#080808]">
                         {audit.overall_score !== null && audit.overall_score !== undefined
                           ? `${audit.overall_score}/100`
                           : "N/A"}
                       </td>
-                      <td className="py-3 text-slate-400">
+                      <td className="py-3 px-3 text-[#080808]/70">
                         {new Date(audit.created_at).toLocaleDateString()}
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="py-3 px-3 text-right">
                         <Link
                           href={`/audits/${audit.id}`}
-                          className="inline-flex items-center gap-1 font-semibold text-slate-900 hover:underline dark:text-slate-100"
+                          className="inline-flex items-center gap-1 border-2 border-[#080808] bg-white px-2.5 py-1 text-[11px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:bg-[#FFE500]"
                         >
                           <span>View</span>
-                          <ArrowRight className="h-3 w-3" />
+                          <ArrowRight className="h-3 w-3 stroke-[2.5]" />
                         </Link>
                       </td>
                     </tr>
@@ -167,7 +169,7 @@ export default async function AuditsPage({ searchParams }: AuditsPageProps) {
                   ? "No website audits matched your filter query."
                   : "Give Aigenstra a website URL above to generate your first technical and UX audit report."
               }
-              icon={<FileSearch className="h-6 w-6" />}
+              icon={<FileSearch className="h-6 w-6 stroke-[2.5]" />}
             />
           )}
         </CardContent>

@@ -82,7 +82,6 @@ export default function SettingsPage() {
         return;
       }
 
-      // Also update auth user metadata for consistency
       await supabase.auth.updateUser({
         data: { full_name: fullName.trim() },
       });
@@ -90,7 +89,6 @@ export default function SettingsPage() {
       setSaveSuccess(true);
       setSaving(false);
 
-      // Auto hide success badge after 3 seconds
       setTimeout(() => {
         setSaveSuccess(false);
       }, 3000);
@@ -102,58 +100,61 @@ export default function SettingsPage() {
 
   if (fetching) {
     return (
-      <div className="flex h-64 flex-col items-center justify-center space-y-3">
-        <Spinner size="md" />
-        <p className="text-xs text-slate-500">Loading user settings...</p>
+      <div className="flex h-64 flex-col items-center justify-center space-y-3 font-mono">
+        <Spinner size="md" className="text-[#080808]" />
+        <p className="text-xs font-bold text-[#080808]/70">Loading user settings...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="border-b border-slate-200/80 pb-6 dark:border-slate-800">
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+    <div className="space-y-6 py-2">
+      <div className="border-b-[3px] border-[#080808] pb-6">
+        <div className="inline-block border-2 border-[#080808] bg-[#FFE500] px-2.5 py-0.5 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+          PREFERENCES
+        </div>
+        <h1 className="mt-3 font-mono text-2xl font-black uppercase tracking-tight text-[#080808] sm:text-3xl">
           Account Settings
         </h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-1 font-mono text-xs font-bold text-[#080808]/70">
           Manage your personal profile information and account preferences.
         </p>
       </div>
 
-      <Card className="max-w-2xl border-slate-200/80 shadow-sm dark:border-slate-800">
+      <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle className="text-lg font-bold">Profile Details</CardTitle>
-          <CardDescription className="text-xs">
+          <CardTitle>Profile Details</CardTitle>
+          <CardDescription>
             Your name is displayed across your audit reports and account workspace
           </CardDescription>
         </CardHeader>
 
         <CardContent>
           {errorMessage && (
-            <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
-              <AlertCircle className="h-4 w-4 text-rose-600 flex-shrink-0 mt-0.5" />
+            <div className="mb-4 flex items-start gap-2.5 border-2 border-[#080808] bg-red-100 p-3 font-mono text-xs font-bold text-red-950 shadow-[2px_2px_0px_#080808]">
+              <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5 stroke-[2.5]" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {saveSuccess && (
-            <div className="mb-4 flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 flex-shrink-0" />
-              <span className="font-semibold">Saved! Your profile has been updated successfully.</span>
+            <div className="mb-4 flex items-center gap-2.5 border-2 border-[#080808] bg-[#B7FF6A] p-3 font-mono text-xs font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+              <CheckCircle2 className="h-4 w-4 stroke-[3]" />
+              <span>Saved! Your profile has been updated successfully.</span>
             </div>
           )}
 
-          <form onSubmit={handleSaveProfile} className="space-y-5">
-            {/* Avatar Placeholder */}
+          <form onSubmit={handleSaveProfile} className="space-y-5 font-mono">
+            {/* Avatar */}
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-xl font-bold text-white dark:bg-slate-100 dark:text-slate-900">
+              <div className="flex h-14 w-14 items-center justify-center border-2 border-[#080808] bg-[#FFE500] text-xl font-black text-[#080808] shadow-[3px_3px_0px_#080808]">
                 {fullName ? fullName.charAt(0).toUpperCase() : email.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <p className="text-sm font-black uppercase text-[#080808]">
                   {fullName || "User Account"}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-[11px] font-bold text-[#080808]/60">
                   Avatar upload will be available in organizational settings
                 </p>
               </div>
@@ -161,33 +162,33 @@ export default function SettingsPage() {
 
             {/* Email field (Read-only) */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <label className="text-xs font-black uppercase text-[#080808]">
                 Email Address (Primary Account)
               </label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                  <Mail className="h-4 w-4" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#080808]/60">
+                  <Mail className="h-4 w-4 stroke-[2.5]" />
                 </div>
                 <input
                   type="email"
                   disabled
                   value={email}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-100 py-2 pl-9 pr-3 text-sm text-slate-500 cursor-not-allowed dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
+                  className="w-full border-2 border-[#080808] bg-[#F8F6EC]/50 py-2.5 pl-10 pr-3 text-xs font-bold text-[#080808]/60 cursor-not-allowed shadow-[2px_2px_0px_#080808]"
                 />
               </div>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[10px] font-bold text-[#080808]/60">
                 Email address modifications are locked for security verification.
               </p>
             </div>
 
             {/* Full Name field (Editable) */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <label className="text-xs font-black uppercase text-[#080808]">
                 Full Name
               </label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                  <User className="h-4 w-4" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#080808]">
+                  <User className="h-4 w-4 stroke-[2.5]" />
                 </div>
                 <input
                   type="text"
@@ -195,21 +196,21 @@ export default function SettingsPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your full name"
-                  className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-100 dark:focus:ring-slate-100"
+                  className="w-full border-2 border-[#080808] bg-[#F8F6EC] py-2.5 pl-10 pr-3 text-xs font-bold text-[#080808] placeholder:text-[#080808]/40 shadow-[2px_2px_0px_#080808] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
                 />
               </div>
             </div>
 
-            <CardFooter className="px-0 pt-2 pb-0 flex justify-end">
+            <CardFooter className="px-0 pt-4 pb-0 flex justify-end border-t-0 bg-transparent">
               <Button type="submit" disabled={saving} className="gap-2">
                 {saving ? (
                   <>
-                    <Spinner size="sm" className="text-white dark:text-slate-900" />
+                    <Spinner size="sm" className="text-[#080808]" />
                     <span>Saving...</span>
                   </>
                 ) : (
                   <>
-                    <Save className="h-4 w-4" />
+                    <Save className="h-4 w-4 stroke-[2.5]" />
                     <span>Save Changes</span>
                   </>
                 )}

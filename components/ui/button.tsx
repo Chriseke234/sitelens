@@ -13,20 +13,25 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
+      "inline-flex items-center justify-center font-mono font-black uppercase tracking-wider border-2 border-[#080808] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFE500] disabled:pointer-events-none disabled:opacity-50";
 
     const variants = {
-      primary: "bg-slate-900 text-slate-50 hover:bg-slate-800 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-200",
-      secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-700",
-      outline: "border border-slate-200 bg-white hover:bg-slate-100 text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-800 dark:text-slate-50",
-      ghost: "hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-50",
-      destructive: "bg-rose-600 text-white hover:bg-rose-700 dark:bg-rose-900 dark:text-rose-50 dark:hover:bg-rose-800",
+      primary:
+        "bg-[#FFE500] text-[#080808] shadow-[3px_3px_0px_#080808] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1.5px_1.5px_0px_#080808] active:translate-x-1 active:translate-y-1 active:shadow-none",
+      secondary:
+        "bg-white text-[#080808] shadow-[3px_3px_0px_#080808] hover:bg-[#F8F6EC] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1",
+      outline:
+        "bg-white text-[#080808] shadow-[2px_2px_0px_#080808] hover:bg-[#FFE500] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1",
+      ghost:
+        "border-transparent bg-transparent text-[#080808] shadow-none hover:border-[#080808] hover:bg-white hover:shadow-[2px_2px_0px_#080808]",
+      destructive:
+        "bg-red-500 text-white shadow-[3px_3px_0px_#080808] hover:bg-red-600 hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1",
     };
 
     const sizes = {
-      sm: "h-8 px-3 text-xs",
-      md: "h-10 px-4 text-sm",
-      lg: "h-12 px-6 text-base",
+      sm: "h-8 px-3 text-[11px]",
+      md: "h-10 px-4 text-xs",
+      lg: "h-12 px-6 text-sm",
       icon: "h-10 w-10 p-2",
     };
 
