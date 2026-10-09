@@ -23,9 +23,8 @@ export function NeoAudit() {
               THE FINISH LINE.
             </span>
           </h2>
-          <p className="mt-6 text-base font-medium text-[#080808]/80 sm:text-lg max-w-2xl mx-auto">
-            Aigenstra checks what you&apos;ve built before you ship it. When issues are discovered,
-            it instantly formulates the exact fix prompt for your AI coding agent.
+          <p className="mt-4 text-sm font-bold text-[#080808]/80 font-mono max-w-xl mx-auto">
+            Verify what your agent built. Generate instant targeted fix prompts before shipping.
           </p>
         </div>
 

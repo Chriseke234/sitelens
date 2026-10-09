@@ -56,9 +56,8 @@ Clean Supabase migration SQL file with idempotency checks (IF NOT EXISTS) and ro
             </span> <br />
             IT NEEDS A BETTER ONE.
           </h2>
-          <p className="mt-6 text-base font-medium text-[#080808]/80 sm:text-lg max-w-2xl mx-auto">
-            Vibe coders often dump huge fuzzy walls of text into their coding agents. Aigenstra breaks
-            features down into atomic, context-locked blueprints with explicit guardrails.
+          <p className="mt-4 text-sm font-bold text-[#080808]/80 font-mono max-w-xl mx-auto">
+            Clear constraints, explicit change boundaries, and precision context blocks that stop AI regressions.
           </p>
         </div>
 

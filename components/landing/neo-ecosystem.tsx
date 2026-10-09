@@ -50,11 +50,8 @@ export function NeoEcosystem() {
               YOUR WORKFLOW.
             </span>
           </h2>
-          <p className="mt-4 font-mono text-xs font-black uppercase tracking-wider text-[#080808]">
-            Designed for AI-assisted development workflows.
-          </p>
-          <p className="mt-4 text-base font-medium text-[#080808]/80 sm:text-lg max-w-2xl mx-auto">
-            Take structured blueprints and copy surgical prompts straight into whatever tool or agent you use to write code.
+          <p className="mt-4 text-sm font-bold text-[#080808]/80 font-mono max-w-xl mx-auto">
+            Copy surgical prompts directly into whichever agent, terminal CLI, or IDE you build with.
           </p>
         </div>
 

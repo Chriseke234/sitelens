@@ -46,8 +46,8 @@ export function NeoFooter() {
               </h3>
               <ul className="mt-4 space-y-2.5 font-mono text-xs font-bold">
                 <li>
-                  <Link href="#capabilities" className="hover:underline">
-                    Product Features
+                  <Link href="#blueprint" className="hover:underline">
+                    Prompt Blueprints
                   </Link>
                 </li>
                 <li>
@@ -56,19 +56,19 @@ export function NeoFooter() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#who-its-for" className="hover:underline">
-                    For Vibecoders
+                  <Link href="#audit" className="hover:underline">
+                    Production Audit
                   </Link>
                 </li>
                 <li>
-                  <Link href="#blueprint" className="hover:underline">
-                    The Blueprint
+                  <Link href="#who-its-for" className="hover:underline">
+                    For Builders
                   </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Platform & Pricing */}
+            {/* Platform */}
             <div>
               <h3 className="font-mono text-xs font-black uppercase text-[#080808] border-b-2 border-[#080808] pb-1">
                 PLATFORM
@@ -87,11 +87,6 @@ export function NeoFooter() {
                 <li>
                   <Link href="/signup" className="hover:underline">
                     Create Account
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#pricing" className="hover:underline">
-                    Pricing
                   </Link>
                 </li>
               </ul>

@@ -6,37 +6,37 @@ export function NeoAudience() {
   const audiences = [
     {
       title: "VIBECODERS",
-      tag: "BUILDING AT SPEED",
+      tag: "SPEED & FLOW",
       bg: "bg-[#FFE500]",
-      description: "You already build with AI coding tools daily.",
+      description: "Building fast with Cursor, Antigravity, or Claude Code.",
       points: [
-        "Give your coding agent tight context before asking it to write a line of code",
-        "Stop burning prompt iterations trying to debug hallucinated architecture",
-        "Generate 16-part implementation prompts tailored for cursor and terminal agents",
+        "Give your agent tight context before it codes",
+        "Stop burning tokens on hallucinated architecture",
+        "Generate 12-section precision prompt blocks",
       ],
       icon: Terminal,
     },
     {
-      title: "BEGINNERS",
-      tag: "FROM ZERO TO ONE",
+      title: "FOUNDERS & MAKERS",
+      tag: "ZERO TO ONE",
       bg: "bg-[#B7FF6A]",
-      description: "You have a great product idea but don't know where to start.",
+      description: "Have a product idea but need a structured technical roadmap.",
       points: [
-        "Aigenstra asks the right product questions so you don't miss fundamental UX flows",
-        "Translates your idea into clear frontend, backend, and database blueprints",
-        "No engineering degree required — learn architectural thinking as you build",
+        "Answer key questions to capture essential UX flows",
+        "Translates ideas into frontend, backend, & database specs",
+        "No engineering degree needed — structured guidance",
       ],
       icon: Lightbulb,
     },
     {
       title: "BUILDERS & TEAMS",
-      tag: "RELIABLE SHIP CYCLES",
+      tag: "RELIABLE SHIPPING",
       bg: "bg-white",
-      description: "Turn messy product requirements into structured implementation work.",
+      description: "Turn scattered notes into clear, isolated tasks.",
       points: [
-        "Align technical specs, security rules, and user journeys across collaborators",
-        "Audit existing codebases before releasing new versions to production",
-        "Keep AI agents isolated to their assigned modules without breaking legacy features",
+        "Align specs, security rules, and user journeys",
+        "Audit code before pushing to production",
+        "Keep agents constrained to their assigned modules",
       ],
       icon: Users,
     },
@@ -57,9 +57,8 @@ export function NeoAudience() {
               BUILDING WITH AI.
             </span>
           </h2>
-          <p className="mt-6 text-base font-medium text-[#080808]/80 sm:text-lg max-w-2xl mx-auto">
-            Whether you&apos;re shipping your tenth micro-SaaS or bringing your very first digital product to life,
-            Aigenstra keeps your AI coding agent honest and on track.
+          <p className="mt-4 text-sm font-bold text-[#080808]/80 font-mono max-w-xl mx-auto">
+            Keep your AI coding agents honest, constrained, and aligned from concept to production.
           </p>
         </div>
 

@@ -38,18 +38,15 @@ export function NeoHero() {
               </span>
             </h1>
 
-            {/* Supporting Pitch */}
-            <p className="mt-8 text-xl font-black text-[#080808] sm:text-2xl font-mono">
+            {/* Supporting Pitch - Punchy & Direct */}
+            <p className="mt-6 text-xl sm:text-2xl font-black text-[#080808] font-mono leading-snug">
               Your AI coding agent can code. <br />
-              <span className="bg-[#FF4F9A] text-white px-2 py-0.5 inline-block mt-1 shadow-[2px_2px_0px_#080808]">
-                Aigenstra helps you figure out what it should build.
+              <span className="bg-[#FFE500] border-2 border-[#080808] text-[#080808] px-2 py-0.5 inline-block mt-1 shadow-[2px_2px_0px_#080808]">
+                Aigenstra tells it what to build.
               </span>
             </p>
-
-            <p className="mt-6 max-w-xl text-base text-[#080808]/85 leading-relaxed font-sans font-medium sm:text-lg">
-              Aigenstra turns your idea, product or codebase into a structured build plan and
-              context-aware prompts for your AI coding agent — so you spend less time fixing bad
-              instructions and more time shipping.
+            <p className="mt-3 text-sm sm:text-base font-bold text-[#080808]/80 font-mono">
+              From raw idea to structured build blueprint and precision prompts.
             </p>
 
             {/* Primary & Secondary CTAs with Tactile Neo-Brutalist Micro-Motions */}

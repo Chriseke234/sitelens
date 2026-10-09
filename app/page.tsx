@@ -3,14 +3,11 @@ import React from "react";
 import { NeoNavbar } from "@/components/landing/neo-navbar";
 import { NeoHero } from "@/components/landing/neo-hero";
 import { NeoProblem } from "@/components/landing/neo-problem";
-import { NeoCapabilities } from "@/components/landing/neo-capabilities";
 import { NeoWorkflow } from "@/components/landing/neo-workflow";
 import { NeoBlueprint } from "@/components/landing/neo-blueprint";
-import { NeoEfficiency } from "@/components/landing/neo-efficiency";
 import { NeoAudit } from "@/components/landing/neo-audit";
 import { NeoAudience } from "@/components/landing/neo-audience";
 import { NeoEcosystem } from "@/components/landing/neo-ecosystem";
-import { NeoPricing } from "@/components/landing/neo-pricing";
 import { NeoFinalCTA } from "@/components/landing/neo-final-cta";
 import { NeoFooter } from "@/components/landing/neo-footer";
 
@@ -87,31 +84,22 @@ export default function Home() {
         {/* 3. Section 2: The Problem */}
         <NeoProblem />
 
-        {/* 4. Section 3: What Aigenstra Does */}
-        <NeoCapabilities />
-
-        {/* 5. Section 4: How It Works */}
+        {/* 4. Section 3: How It Works (Consolidated Workflow) */}
         <NeoWorkflow />
 
-        {/* 6. Section 5: The Build Blueprint */}
+        {/* 5. Section 4: The Build Blueprint */}
         <NeoBlueprint />
 
-        {/* 7. Section 6: Token Efficiency */}
-        <NeoEfficiency />
-
-        {/* 8. Section 7: Audit & Verification */}
+        {/* 6. Section 5: Audit & Verification */}
         <NeoAudit />
 
-        {/* 9. Section 8: Who Aigenstra Is For */}
+        {/* 7. Section 6: Who Aigenstra Is For */}
         <NeoAudience />
 
-        {/* 10. Section 9: Works With Your Workflow */}
+        {/* 8. Section 7: Works With Your Workflow */}
         <NeoEcosystem />
 
-        {/* 11. Section: Simple Pricing */}
-        <NeoPricing />
-
-        {/* 12. Section 10 & Final CTA: Close The Loop */}
+        {/* 9. Final CTA: Close The Loop */}
         <NeoFinalCTA />
       </main>
 

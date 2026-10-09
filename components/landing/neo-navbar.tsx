@@ -57,12 +57,6 @@ export function NeoNavbar() {
             >
               The Blueprint
             </Link>
-            <Link
-              href="#pricing"
-              className="text-xs font-black uppercase tracking-wider text-[#080808] transition-colors hover:text-[#FF4F9A]"
-            >
-              Pricing
-            </Link>
           </nav>
         </div>
 
@@ -134,13 +128,6 @@ export function NeoNavbar() {
               className="border-2 border-[#080808] bg-white p-3 text-sm uppercase text-[#080808] shadow-[3px_3px_0px_#080808]"
             >
               The Blueprint
-            </Link>
-            <Link
-              href="#pricing"
-              onClick={() => setMobileMenuOpen(false)}
-              className="border-2 border-[#080808] bg-white p-3 text-sm uppercase text-[#080808] shadow-[3px_3px_0px_#080808]"
-            >
-              Pricing
             </Link>
             <div className="pt-2 flex flex-col gap-3">
               <Link
