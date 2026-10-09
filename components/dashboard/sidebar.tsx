@@ -4,22 +4,17 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
 import {
   Search,
   LayoutDashboard,
   FolderKanban,
-  Layers,
   FileCheck,
-  ShieldCheck,
   Settings,
   LogOut,
   Menu,
   X,
   User as UserIcon,
-  Sparkles,
 } from "lucide-react";
-
 import { Logo } from "@/components/ui/logo";
 
 interface SidebarProps {
@@ -61,40 +56,44 @@ export function Sidebar({ userProfile }: SidebarProps) {
   return (
     <>
       {/* Mobile Top Header */}
-      <div className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 lg:hidden">
-        <Link href="/dashboard" className="btn-interactive">
+      <div className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b-[3px] border-[#080808] bg-[#F8F6EC] px-4 lg:hidden">
+        <Link href="/dashboard" className="transition-transform hover:-translate-y-0.5">
           <Logo size="md" />
         </Link>
 
         <button
           type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+          className="border-2 border-[#080808] bg-white p-2 text-[#080808] shadow-[2px_2px_0px_#080808] active:translate-x-0.5 active:translate-y-0.5"
+          aria-label="Toggle navigation menu"
         >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
       {/* Mobile Drawer Overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)} />
+        <div
+          className="fixed inset-0 z-50 bg-[#080808]/60 backdrop-blur-xs lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
       )}
 
       {/* Sidebar Desktop & Mobile Drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r-[3px] border-[#080808] bg-[#F8F6EC] transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Brand Header */}
-        <div className="flex h-16 items-center px-6 border-b border-slate-100 dark:border-slate-800">
-          <Link href="/dashboard" className="btn-interactive">
+        <div className="flex h-20 items-center px-6 border-b-[3px] border-[#080808]">
+          <Link href="/dashboard" className="transition-transform hover:-translate-y-0.5">
             <Logo size="md" />
           </Link>
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        <nav className="flex-1 space-y-2 px-4 py-6 font-mono text-xs">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
@@ -103,13 +102,13 @@ export function Sidebar({ userProfile }: SidebarProps) {
                 key={item.name}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all btn-interactive ${
+                className={`flex items-center gap-3 border-2 px-3.5 py-3 font-black uppercase tracking-wider transition-all ${
                   isActive
-                    ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30 dark:bg-blue-600 dark:text-white"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                    ? "border-[#080808] bg-[#FFE500] text-[#080808] shadow-[3px_3px_0px_#080808] translate-x-0.5"
+                    : "border-transparent text-[#080808] hover:border-[#080808] hover:bg-white hover:shadow-[3px_3px_0px_#080808]"
                 }`}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4 stroke-[2.5]" />
                 <span>{item.name}</span>
               </Link>
             );
@@ -117,31 +116,30 @@ export function Sidebar({ userProfile }: SidebarProps) {
         </nav>
 
         {/* Footer User Profile Summary & Sign Out */}
-        <div className="border-t border-slate-200 p-4 dark:border-slate-800">
-          <div className="mb-3 flex items-center gap-3 px-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-              <UserIcon className="h-4 w-4" />
+        <div className="border-t-[3px] border-[#080808] p-4 bg-white/50">
+          <div className="mb-3 flex items-center gap-3 border-2 border-[#080808] bg-white p-2.5 shadow-[2px_2px_0px_#080808]">
+            <div className="flex h-8 w-8 items-center justify-center border-2 border-[#080808] bg-[#B7FF6A] text-[#080808]">
+              <UserIcon className="h-4 w-4 stroke-[2.5]" />
             </div>
-            <div className="flex flex-col truncate">
-              <span className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
+            <div className="flex flex-col truncate font-mono">
+              <span className="truncate text-xs font-black uppercase text-[#080808]">
                 {displayName}
               </span>
-              <span className="truncate text-[11px] text-slate-500">
+              <span className="truncate text-[10px] font-bold text-[#080808]/60">
                 {displayEmail}
               </span>
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
+          <button
+            type="button"
             onClick={handleSignOut}
             disabled={signingOut}
-            className="w-full justify-start gap-2 text-slate-600 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 rounded-lg btn-interactive"
+            className="w-full flex items-center justify-center gap-2 border-2 border-[#080808] bg-white py-2 font-mono text-xs font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] transition-all hover:bg-red-50 hover:text-red-700 active:translate-x-0.5 active:translate-y-0.5"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-3.5 w-3.5 stroke-[2.5]" />
             <span>{signingOut ? "Signing out..." : "Sign Out"}</span>
-          </Button>
+          </button>
         </div>
       </aside>
     </>

@@ -4,8 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { AlertCircle, CheckCircle2, User, Mail, Lock, ArrowRight } from "lucide-react";
 
@@ -89,7 +87,6 @@ export default function SignupPage() {
         }
       }
 
-      // Check if session was immediately established or email confirmation is required
       if (data.session) {
         window.location.href = "/dashboard";
       } else {
@@ -104,53 +101,59 @@ export default function SignupPage() {
 
   if (confirmationSuccess) {
     return (
-      <Card className="border-slate-200/80 shadow-md dark:border-slate-800 text-center">
-        <CardHeader className="space-y-2">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
-            <CheckCircle2 className="h-6 w-6" />
-          </div>
-          <CardTitle className="text-xl font-bold">Check your email</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">
-            We sent a verification link to <strong className="text-slate-900 dark:text-slate-100">{email}</strong>.
-            Please click the link in your email to confirm your account and sign in.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-2">
-          <Link href="/login">
-            <Button variant="outline" className="w-full">
-              Return to Sign In
-            </Button>
+      <div className="border-[3px] border-[#080808] bg-white p-6 sm:p-8 shadow-[8px_8px_0px_#080808] text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center border-2 border-[#080808] bg-[#B7FF6A] text-[#080808] shadow-[3px_3px_0px_#080808]">
+          <CheckCircle2 className="h-8 w-8 stroke-[2.5]" />
+        </div>
+        <h2 className="mt-4 font-mono text-2xl font-black uppercase text-[#080808]">Check your email</h2>
+        <p className="mt-2 font-mono text-xs font-bold leading-relaxed text-[#080808]/80">
+          We sent a verification link to <strong className="text-[#080808] underline">{email}</strong>.
+          Please click the link in your email to confirm your account and sign in.
+        </p>
+        <div className="mt-6 border-t-2 border-[#080808] pt-4">
+          <Link
+            href="/login"
+            className="w-full inline-flex items-center justify-center gap-2 border-2 border-[#080808] bg-[#FFE500] py-3 font-mono text-xs font-black uppercase text-[#080808] shadow-[3px_3px_0px_#080808]"
+          >
+            <span>Return to Sign In</span>
+            <ArrowRight className="h-4 w-4" />
           </Link>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="border-slate-200/80 shadow-md dark:border-slate-800">
-      <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold tracking-tight">Create your Aigenstra account</CardTitle>
-        <CardDescription className="text-sm">
+    <div className="border-[3px] border-[#080808] bg-white p-6 sm:p-8 shadow-[8px_8px_0px_#080808]">
+      {/* Top Header */}
+      <div className="text-center pb-6 border-b-2 border-[#080808]">
+        <span className="inline-block border-2 border-[#080808] bg-[#B7FF6A] px-2.5 py-0.5 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+          NEW VIBECODER ACCOUNT
+        </span>
+        <h1 className="mt-3 font-mono text-2xl font-black uppercase text-[#080808] sm:text-3xl">
+          Create Account
+        </h1>
+        <p className="mt-1 font-mono text-xs font-bold text-[#080808]/70">
           Start engineering, architecting, and auditing your AI products
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
 
-      <CardContent>
+      <div className="pt-6">
         {errorMessage && (
-          <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
-            <AlertCircle className="h-4 w-4 text-rose-600 flex-shrink-0 mt-0.5" />
+          <div className="mb-5 flex items-start gap-2.5 border-2 border-[#080808] bg-red-100 p-3 font-mono text-xs font-bold text-red-950 shadow-[3px_3px_0px_#080808]">
+            <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5 stroke-[2.5]" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <label className="font-mono text-xs font-black uppercase text-[#080808]">
               Full Name
             </label>
             <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <User className="h-4 w-4" />
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#080808]">
+                <User className="h-4 w-4 stroke-[2.5]" />
               </div>
               <input
                 type="text"
@@ -158,92 +161,97 @@ export default function SignupPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Jane Doe"
-                className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-100 dark:focus:ring-slate-100"
+                className="w-full border-2 border-[#080808] bg-[#F8F6EC] py-2.5 pl-10 pr-3 font-mono text-xs font-bold text-[#080808] placeholder:text-[#080808]/40 shadow-[2px_2px_0px_#080808] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <label className="font-mono text-xs font-black uppercase text-[#080808]">
               Email Address
             </label>
             <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <Mail className="h-4 w-4" />
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#080808]">
+                <Mail className="h-4 w-4 stroke-[2.5]" />
               </div>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@company.com"
-                className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-100 dark:focus:ring-slate-100"
+                placeholder="jane@company.com"
+                className="w-full border-2 border-[#080808] bg-[#F8F6EC] py-2.5 pl-10 pr-3 font-mono text-xs font-bold text-[#080808] placeholder:text-[#080808]/40 shadow-[2px_2px_0px_#080808] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <label className="font-mono text-xs font-black uppercase text-[#080808]">
               Password
             </label>
             <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <Lock className="h-4 w-4" />
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#080808]">
+                <Lock className="h-4 w-4 stroke-[2.5]" />
               </div>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 6 characters"
-                className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-100 dark:focus:ring-slate-100"
+                placeholder="Minimum 6 characters"
+                className="w-full border-2 border-[#080808] bg-[#F8F6EC] py-2.5 pl-10 pr-3 font-mono text-xs font-bold text-[#080808] placeholder:text-[#080808]/40 shadow-[2px_2px_0px_#080808] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <label className="font-mono text-xs font-black uppercase text-[#080808]">
               Confirm Password
             </label>
             <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <Lock className="h-4 w-4" />
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#080808]">
+                <Lock className="h-4 w-4 stroke-[2.5]" />
               </div>
               <input
                 type="password"
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Re-enter password"
-                className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-100 dark:focus:ring-slate-100"
+                placeholder="Re-type password"
+                className="w-full border-2 border-[#080808] bg-[#F8F6EC] py-2.5 pl-10 pr-3 font-mono text-xs font-bold text-[#080808] placeholder:text-[#080808]/40 shadow-[2px_2px_0px_#080808] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
               />
             </div>
           </div>
 
-          <Button type="submit" disabled={loading} className="w-full gap-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full inline-flex items-center justify-center gap-2 border-2 border-[#080808] bg-[#FFE500] py-3 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[4px_4px_0px_#080808] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#080808] active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-60"
+          >
             {loading ? (
               <>
-                <Spinner size="sm" className="text-white dark:text-slate-900" />
-                <span>Creating account...</span>
+                <Spinner size="sm" className="text-[#080808]" />
+                <span>Creating workspace account...</span>
               </>
             ) : (
               <>
                 <span>Create Account</span>
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 stroke-[3]" />
               </>
             )}
-          </Button>
+          </button>
         </form>
-      </CardContent>
+      </div>
 
-      <CardFooter className="flex justify-center border-t border-slate-100 pt-4 dark:border-slate-800">
-        <p className="text-xs text-slate-500">
-          Already have an account?{" "}
-          <Link href="/login" className="font-semibold text-slate-900 hover:underline dark:text-slate-100">
-            Sign in
-          </Link>
-        </p>
-      </CardFooter>
-    </Card>
+      <div className="mt-6 border-t-2 border-[#080808] pt-4 text-center font-mono text-xs font-bold text-[#080808]/70">
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          className="font-black text-[#080808] underline hover:bg-[#FFE500] px-1"
+        >
+          Sign in
+        </Link>
+      </div>
+    </div>
   );
 }

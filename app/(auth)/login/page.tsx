@@ -4,10 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { AlertCircle, Lock, Mail, ArrowRight } from "lucide-react";
+import { AlertCircle, Lock, Mail, ArrowRight, ShieldCheck } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,7 +49,6 @@ export default function LoginPage() {
       }
 
       window.location.href = redirectPath;
-
     } catch {
       setErrorMessage("An unexpected network error occurred. Please try again.");
       setLoading(false);
@@ -59,30 +56,36 @@ export default function LoginPage() {
   };
 
   return (
-    <Card className="border-slate-200/80 shadow-md dark:border-slate-800">
-      <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold tracking-tight">Sign in to Aigenstra</CardTitle>
-        <CardDescription className="text-sm">
-          Enter your credentials to access your AI engineering workspaces
-        </CardDescription>
-      </CardHeader>
+    <div className="border-[3px] border-[#080808] bg-white p-6 sm:p-8 shadow-[8px_8px_0px_#080808]">
+      {/* Top Tag & Title */}
+      <div className="text-center pb-6 border-b-2 border-[#080808]">
+        <span className="inline-block border-2 border-[#080808] bg-[#FFE500] px-2.5 py-0.5 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+          SECURE ACCESS
+        </span>
+        <h1 className="mt-3 font-mono text-2xl font-black uppercase text-[#080808] sm:text-3xl">
+          Sign In
+        </h1>
+        <p className="mt-1 font-mono text-xs font-bold text-[#080808]/70">
+          Enter credentials to access your AI engineering workspaces
+        </p>
+      </div>
 
-      <CardContent>
+      <div className="pt-6">
         {errorMessage && (
-          <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
-            <AlertCircle className="h-4 w-4 text-rose-600 flex-shrink-0 mt-0.5" />
+          <div className="mb-5 flex items-start gap-2.5 border-2 border-[#080808] bg-red-100 p-3 font-mono text-xs font-bold text-red-950 shadow-[3px_3px_0px_#080808]">
+            <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5 stroke-[2.5]" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <label className="font-mono text-xs font-black uppercase text-[#080808]">
               Email Address
             </label>
             <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <Mail className="h-4 w-4" />
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#080808]">
+                <Mail className="h-4 w-4 stroke-[2.5]" />
               </div>
               <input
                 type="email"
@@ -90,26 +93,26 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@company.com"
-                className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-100 dark:focus:ring-slate-100"
+                className="w-full border-2 border-[#080808] bg-[#F8F6EC] py-2.5 pl-10 pr-3 font-mono text-xs font-bold text-[#080808] placeholder:text-[#080808]/40 shadow-[2px_2px_0px_#080808] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <label className="font-mono text-xs font-black uppercase text-[#080808]">
                 Password
               </label>
               <Link
                 href="/forgot-password"
-                className="text-xs text-slate-600 hover:underline dark:text-slate-400"
+                className="font-mono text-[11px] font-bold text-[#080808]/70 hover:underline hover:text-[#080808]"
               >
                 Forgot password?
               </Link>
             </div>
             <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <Lock className="h-4 w-4" />
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#080808]">
+                <Lock className="h-4 w-4 stroke-[2.5]" />
               </div>
               <input
                 type="password"
@@ -117,35 +120,40 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-slate-100 dark:focus:ring-slate-100"
+                className="w-full border-2 border-[#080808] bg-[#F8F6EC] py-2.5 pl-10 pr-3 font-mono text-xs font-bold text-[#080808] placeholder:text-[#080808]/40 shadow-[2px_2px_0px_#080808] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
               />
             </div>
           </div>
 
-          <Button type="submit" disabled={loading} className="w-full gap-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full inline-flex items-center justify-center gap-2 border-2 border-[#080808] bg-[#FFE500] py-3 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[4px_4px_0px_#080808] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#080808] active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-60"
+          >
             {loading ? (
               <>
-                <Spinner size="sm" className="text-white dark:text-slate-900" />
+                <Spinner size="sm" className="text-[#080808]" />
                 <span>Signing in...</span>
               </>
             ) : (
               <>
-                <span>Sign In</span>
-                <ArrowRight className="h-4 w-4" />
+                <span>Sign In to Workspace</span>
+                <ArrowRight className="h-4 w-4 stroke-[3]" />
               </>
             )}
-          </Button>
+          </button>
         </form>
-      </CardContent>
+      </div>
 
-      <CardFooter className="flex justify-center border-t border-slate-100 pt-4 dark:border-slate-800">
-        <p className="text-xs text-slate-500">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-semibold text-slate-900 hover:underline dark:text-slate-100">
-            Create an account
-          </Link>
-        </p>
-      </CardFooter>
-    </Card>
+      <div className="mt-6 border-t-2 border-[#080808] pt-4 text-center font-mono text-xs font-bold text-[#080808]/70">
+        Don&apos;t have an account?{" "}
+        <Link
+          href="/signup"
+          className="font-black text-[#080808] underline hover:bg-[#FFE500] px-1"
+        >
+          Create an account
+        </Link>
+      </div>
+    </div>
   );
 }

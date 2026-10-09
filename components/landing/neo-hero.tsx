@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Sparkles, Terminal, FileCode, ShieldCheck, Eye, Layers } from "lucide-react";
+import { VibecoderCharacter } from "@/components/landing/characters";
 
 export function NeoHero() {
   return (
@@ -22,9 +23,9 @@ export function NeoHero() {
           
           {/* Left Column: Editorial Headline & Actions (7 cols on lg) */}
           <div className="flex flex-col items-start lg:col-span-7">
-            {/* Top Pill Label */}
-            <div className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#B7FF6A] px-3.5 py-1 text-xs font-mono font-black uppercase tracking-wider text-[#080808] shadow-[3px_3px_0px_#080808]">
-              <span className="h-2 w-2 rounded-full bg-[#080808]" />
+            {/* Top Pill Label with subtle live pulse indicator */}
+            <div className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#B7FF6A] px-3.5 py-1 text-xs font-mono font-black uppercase tracking-wider text-[#080808] shadow-[3px_3px_0px_#080808] transition-transform hover:scale-105">
+              <span className="h-2 w-2 rounded-full bg-[#080808] animate-ping" />
               <span>THINK BEFORE YOU VIBE.</span>
             </div>
 
@@ -32,7 +33,7 @@ export function NeoHero() {
             <h1 className="mt-6 font-mono text-5xl font-black uppercase tracking-tight text-[#080808] sm:text-6xl md:text-7xl lg:text-8xl leading-[0.95]">
               THINK BEFORE <br />
               YOU{" "}
-              <span className="relative inline-block bg-[#FFE500] px-2 py-0.5 border-[3px] border-[#080808] shadow-[4px_4px_0px_#080808] -rotate-1">
+              <span className="relative inline-block bg-[#FFE500] px-2 py-0.5 border-[3px] border-[#080808] shadow-[4px_4px_0px_#080808] -rotate-1 transition-transform hover:rotate-2 cursor-pointer">
                 VIBE.
               </span>
             </h1>
@@ -40,7 +41,7 @@ export function NeoHero() {
             {/* Supporting Pitch */}
             <p className="mt-8 text-xl font-black text-[#080808] sm:text-2xl font-mono">
               Your AI coding agent can code. <br />
-              <span className="bg-[#FF4F9A] text-white px-2 py-0.5 inline-block mt-1">
+              <span className="bg-[#FF4F9A] text-white px-2 py-0.5 inline-block mt-1 shadow-[2px_2px_0px_#080808]">
                 Aigenstra helps you figure out what it should build.
               </span>
             </p>
@@ -51,37 +52,49 @@ export function NeoHero() {
               instructions and more time shipping.
             </p>
 
-            {/* Primary & Secondary CTAs */}
+            {/* Primary & Secondary CTAs with Tactile Neo-Brutalist Micro-Motions */}
             <div className="mt-10 flex w-full flex-col gap-4 sm:w-auto sm:flex-row sm:items-center">
               <Link
                 href="/projects/new"
-                className="inline-flex items-center justify-center gap-3 border-[3px] border-[#080808] bg-[#FFE500] px-8 py-4 font-mono text-sm font-black uppercase tracking-wider text-[#080808] shadow-[6px_6px_0px_#080808] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[3px_3px_0px_#080808] active:translate-x-[5px] active:translate-y-[5px] active:shadow-none"
+                className="group inline-flex items-center justify-center gap-3 border-[3px] border-[#080808] bg-[#FFE500] px-8 py-4 font-mono text-sm font-black uppercase tracking-wider text-[#080808] shadow-[6px_6px_0px_#080808] transition-all hover:-translate-y-1 hover:translate-x-[-1px] hover:shadow-[8px_8px_0px_#080808] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
               >
                 <span>Start building with Aigenstra</span>
-                <ArrowRight className="h-5 w-5" />
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Link>
 
               <Link
                 href="#how-it-works"
-                className="inline-flex items-center justify-center gap-2 border-[3px] border-[#080808] bg-white px-6 py-4 font-mono text-sm font-black uppercase tracking-wider text-[#080808] shadow-[4px_4px_0px_#080808] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#080808] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
+                className="inline-flex items-center justify-center gap-2 border-[3px] border-[#080808] bg-white px-6 py-4 font-mono text-sm font-black uppercase tracking-wider text-[#080808] shadow-[4px_4px_0px_#080808] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#080808] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
               >
                 <span>See how it works</span>
               </Link>
             </div>
 
-            {/* Underneath Workflow Ticker */}
-            <div className="mt-12 flex flex-wrap items-center gap-2 border-2 border-[#080808] bg-white p-3 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[3px_3px_0px_#080808]">
-              <span className="text-[#FF4F9A]">PLAN</span>
-              <span className="text-[#080808]/30">•</span>
-              <span className="text-[#080808]">PROMPT</span>
-              <span className="text-[#080808]/30">•</span>
-              <span className="text-[#080808]">BUILD</span>
-              <span className="text-[#080808]/30">•</span>
-              <span className="text-[#080808]">AUDIT</span>
-              <span className="text-[#080808]/30">•</span>
-              <span className="text-[#B7FF6A] bg-[#080808] px-1.5 py-0.5">VERIFY</span>
-              <span className="text-[#080808]/30">•</span>
-              <span className="text-[#FFE500] bg-[#080808] px-1.5 py-0.5">SHIP</span>
+            {/* Bottom Row: Animated Character Badge & Workflow Ticker */}
+            <div className="mt-12 flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-3 border-2 border-[#080808] bg-white p-2.5 shadow-[3px_3px_0px_#080808] transition-all hover:scale-102">
+                <div className="h-12 w-12 shrink-0">
+                  <VibecoderCharacter className="w-12 h-12" />
+                </div>
+                <div className="font-mono text-[11px] leading-tight">
+                  <span className="font-black uppercase text-[#080808] block">VIBECODER ACTIVE</span>
+                  <span className="text-[#080808]/70">Zero hallucinated architecture</span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 border-2 border-[#080808] bg-white p-3 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[3px_3px_0px_#080808]">
+                <span className="text-[#FF4F9A] hover:underline">PLAN</span>
+                <span className="text-[#080808]/30">•</span>
+                <span className="text-[#080808]">PROMPT</span>
+                <span className="text-[#080808]/30">•</span>
+                <span className="text-[#080808]">BUILD</span>
+                <span className="text-[#080808]/30">•</span>
+                <span className="text-[#080808]">AUDIT</span>
+                <span className="text-[#080808]/30">•</span>
+                <span className="text-[#B7FF6A] bg-[#080808] px-1.5 py-0.5 shadow-[1px_1px_0px_#FFE500]">VERIFY</span>
+                <span className="text-[#080808]/30">•</span>
+                <span className="text-[#FFE500] bg-[#080808] px-1.5 py-0.5 shadow-[1px_1px_0px_#B7FF6A]">SHIP</span>
+              </div>
             </div>
           </div>
 
@@ -90,7 +103,7 @@ export function NeoHero() {
             <div className="relative mx-auto flex max-w-md flex-col space-y-4">
               
               {/* CARD 1: YOUR IDEA */}
-              <div className="relative z-10 border-[3px] border-[#080808] bg-white p-4 shadow-[5px_5px_0px_#080808] -rotate-1 transition-transform hover:rotate-0">
+              <div className="relative z-10 border-[3px] border-[#080808] bg-white p-4 shadow-[5px_5px_0px_#080808] -rotate-1 transition-transform duration-300 hover:rotate-0 hover:scale-102 hover:shadow-[7px_7px_0px_#080808]">
                 <div className="flex items-center justify-between border-b-2 border-[#080808] pb-2 font-mono">
                   <span className="bg-[#080808] px-2 py-0.5 text-[10px] font-black uppercase text-[#FFE500]">
                     CARD 01
@@ -103,7 +116,7 @@ export function NeoHero() {
               </div>
 
               {/* CARD 2: AIGENSTRA UNDERSTANDING */}
-              <div className="relative z-20 border-[3px] border-[#080808] bg-[#FFE500] p-4 shadow-[6px_6px_0px_#080808] translate-x-2 rotate-1 transition-transform hover:rotate-0">
+              <div className="relative z-20 border-[3px] border-[#080808] bg-[#FFE500] p-4 shadow-[6px_6px_0px_#080808] translate-x-2 rotate-1 transition-transform duration-300 hover:rotate-0 hover:scale-102 hover:shadow-[8px_8px_0px_#080808]">
                 <div className="flex items-center justify-between border-b-2 border-[#080808] pb-2 font-mono">
                   <span className="bg-[#080808] px-2 py-0.5 text-[10px] font-black uppercase text-white">
                     CARD 02
@@ -138,7 +151,7 @@ export function NeoHero() {
               </div>
 
               {/* CARD 3: BUILD BLUEPRINT */}
-              <div className="relative z-30 border-[3px] border-[#080808] bg-white p-4 shadow-[6px_6px_0px_#080808] -translate-x-1 -rotate-0.5 transition-transform hover:rotate-0">
+              <div className="relative z-30 border-[3px] border-[#080808] bg-white p-4 shadow-[6px_6px_0px_#080808] -translate-x-1 -rotate-0.5 transition-transform duration-300 hover:rotate-0 hover:scale-102 hover:shadow-[8px_8px_0px_#080808]">
                 <div className="flex items-center justify-between border-b-2 border-[#080808] pb-2 font-mono">
                   <span className="bg-[#FF4F9A] px-2 py-0.5 text-[10px] font-black uppercase text-white">
                     CARD 03
@@ -172,13 +185,13 @@ export function NeoHero() {
                   </div>
                   <div className="flex justify-between font-black text-[#080808]">
                     <span>07 Security Guardrails</span>
-                    <span className="bg-[#FFE500] px-1 text-[9px]">Ready</span>
+                    <span className="bg-[#FFE500] px-1 text-[9px] shadow-[1px_1px_0px_#080808]">Ready</span>
                   </div>
                 </div>
               </div>
 
               {/* CARD 4: AGENT PROMPT */}
-              <div className="relative z-40 border-[3px] border-[#080808] bg-[#080808] p-4 text-white shadow-[6px_6px_0px_#FFE500] translate-x-2 rotate-1 transition-transform hover:rotate-0">
+              <div className="relative z-40 border-[3px] border-[#080808] bg-[#080808] p-4 text-white shadow-[6px_6px_0px_#FFE500] translate-x-2 rotate-1 transition-transform duration-300 hover:rotate-0 hover:scale-102">
                 <div className="flex items-center justify-between border-b border-white/30 pb-2 font-mono">
                   <span className="bg-[#FFE500] px-2 py-0.5 text-[10px] font-black uppercase text-[#080808]">
                     CARD 04
@@ -193,7 +206,7 @@ export function NeoHero() {
               </div>
 
               {/* CARD 5: VERIFIED */}
-              <div className="relative z-50 border-[3px] border-[#080808] bg-[#B7FF6A] p-4 shadow-[6px_6px_0px_#080808] -translate-x-1.5 -rotate-1 transition-transform hover:rotate-0">
+              <div className="relative z-50 border-[3px] border-[#080808] bg-[#B7FF6A] p-4 shadow-[6px_6px_0px_#080808] -translate-x-1.5 -rotate-1 transition-transform duration-300 hover:rotate-0 hover:scale-102 hover:shadow-[8px_8px_0px_#080808]">
                 <div className="flex items-center justify-between border-b-2 border-[#080808] pb-2 font-mono">
                   <span className="bg-[#080808] px-2 py-0.5 text-[10px] font-black uppercase text-[#B7FF6A]">
                     CARD 05

@@ -31,8 +31,8 @@ export default async function DashboardLayout({
   };
 
   return (
-    <div className="flex min-h-screen flex-col lg:flex-row bg-slate-50 dark:bg-slate-950">
-      {/* Sidebar Navigation */}
+    <div className="flex min-h-screen flex-col lg:flex-row bg-[#F8F6EC] text-[#080808] selection:bg-[#FFE500] selection:text-[#080808]">
+      {/* Neo-Brutalist Bento Sidebar Navigation */}
       <Sidebar userProfile={userProfile} />
 
       {/* Main Content Area */}

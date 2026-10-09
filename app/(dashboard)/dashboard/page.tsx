@@ -1,8 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ScoreTrendChart, TrendPoint } from "@/components/dashboard/score-trend-chart";
 import {
@@ -92,116 +90,142 @@ export default async function DashboardPage() {
   const welcomeHeadline = fullName ? `Welcome back, ${fullName}` : "Welcome back";
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8">
       {/* Header Greeting & Actions */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-6 dark:border-slate-800">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b-[3px] border-[#080808] pb-6">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-3xl font-sans">
+          <div className="inline-block border-2 border-[#080808] bg-[#FFE500] px-2.5 py-0.5 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+            WORKSPACE COMMAND
+          </div>
+          <h1 className="mt-2 font-mono text-2xl font-black uppercase tracking-tight text-[#080808] sm:text-3xl">
             {welcomeHeadline}
           </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Overview of your website audits and site intelligence metrics.
+          <p className="mt-1 font-mono text-xs font-bold text-[#080808]/70">
+            Overview of your website audits, prompt blueprints, and intelligence metrics.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/audits">
-            <Button size="sm" className="gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold btn-interactive">
-              <Search className="h-4 w-4" />
-              <span>New Audit</span>
-            </Button>
+          <Link
+            href="/audits"
+            className="inline-flex items-center gap-2 border-2 border-[#080808] bg-[#FFE500] px-4 py-2 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[3px_3px_0px_#080808] transition-all hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1"
+          >
+            <Search className="h-4 w-4 stroke-[2.5]" />
+            <span>New Audit</span>
           </Link>
         </div>
       </div>
 
-      {/* Overview Stat Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 card-hover-effect">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Total Audits</span>
-          <div className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-white">{totalAudits}</div>
+      {/* 4 Bento Overview Stat Cards */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Total Audits */}
+        <div className="border-[3px] border-[#080808] bg-white p-5 shadow-[5px_5px_0px_#080808]">
+          <div className="flex items-center justify-between border-b-2 border-[#080808] pb-2 font-mono">
+            <span className="text-[11px] font-black uppercase text-[#080808]/70">TOTAL AUDITS</span>
+            <span className="border border-[#080808] bg-[#F8F6EC] px-1.5 py-0.2 text-[9px] font-bold">ALL</span>
+          </div>
+          <div className="mt-3 font-mono text-3xl font-black text-[#080808]">{totalAudits}</div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 card-hover-effect">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Completed</span>
-          <div className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-white">{completedCount}</div>
+        {/* Completed */}
+        <div className="border-[3px] border-[#080808] bg-white p-5 shadow-[5px_5px_0px_#080808]">
+          <div className="flex items-center justify-between border-b-2 border-[#080808] pb-2 font-mono">
+            <span className="text-[11px] font-black uppercase text-[#080808]/70">COMPLETED</span>
+            <span className="border border-[#080808] bg-[#B7FF6A] px-1.5 py-0.2 text-[9px] font-bold">DONE</span>
+          </div>
+          <div className="mt-3 font-mono text-3xl font-black text-[#080808]">{completedCount}</div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 card-hover-effect">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Average Score</span>
-          <div className="mt-2 text-3xl font-extrabold text-blue-600 dark:text-blue-400">
+        {/* Average Score */}
+        <div className="border-[3px] border-[#080808] bg-[#FFE500] p-5 shadow-[5px_5px_0px_#080808]">
+          <div className="flex items-center justify-between border-b-2 border-[#080808] pb-2 font-mono">
+            <span className="text-[11px] font-black uppercase text-[#080808]">AVERAGE SCORE</span>
+            <span className="border border-[#080808] bg-white px-1.5 py-0.2 text-[9px] font-bold">HEALTH</span>
+          </div>
+          <div className="mt-3 font-mono text-3xl font-black text-[#080808]">
             {avgScore !== null ? `${avgScore}/100` : "N/A"}
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 card-hover-effect">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Open High Issues</span>
-          <div className="mt-2 text-3xl font-extrabold text-rose-600 dark:text-rose-400">{criticalHighCount}</div>
+        {/* Open High Issues */}
+        <div className="border-[3px] border-[#080808] bg-[#FF4F9A] p-5 shadow-[5px_5px_0px_#080808] text-white">
+          <div className="flex items-center justify-between border-b-2 border-white/60 pb-2 font-mono">
+            <span className="text-[11px] font-black uppercase text-white">OPEN HIGH ISSUES</span>
+            <span className="border border-white bg-white text-[#080808] px-1.5 py-0.2 text-[9px] font-bold">QA</span>
+          </div>
+          <div className="mt-3 font-mono text-3xl font-black text-white">{criticalHighCount}</div>
         </div>
       </div>
 
       {/* Score Trend Section */}
       {trendPoints.length > 0 && (
-        <ScoreTrendChart
-          title={`Score Trend for ${latestAudit?.url}`}
-          points={trendPoints}
-        />
+        <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[6px_6px_0px_#080808]">
+          <ScoreTrendChart
+            title={`Score Trend for ${latestAudit?.url}`}
+            points={trendPoints}
+          />
+        </div>
       )}
 
-      {/* Main Grid: Recent Audits */}
-      <Card className="border-slate-200/80 shadow-sm dark:border-slate-800">
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
+      {/* Main Bento Card: Recent Audits */}
+      <div className="border-[3px] border-[#080808] bg-white shadow-[6px_6px_0px_#080808]">
+        <div className="flex flex-row items-center justify-between border-b-[3px] border-[#080808] bg-[#F8F6EC] p-4">
           <div>
-            <CardTitle className="text-lg font-bold">Recent Audits</CardTitle>
-            <CardDescription className="text-xs">
-              Your recent website audit reports
-            </CardDescription>
+            <h2 className="font-mono text-base font-black uppercase text-[#080808]">
+              Recent Audits
+            </h2>
+            <p className="font-mono text-xs font-bold text-[#080808]/60">
+              Your recent website audit reports &amp; inspection records
+            </p>
           </div>
-          <History className="h-5 w-5 text-slate-400" />
-        </CardHeader>
-        <CardContent>
+          <History className="h-5 w-5 text-[#080808] stroke-[2.5]" />
+        </div>
+
+        <div className="p-4 sm:p-6">
           {audits.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px] text-left text-xs">
+              <table className="w-full min-w-[600px] text-left font-mono text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-950">
-                    <th className="py-2.5 px-3 font-semibold">Website URL</th>
-                    <th className="py-2.5 px-3 font-semibold">Status</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Overall Score</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Date</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Action</th>
+                  <tr className="border-b-2 border-[#080808] bg-[#F8F6EC] text-[#080808]">
+                    <th className="py-2.5 px-3 font-black uppercase">Website URL</th>
+                    <th className="py-2.5 px-3 font-black uppercase">Status</th>
+                    <th className="py-2.5 px-3 font-black uppercase text-right">Overall Score</th>
+                    <th className="py-2.5 px-3 font-black uppercase text-right">Date</th>
+                    <th className="py-2.5 px-3 font-black uppercase text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-[#080808]/20">
                   {audits.slice(0, 10).map((audit) => (
-                    <tr key={audit.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                      <td className="py-3 px-3 font-mono font-medium text-slate-800 dark:text-slate-200">
+                    <tr key={audit.id} className="hover:bg-[#F8F6EC]/80 transition-colors">
+                      <td className="py-3.5 px-3 font-bold text-[#080808]">
                         {audit.url}
                       </td>
-                      <td className="py-3 px-3 capitalize font-semibold">
+                      <td className="py-3.5 px-3">
                         <span
-                          className={`inline-block rounded px-2 py-0.5 text-[10px] ${
+                          className={`inline-block border border-[#080808] px-2 py-0.5 text-[10px] font-black uppercase shadow-[1px_1px_0px_#080808] ${
                             audit.status === "completed"
-                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                              ? "bg-[#B7FF6A] text-[#080808]"
                               : audit.status === "failed"
-                              ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
-                              : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                              ? "bg-red-200 text-red-950"
+                              : "bg-[#FFE500] text-[#080808]"
                           }`}
                         >
                           {audit.status}
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                      <td className="py-3.5 px-3 text-right font-black text-[#080808]">
                         {audit.overall_score !== null ? `${audit.overall_score}/100` : "—"}
                       </td>
-                      <td className="py-3 px-3 text-right text-slate-500">
+                      <td className="py-3.5 px-3 text-right text-[#080808]/70">
                         {new Date(audit.created_at).toLocaleDateString()}
                       </td>
-                      <td className="py-3 px-3 text-right">
-                        <Link href={`/audits/${audit.id}`}>
-                          <Button size="sm" variant="outline" className="gap-1">
-                            <span>View</span>
-                            <ArrowRight className="h-3 w-3" />
-                          </Button>
+                      <td className="py-3.5 px-3 text-right">
+                        <Link
+                          href={`/audits/${audit.id}`}
+                          className="inline-flex items-center gap-1 border-2 border-[#080808] bg-white px-2.5 py-1 text-[11px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:bg-[#FFE500] hover:translate-x-0.5 hover:translate-y-0.5"
+                        >
+                          <span>View</span>
+                          <ArrowRight className="h-3 w-3 stroke-[2.5]" />
                         </Link>
                       </td>
                     </tr>
@@ -213,19 +237,20 @@ export default async function DashboardPage() {
             <EmptyState
               title="No audits yet"
               description="Run your first website audit to start uncovering issues and opportunities."
-              icon={<FileSearch className="h-6 w-6" />}
+              icon={<FileSearch className="h-6 w-6 stroke-[2.5]" />}
               action={
-                <Link href="/audits">
-                  <Button size="sm" variant="outline" className="gap-1.5">
-                    <span>Start an Audit</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Button>
+                <Link
+                  href="/audits"
+                  className="inline-flex items-center gap-1.5 border-2 border-[#080808] bg-[#FFE500] px-4 py-2 font-mono text-xs font-black uppercase text-[#080808] shadow-[3px_3px_0px_#080808]"
+                >
+                  <span>Start an Audit</span>
+                  <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
                 </Link>
               }
             />
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

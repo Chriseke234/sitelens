@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Copy, Check, Terminal, FileCode, CheckCircle2, ShieldAlert } from "lucide-react";
+import { AgentArchitectCharacter } from "@/components/landing/characters";
 
 export function NeoBlueprint() {
   const [copied, setCopied] = useState(false);
@@ -61,112 +62,123 @@ Clean Supabase migration SQL file with idempotency checks (IF NOT EXISTS) and ro
           </p>
         </div>
 
-        {/* Large Neo-Brutalist Prompt Card */}
-        <div className="mt-14 mx-auto max-w-4xl border-[3px] border-[#080808] bg-white shadow-[8px_8px_0px_#080808]">
+        {/* Large Neo-Brutalist Prompt Card with Character Badge */}
+        <div className="relative mt-14 mx-auto max-w-4xl">
           
-          {/* Card Top Banner */}
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b-[3px] border-[#080808] bg-[#080808] p-4 text-white">
-            <div className="flex items-center gap-3 font-mono">
-              <span className="bg-[#FFE500] px-2.5 py-1 text-xs font-black uppercase text-[#080808]">
-                TASK 07
-              </span>
-              <span className="text-sm font-black uppercase tracking-wide text-white">
-                DATABASE ARCHITECTURE &amp; WORKSPACE RELATIONSHIPS
-              </span>
+          {/* Floating Character Callout on Desktop */}
+          <div className="hidden lg:flex absolute -right-20 -top-14 z-20 items-center gap-2 border-2 border-[#080808] bg-[#B7FF6A] p-2 shadow-[4px_4px_0px_#080808] rotate-3 hover:rotate-0 transition-transform">
+            <AgentArchitectCharacter className="w-16 h-16" />
+            <div className="font-mono text-[10px] leading-tight">
+              <span className="font-black uppercase text-[#080808] block">ARCHITECT SPEC</span>
+              <span className="text-[#080808]/80">Context-locked</span>
             </div>
-
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="inline-flex items-center gap-2 border-2 border-white bg-white px-3.5 py-1.5 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[2px_2px_0px_#FFE500] transition-all hover:bg-[#FFE500] active:translate-x-0.5 active:translate-y-0.5"
-            >
-              {copied ? (
-                <>
-                  <Check className="h-4 w-4 text-green-700 stroke-[3]" />
-                  <span>Copied to clipboard!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="h-4 w-4" />
-                  <span>Copy prompt →</span>
-                </>
-              )}
-            </button>
           </div>
 
-          {/* Prompt Body with Visual Sections */}
-          <div className="p-6 sm:p-8 space-y-6 font-mono text-xs sm:text-sm">
-            
-            {/* CONTEXT */}
-            <div className="border-2 border-[#080808] bg-[#F8F6EC] p-4 shadow-[3px_3px_0px_#080808]">
-              <div className="font-black uppercase text-[#080808] flex items-center gap-2">
-                <span className="bg-[#080808] text-white px-1.5 py-0.5 text-[10px]">01</span>
-                <span>CONTEXT &amp; ENVIRONMENT</span>
+          <div className="border-[3px] border-[#080808] bg-white shadow-[8px_8px_0px_#080808] transition-transform hover:-translate-y-0.5 hover:shadow-[10px_10px_0px_#080808]">
+            {/* Card Top Banner */}
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b-[3px] border-[#080808] bg-[#080808] p-4 text-white">
+              <div className="flex items-center gap-3 font-mono">
+                <span className="bg-[#FFE500] px-2.5 py-1 text-xs font-black uppercase text-[#080808] shadow-[1px_1px_0px_#FFF]">
+                  TASK 07
+                </span>
+                <span className="text-sm font-black uppercase tracking-wide text-white">
+                  DATABASE ARCHITECTURE &amp; WORKSPACE RELATIONSHIPS
+                </span>
               </div>
-              <p className="mt-2 text-[#080808]/90 font-medium leading-relaxed">
-                Existing Supabase PostgreSQL project detected. Schema migration required for workspace isolation.
-              </p>
+
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="inline-flex items-center gap-2 border-2 border-white bg-white px-3.5 py-1.5 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[2px_2px_0px_#FFE500] transition-all hover:bg-[#FFE500] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-4 w-4 text-green-700 stroke-[3]" />
+                    <span>Copied to clipboard!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4 stroke-[2.5]" />
+                    <span>Copy prompt →</span>
+                  </>
+                )}
+              </button>
             </div>
 
-            {/* DO NOT CHANGE */}
-            <div className="border-2 border-[#080808] bg-red-50 p-4 shadow-[3px_3px_0px_#080808]">
-              <div className="font-black uppercase text-red-800 flex items-center gap-2">
-                <ShieldAlert className="h-4 w-4 text-red-600 stroke-[2.5]" />
-                <span className="bg-red-700 text-white px-1.5 py-0.5 text-[10px]">GUARDRAILS</span>
-                <span>DO NOT CHANGE</span>
-              </div>
-              <ul className="mt-2 list-disc list-inside text-red-950 font-bold space-y-1">
-                <li>Existing authentication flows &amp; <code className="bg-red-100 px-1 text-[11px]">auth.users</code> references.</li>
-                <li>Existing user profiles schema in <code className="bg-red-100 px-1 text-[11px]">public.profiles</code>.</li>
-                <li>Session cookies and SSR auth middleware verification logic.</li>
-              </ul>
-            </div>
-
-            {/* IMPLEMENT */}
-            <div className="border-2 border-[#080808] bg-[#FFE500]/20 p-4 shadow-[3px_3px_0px_#080808]">
-              <div className="font-black uppercase text-[#080808] flex items-center gap-2">
-                <Terminal className="h-4 w-4 text-[#080808] stroke-[2.5]" />
-                <span className="bg-[#FFE500] border border-[#080808] text-[#080808] px-1.5 py-0.5 text-[10px]">ACTION</span>
-                <span>IMPLEMENT</span>
-              </div>
-              <p className="mt-2 text-[#080808] font-medium leading-relaxed">
-                Project and workspace relationships. Create <code className="border border-[#080808] bg-white px-1 font-bold">public.workspaces</code> and assign Row-Level Security policies ensuring tenant boundaries cannot leak cross-account queries.
-              </p>
-            </div>
-
-            {/* VERIFY & EXPECTED RESULT */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="border-2 border-[#080808] bg-[#B7FF6A]/20 p-4 shadow-[3px_3px_0px_#080808]">
+            {/* Prompt Body with Visual Sections */}
+            <div className="p-6 sm:p-8 space-y-6 font-mono text-xs sm:text-sm">
+              
+              {/* CONTEXT */}
+              <div className="border-2 border-[#080808] bg-[#F8F6EC] p-4 shadow-[3px_3px_0px_#080808]">
                 <div className="font-black uppercase text-[#080808] flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-[#080808] stroke-[2.5]" />
-                  <span>VERIFICATION CHECKS</span>
+                  <span className="bg-[#080808] text-white px-1.5 py-0.5 text-[10px]">01</span>
+                  <span>CONTEXT &amp; ENVIRONMENT</span>
                 </div>
-                <p className="mt-2 text-[11px] font-bold text-[#080808]/90 leading-normal">
-                  - RLS queries reject non-tenant sessions<br />
-                  - Migration runs idempotently<br />
-                  - Type generation verified via Supabase CLI
+                <p className="mt-2 text-[#080808]/90 font-medium leading-relaxed">
+                  Existing Supabase PostgreSQL project detected. Schema migration required for workspace isolation.
                 </p>
               </div>
 
-              <div className="border-2 border-[#080808] bg-white p-4 shadow-[3px_3px_0px_#080808]">
-                <div className="font-black uppercase text-[#080808] flex items-center gap-2">
-                  <FileCode className="h-4 w-4 text-[#080808] stroke-[2.5]" />
-                  <span>EXPECTED RESULT</span>
+              {/* DO NOT CHANGE */}
+              <div className="border-2 border-[#080808] bg-red-50 p-4 shadow-[3px_3px_0px_#080808]">
+                <div className="font-black uppercase text-red-800 flex items-center gap-2">
+                  <ShieldAlert className="h-4 w-4 text-red-600 stroke-[2.5]" />
+                  <span className="bg-red-700 text-white px-1.5 py-0.5 text-[10px]">GUARDRAILS</span>
+                  <span>DO NOT CHANGE</span>
                 </div>
-                <p className="mt-2 text-[11px] font-bold text-[#080808]/90 leading-normal">
-                  Single, reproducible migration SQL file with rollback instructions and updated TypeScript schema types.
+                <ul className="mt-2 list-disc list-inside text-red-950 font-bold space-y-1">
+                  <li>Existing authentication flows &amp; <code className="bg-red-100 px-1 text-[11px]">auth.users</code> references.</li>
+                  <li>Existing user profiles schema in <code className="bg-red-100 px-1 text-[11px]">public.profiles</code>.</li>
+                  <li>Session cookies and SSR auth middleware verification logic.</li>
+                </ul>
+              </div>
+
+              {/* IMPLEMENT */}
+              <div className="border-2 border-[#080808] bg-[#FFE500]/20 p-4 shadow-[3px_3px_0px_#080808]">
+                <div className="font-black uppercase text-[#080808] flex items-center gap-2">
+                  <Terminal className="h-4 w-4 text-[#080808] stroke-[2.5]" />
+                  <span className="bg-[#FFE500] border border-[#080808] text-[#080808] px-1.5 py-0.5 text-[10px]">ACTION</span>
+                  <span>IMPLEMENT</span>
+                </div>
+                <p className="mt-2 text-[#080808] font-medium leading-relaxed">
+                  Project and workspace relationships. Create <code className="border border-[#080808] bg-white px-1 font-bold">public.workspaces</code> and assign Row-Level Security policies ensuring tenant boundaries cannot leak cross-account queries.
                 </p>
               </div>
+
+              {/* VERIFY & EXPECTED RESULT */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="border-2 border-[#080808] bg-[#B7FF6A]/20 p-4 shadow-[3px_3px_0px_#080808]">
+                  <div className="font-black uppercase text-[#080808] flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-[#080808] stroke-[2.5]" />
+                    <span>VERIFICATION CHECKS</span>
+                  </div>
+                  <p className="mt-2 text-[11px] font-bold text-[#080808]/90 leading-normal">
+                    - RLS queries reject non-tenant sessions<br />
+                    - Migration runs idempotently<br />
+                    - Type generation verified via Supabase CLI
+                  </p>
+                </div>
+
+                <div className="border-2 border-[#080808] bg-white p-4 shadow-[3px_3px_0px_#080808]">
+                  <div className="font-black uppercase text-[#080808] flex items-center gap-2">
+                    <FileCode className="h-4 w-4 text-[#080808] stroke-[2.5]" />
+                    <span>EXPECTED RESULT</span>
+                  </div>
+                  <p className="mt-2 text-[11px] font-bold text-[#080808]/90 leading-normal">
+                    Single, reproducible migration SQL file with rollback instructions and updated TypeScript schema types.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer note */}
+            <div className="border-t-2 border-[#080808] bg-[#F8F6EC] px-6 py-3 font-mono text-[11px] font-bold uppercase text-[#080808]/70 flex items-center justify-between">
+              <span>Contextual implementation instruction generated by Aigenstra</span>
+              <span className="hidden sm:inline">16-Part Blueprint Protocol</span>
             </div>
 
           </div>
-
-          {/* Footer note */}
-          <div className="border-t-2 border-[#080808] bg-[#F8F6EC] px-6 py-3 font-mono text-[11px] font-bold uppercase text-[#080808]/70 flex items-center justify-between">
-            <span>Contextual implementation instruction generated by Aigenstra</span>
-            <span className="hidden sm:inline">16-Part Blueprint Protocol</span>
-          </div>
-
         </div>
 
       </div>
