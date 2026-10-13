@@ -47,12 +47,27 @@ export default function PromptsPage() {
   const fetchInitialData = async () => {
     try {
       // Fetch tasks for this project
-      const tasksRes = await fetch(`/api/projects/${projectId}/tasks`);
-      const tasksData = await tasksRes.json();
+      let tasksRes = await fetch(`/api/projects/${projectId}/tasks`);
+      let tasksData = await tasksRes.json();
       
       let projectTasks: AigenstraTask[] = [];
       if (tasksRes.ok && Array.isArray(tasksData.tasks) && tasksData.tasks.length > 0) {
         projectTasks = tasksData.tasks;
+      } else {
+        // Auto-synthesize tasks seamlessly from the blueprint if not generated yet
+        const genRes = await fetch(`/api/projects/${projectId}/tasks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (genRes.ok) {
+          const genData = await genRes.json();
+          if (Array.isArray(genData.tasks) && genData.tasks.length > 0) {
+            projectTasks = genData.tasks;
+          }
+        }
+      }
+
+      if (projectTasks.length > 0) {
         setTasks(projectTasks);
         setSelectedTaskId(projectTasks[0].id);
       }
@@ -64,7 +79,7 @@ export default function PromptsPage() {
       const projDesc = projData?.project?.description || "Vibe-coding product architecture";
       setProjectInfo({ name: projName, description: projDesc });
 
-      // Only compile prompt if real tasks exist in the database
+      // Compile prompt for the first task
       if (projectTasks.length > 0) {
         await handleCompilePromptForTask(projectTasks[0], "Antigravity", projName, projDesc);
       } else {
@@ -253,6 +268,8 @@ export default function PromptsPage() {
           {activePrompt ? (
             <PromptStudioView
               prompt={activePrompt}
+              task={tasks.find((t) => t.id === selectedTaskId) || tasks[0] || null}
+              projectName={projectInfo?.name || "Your Application"}
               onSelectAgent={handleSelectAgent}
               onRecompile={() => {
                 const currentTask = tasks.find((t) => t.id === selectedTaskId) || tasks[0];

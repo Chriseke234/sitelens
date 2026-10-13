@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   SoftwareBlueprint,
   BlueprintHealthReport,
@@ -46,6 +47,7 @@ import {
   ChevronDown,
   ChevronRight,
   Info,
+  Terminal,
 } from "lucide-react";
 
 interface BlueprintViewProps {
@@ -279,12 +281,20 @@ export function BlueprintView({
             {onContinueToBuildMap && (
               <button
                 onClick={onContinueToBuildMap}
-                className="flex items-center gap-1.5 border-2 border-[#080808] bg-[#B7FF6A] px-4 py-2 text-xs font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                className="flex items-center gap-1.5 border-2 border-[#080808] bg-[#F8F6EC] px-3.5 py-2 text-xs font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:bg-white hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
               >
                 View Build Map
                 <ChevronRight className="w-4 h-4" />
               </button>
             )}
+
+            <Link
+              href={`/projects/${projectId}/prompts`}
+              className="flex items-center gap-1.5 border-2 border-[#080808] bg-[#FFE500] px-4 py-2 text-xs font-black uppercase text-[#080808] shadow-[2.5px_2.5px_0px_#080808] hover:bg-[#080808] hover:text-[#FFE500] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+            >
+              <Terminal className="w-3.5 h-3.5 stroke-[2.5]" />
+              Generate Coding Prompts →
+            </Link>
           </div>
         </div>
 

@@ -21,16 +21,28 @@ import {
   Zap,
   Info,
   ExternalLink,
+  Layout,
+  Database,
+  Lock,
+  Compass,
+  Code2,
+  Bot,
+  Play,
 } from "lucide-react";
 import {
   CompiledPrompt,
   CodingAgentProfile,
   PromptQualityStatus,
   PromptSection,
+  AigenstraTask,
+  SoftwareBlueprint,
 } from "@/types";
 
 interface PromptStudioViewProps {
   prompt: CompiledPrompt;
+  task?: AigenstraTask | null;
+  blueprint?: SoftwareBlueprint | null;
+  projectName?: string;
   onSelectAgent: (agent: CodingAgentProfile) => void;
   onRecompile?: () => void;
   isCompiling?: boolean;
@@ -39,6 +51,9 @@ interface PromptStudioViewProps {
 
 export function PromptStudioView({
   prompt,
+  task,
+  blueprint,
+  projectName = "Your Application",
   onSelectAgent,
   onRecompile,
   isCompiling = false,
@@ -153,6 +168,223 @@ export function PromptStudioView({
 
   return (
     <div className="space-y-6 font-mono text-[#080808]">
+      {/* 3-Step Build Roadmap Wizard Bar */}
+      <div className="border-[3px] border-[#080808] bg-white p-5 shadow-[6px_6px_0px_#080808]">
+        <div className="flex items-center justify-between mb-3 border-b-2 border-[#080808] pb-2">
+          <div className="flex items-center gap-2">
+            <Compass className="h-4 w-4 stroke-[2.5] text-[#080808]" />
+            <span className="text-xs font-black uppercase text-[#080808]">
+              Prompt Execution Roadmap
+            </span>
+          </div>
+          <span className="border border-[#080808] bg-[#FFE500] px-2 py-0.5 text-[10px] font-black uppercase text-[#080808]">
+            3-Step Workflow
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* Step 1 */}
+          <div className="flex items-start gap-3 border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2.5px_2.5px_0px_#080808]">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center border-2 border-[#080808] bg-[#FFE500] text-xs font-black text-[#080808]">
+              1
+            </span>
+            <div className="space-y-0.5">
+              <div className="text-xs font-black uppercase text-[#080808]">
+                Understand What You're Building
+              </div>
+              <p className="text-[11px] font-medium text-[#080808]/75 leading-tight">
+                Inspect the visual UI mockup, targeted screen, and affected entities below before generating code.
+              </p>
+            </div>
+          </div>
+
+          {/* Step 2 */}
+          <div className="flex items-start gap-3 border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2.5px_2.5px_0px_#080808]">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center border-2 border-[#080808] bg-[#FFE500] text-xs font-black text-[#080808]">
+              2
+            </span>
+            <div className="space-y-0.5">
+              <div className="text-xs font-black uppercase text-[#080808]">
+                Select Target Agent
+              </div>
+              <p className="text-[11px] font-medium text-[#080808]/75 leading-tight">
+                Currently optimized for <strong>{prompt.targetAgent}</strong> with strict change boundaries.
+              </p>
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div className="flex items-start gap-3 border-2 border-[#080808] bg-[#FFE500]/30 p-3 shadow-[2.5px_2.5px_0px_#080808]">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center border-2 border-[#080808] bg-[#B7FF6A] text-xs font-black text-[#080808]">
+              3
+            </span>
+            <div className="space-y-0.5">
+              <div className="text-xs font-black uppercase text-[#080808]">
+                Copy & Run Prompt
+              </div>
+              <p className="text-[11px] font-medium text-[#080808]/75 leading-tight">
+                Paste directly into {prompt.targetAgent}&apos;s input box and start coding immediately.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Visual "What You Are Building" Wireframe Mockup Card */}
+      {task && (
+        <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[6px_6px_0px_#080808] space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#080808] pb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center border-2 border-[#080808] bg-[#B7FF6A] shadow-[1.5px_1.5px_0px_#080808]">
+                <Layout className="h-4 w-4 stroke-[2.5] text-[#080808]" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black uppercase text-[#080808]">
+                  Step 1 Preview: What You Are Building Right Now
+                </h3>
+                <p className="text-[11px] font-medium text-[#080808]/70">
+                  Visual specification generated from real project scope
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="border border-[#080808] bg-[#F8F6EC] px-2 py-0.5 text-[10px] font-black uppercase text-[#080808]">
+                Task Type: {task.task_type || "FEATURE"}
+              </span>
+              <span className="border border-[#080808] bg-[#FFE500] px-2 py-0.5 text-[10px] font-black uppercase text-[#080808]">
+                Complexity: {task.complexity || "MEDIUM"}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+            {/* Left: Interactive Wireframe Mockup representation */}
+            <div className="lg:col-span-7 border-[2.5px] border-[#080808] bg-[#F8F6EC] p-4 shadow-[3px_3px_0px_#080808] flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between border-b-2 border-[#080808] pb-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-2.5 w-2.5 rounded-full border border-[#080808] bg-[#FF4F9A]" />
+                    <span className="flex h-2.5 w-2.5 rounded-full border border-[#080808] bg-[#FFE500]" />
+                    <span className="flex h-2.5 w-2.5 rounded-full border border-[#080808] bg-[#B7FF6A]" />
+                    <span className="text-[11px] font-black uppercase text-[#080808] ml-1">
+                      {task.affected_screens?.[0] || `${projectName} · UI Screen`}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase text-[#080808]/60">
+                    Live Layout Wireframe
+                  </span>
+                </div>
+
+                {/* Simulated Neo-Brutalist Screen Mockup */}
+                <div className="border-2 border-[#080808] bg-white p-4 shadow-[2px_2px_0px_#080808] space-y-3">
+                  {/* Mock Screen Header */}
+                  <div className="flex items-center justify-between border-b border-[#080808] pb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-12 border border-[#080808] bg-[#FFE500]" />
+                      <div className="h-2.5 w-20 bg-[#080808]/20" />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-5 w-14 border border-[#080808] bg-[#B7FF6A] text-[9px] font-black uppercase flex items-center justify-center">
+                        Active
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mock Screen Main Hero/Body */}
+                  <div className="space-y-2 py-1">
+                    <div className="text-xs font-black uppercase text-[#080808]">
+                      {task.title}
+                    </div>
+                    <p className="text-[11px] font-medium text-[#080808]/75 leading-relaxed bg-[#F8F6EC] border border-[#080808] p-2.5">
+                      {task.purpose || task.short_description || "Target feature implementation"}
+                    </p>
+                  </div>
+
+                  {/* Mock Screen Content Blocks / Form or Cards */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className="border border-[#080808] bg-[#F8F6EC] p-2 space-y-1">
+                      <div className="text-[9px] font-black uppercase text-[#080808]/60">
+                        Primary Screen Route
+                      </div>
+                      <div className="text-[11px] font-black uppercase text-[#080808] truncate">
+                        {task.affected_screens?.[0] || "/dashboard/feature"}
+                      </div>
+                    </div>
+                    <div className="border border-[#080808] bg-[#F8F6EC] p-2 space-y-1">
+                      <div className="text-[9px] font-black uppercase text-[#080808]/60">
+                        Database Schema
+                      </div>
+                      <div className="text-[11px] font-black uppercase text-[#080808] truncate">
+                        {task.affected_entities?.[0] || "Supabase Tables"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Wireframe footer note */}
+              <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-[#080808]/70 border-t border-[#080808]/20 pt-2">
+                <span>Viewport: Desktop & Mobile Responsive</span>
+                <span>Component Styling: Tailwind + Bento Borders</span>
+              </div>
+            </div>
+
+            {/* Right: User Value & Scope Breakdown */}
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-3">
+              <div className="border-2 border-[#080808] bg-[#FFE500]/20 p-3.5 shadow-[2.5px_2.5px_0px_#080808] space-y-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-black uppercase text-[#080808]">
+                  <Sparkles className="h-3.5 w-3.5 stroke-[2.5]" />
+                  <span>Real User Outcome & Value</span>
+                </div>
+                <p className="text-xs font-medium text-[#080808]/85 leading-relaxed">
+                  {task.user_value || "Enables end-users to interact with the core capability without friction."}
+                </p>
+              </div>
+
+              <div className="border-2 border-[#080808] bg-white p-3.5 shadow-[2.5px_2.5px_0px_#080808] space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-black uppercase text-[#080808]">
+                  <Database className="h-3.5 w-3.5 stroke-[2.5]" />
+                  <span>Affected Database Entities</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {task.affected_entities && task.affected_entities.length > 0 ? (
+                    task.affected_entities.map((ent, idx) => (
+                      <span
+                        key={idx}
+                        className="border border-[#080808] bg-[#F8F6EC] px-2 py-0.5 text-[10px] font-black uppercase text-[#080808]"
+                      >
+                        {ent}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-[11px] text-[#080808]/60">
+                      Standard Supabase Tables
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="border-2 border-[#080808] bg-white p-3.5 shadow-[2.5px_2.5px_0px_#080808] space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-black uppercase text-[#080808]">
+                  <Lock className="h-3.5 w-3.5 stroke-[2.5]" />
+                  <span>Change Boundaries</span>
+                </div>
+                <div className="text-[11px] space-y-1 font-medium text-[#080808]/80">
+                  <div className="truncate">
+                    <strong className="text-[#080808]">MUST CHANGE:</strong>{" "}
+                    {task.change_boundaries?.mustChange?.slice(0, 2).join(", ") || "app/, components/"}
+                  </div>
+                  <div className="truncate">
+                    <strong className="text-[#080808]">LEAVE ALONE:</strong>{" "}
+                    {task.change_boundaries?.mustNotChange?.slice(0, 1).join(", ") || "middleware.ts, auth config"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Banner: Studio Header & Coding Agent Selector */}
       <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[6px_6px_0px_#080808]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
