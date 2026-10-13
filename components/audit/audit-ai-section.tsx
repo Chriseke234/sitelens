@@ -2,10 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { DBStoredAIReport } from "@/lib/ai/audit-report";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
-import { Sparkles, AlertCircle, CheckCircle2, ShieldAlert, ArrowRight } from "lucide-react";
+import { Sparkles, AlertCircle, CheckCircle2, ShieldAlert, ArrowRight, Target, Zap } from "lucide-react";
 
 interface AuditAISectionProps {
   auditId: string;
@@ -40,13 +38,13 @@ export function AuditAISection({ auditId }: AuditAISectionProps) {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-blue-100 bg-blue-50/40 p-8 text-center dark:border-blue-900/40 dark:bg-blue-950/20">
-        <Spinner className="mx-auto h-8 w-8 text-blue-600 mb-3" />
-        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-          Synthesizing AI Report Interpretation...
+      <div className="border-[3px] border-[#080808] bg-[#F8F6EC] p-8 text-center shadow-[5px_5px_0px_#080808]">
+        <Spinner className="mx-auto h-8 w-8 text-[#080808] mb-3" />
+        <p className="font-sans text-sm font-black uppercase text-[#080808]">
+          Translating Audit Evidence into Plain-English Executive Report...
         </p>
-        <p className="text-xs text-slate-500 mt-1">
-          Translating deterministic audit evidence into actionable executive summary.
+        <p className="font-sans text-xs text-[#080808]/75 mt-1">
+          Synthesizing real-world measurements into actionable business priorities.
         </p>
       </div>
     );
@@ -54,13 +52,13 @@ export function AuditAISection({ auditId }: AuditAISectionProps) {
 
   if (error || !report) {
     return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-6 dark:border-amber-900/50 dark:bg-amber-950/20">
+      <div className="border-[3px] border-[#080808] bg-[#FFE500] p-6 shadow-[5px_5px_0px_#080808]">
         <div className="flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+          <AlertCircle className="h-5 w-5 text-[#080808] mt-0.5 shrink-0 stroke-[2.5]" />
           <div>
-            <h4 className="text-sm font-bold text-amber-900 dark:text-amber-200">AI Report Interpretation Unavailable</h4>
-            <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-              {error || "AI analysis is not available for this audit yet."}
+            <h4 className="font-sans text-sm font-black uppercase text-[#080808]">Executive Interpretation Notice</h4>
+            <p className="font-sans text-xs text-[#080808]/85 mt-1 font-medium">
+              {error || "Plain-English executive analysis will be synthesized shortly after the audit finishes."}
             </p>
           </div>
         </div>
@@ -71,38 +69,48 @@ export function AuditAISection({ auditId }: AuditAISectionProps) {
   return (
     <div className="space-y-6">
       {/* Executive Header Card */}
-      <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/80 to-indigo-50/40 p-6 shadow-sm dark:border-blue-900/60 dark:from-blue-950/30 dark:to-indigo-950/20">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-blue-100 pb-4 dark:border-blue-900/50">
+      <div className="border-[3px] border-[#080808] bg-[#FFE500] p-6 shadow-[5px_5px_0px_#080808] text-[#080808]">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b-2 border-[#080808] pb-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-              <Sparkles className="h-4 w-4" />
+            <div className="flex h-8 w-8 items-center justify-center border-2 border-[#080808] bg-white text-[#080808] shadow-[2px_2px_0px_#080808]">
+              <Sparkles className="h-4 w-4 stroke-[2.5]" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">AI Executive Interpretation</h3>
-              <p className="text-xs text-slate-500">
-                Model: <span className="font-mono text-slate-700 dark:text-slate-300">{report.model}</span> | Prompt Version: <span className="font-mono text-slate-700 dark:text-slate-300">{report.prompt_version}</span>
+              <h3 className="font-sans text-lg font-black uppercase tracking-tight text-[#080808]">
+                Executive Business Summary
+              </h3>
+              <p className="font-mono text-[10px] text-[#080808]/80 font-bold">
+                Plain-English Translation · Measured Evidence Grounded
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="w-fit border-blue-300 bg-white text-blue-700 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300">
-            Evidence-Based Analysis
-          </Badge>
+          <span className="w-fit border-2 border-[#080808] bg-white px-3 py-1 font-mono text-[11px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808]">
+            Non-Technical Brief
+          </span>
         </div>
 
-        <div className="mt-4 text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+        <div className="mt-4 font-sans text-sm font-medium leading-relaxed text-[#080808]">
           {report.summary}
         </div>
       </div>
 
-      {/* Key Findings List */}
+      {/* Key Strategic Findings List */}
       {report.key_findings && report.key_findings.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Key Strategic Findings</h4>
-          <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 text-xs text-slate-600 dark:text-slate-300">
+        <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808]">
+          <div className="flex items-center gap-2 mb-4">
+            <Target className="h-4 w-4 stroke-[2.5] text-[#080808]" />
+            <h4 className="font-sans text-sm font-black uppercase tracking-tight text-[#080808]">
+              Key Business Insights & Observations
+            </h4>
+          </div>
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {report.key_findings.map((finding, idx) => (
-              <li key={idx} className="flex items-start gap-2 rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
-                <CheckCircle2 className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
-                <span>{finding}</span>
+              <li
+                key={idx}
+                className="flex items-start gap-2.5 border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2px_2px_0px_#080808]"
+              >
+                <CheckCircle2 className="h-4 w-4 text-[#080808] shrink-0 mt-0.5 stroke-[2.5]" />
+                <span className="font-sans text-xs font-semibold leading-relaxed text-[#080808]">{finding}</span>
               </li>
             ))}
           </ul>
@@ -111,30 +119,43 @@ export function AuditAISection({ auditId }: AuditAISectionProps) {
 
       {/* Priority Action Matrix */}
       {report.priority_actions && report.priority_actions.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Recommended Priority Action Items</h4>
+        <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808]">
+          <div className="flex items-center gap-2 mb-4">
+            <Zap className="h-4 w-4 stroke-[2.5] text-[#080808]" />
+            <h4 className="font-sans text-sm font-black uppercase tracking-tight text-[#080808]">
+              Recommended High-Priority Action Items
+            </h4>
+          </div>
 
           <div className="space-y-4">
             {report.priority_actions.map((act, idx) => (
               <div
                 key={idx}
-                className="rounded-lg border border-slate-100 bg-slate-50/80 p-4 text-xs dark:border-slate-800 dark:bg-slate-950/60"
+                className="border-2 border-[#080808] bg-white p-4 shadow-[3px_3px_0px_#080808]"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
-                    Evidence: <span className="font-mono text-slate-600 dark:text-slate-400">{act.evidence}</span>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-[#080808]/20 pb-2 mb-3">
+                  <span className="font-mono text-xs font-bold text-[#080808]/80">
+                    Observation: <span className="font-medium">{act.evidence}</span>
                   </span>
                   <PriorityBadge priority={act.priority} />
                 </div>
 
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 mt-2">
-                  <div className="rounded border border-slate-200/60 bg-white p-2.5 dark:border-slate-800 dark:bg-slate-900">
-                    <span className="font-bold text-slate-700 dark:text-slate-300 block mb-0.5">Why it matters:</span>
-                    <p className="text-slate-600 dark:text-slate-400">{act.why_it_matters}</p>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2px_2px_0px_#080808]">
+                    <span className="font-mono text-[10px] font-black uppercase text-[#080808] block mb-1">
+                      Why this matters for your customers:
+                    </span>
+                    <p className="font-sans text-xs font-medium text-[#080808]/90 leading-relaxed">
+                      {act.why_it_matters}
+                    </p>
                   </div>
-                  <div className="rounded border border-slate-200/60 bg-white p-2.5 dark:border-slate-800 dark:bg-slate-900">
-                    <span className="font-bold text-blue-700 dark:text-blue-300 block mb-0.5">Recommended action:</span>
-                    <p className="text-slate-600 dark:text-slate-400">{act.recommended_action}</p>
+                  <div className="border-2 border-[#080808] bg-[#B7FF6A] p-3 text-[#080808] shadow-[2px_2px_0px_#080808]">
+                    <span className="font-mono text-[10px] font-black uppercase text-[#080808] block mb-1">
+                      Recommended Next Step:
+                    </span>
+                    <p className="font-sans text-xs font-bold text-[#080808] leading-relaxed">
+                      {act.recommended_action}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -144,9 +165,9 @@ export function AuditAISection({ auditId }: AuditAISectionProps) {
       )}
 
       {/* Mandatory AI Disclaimer */}
-      <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-4 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-950">
-        <p className="italic text-center">
-          Notice: AI-generated analysis is provided as an interpretation of the automated audit results and should be reviewed alongside the underlying evidence.
+      <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2px_2px_0px_#080808]">
+        <p className="font-mono text-[11px] text-center font-bold text-[#080808]/75">
+          Notice: This plain-English analysis is grounded strictly in deterministic audit measurements and page signals.
         </p>
       </div>
     </div>
@@ -156,12 +177,28 @@ export function AuditAISection({ auditId }: AuditAISectionProps) {
 function PriorityBadge({ priority }: { priority: string }) {
   switch (priority.toLowerCase()) {
     case "critical":
-      return <Badge className="bg-rose-600 text-white">Critical</Badge>;
+      return (
+        <span className="border border-[#080808] bg-[#FF4F9A] px-2 py-0.5 font-mono text-[10px] font-black uppercase text-white shadow-[1px_1px_0px_#080808]">
+          Critical Priority
+        </span>
+      );
     case "high":
-      return <Badge className="bg-amber-600 text-white">High</Badge>;
+      return (
+        <span className="border border-[#080808] bg-[#FFE500] px-2 py-0.5 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[1px_1px_0px_#080808]">
+          High Impact
+        </span>
+      );
     case "medium":
-      return <Badge className="bg-blue-600 text-white">Medium</Badge>;
+      return (
+        <span className="border border-[#080808] bg-[#B7FF6A] px-2 py-0.5 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[1px_1px_0px_#080808]">
+          Medium Priority
+        </span>
+      );
     default:
-      return <Badge variant="secondary">Low</Badge>;
+      return (
+        <span className="border border-[#080808] bg-white px-2 py-0.5 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[1px_1px_0px_#080808]">
+          Low Priority
+        </span>
+      );
   }
 }

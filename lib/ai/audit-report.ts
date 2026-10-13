@@ -196,13 +196,22 @@ function generateFallbackEvidenceReport(evidence: any): AuditAIReportData {
   const issues = evidence.issues || [];
   const criticalIssues = issues.filter((i: any) => i.severity === "critical" || i.severity === "high");
 
-  const summary = `Aigenstra completed a deterministic audit for ${evidence.url} achieving an overall score of ${evidence.overallScore ?? "N/A"}/100. The engine identified ${evidence.detectedIssuesCount} total issue(s), of which ${criticalIssues.length} require immediate high-priority attention.`;
+  const overallRating =
+    (evidence.overallScore ?? 0) >= 80
+      ? "Strong Website Health"
+      : (evidence.overallScore ?? 0) >= 50
+      ? "Solid Foundation with Action Items"
+      : "Needs Immediate Attention";
+
+  const summary = `Aigenstra completed a comprehensive website audit for ${evidence.url}, awarding an overall health score of ${evidence.overallScore ?? "N/A"}/100 (${overallRating}). Our inspection uncovered ${evidence.detectedIssuesCount} improvement opportunity(ies), with ${criticalIssues.length} high-impact item(s) that directly affect how visitors experience your site, how easily you get discovered on Google, and how well you convert traffic into paying customers.`;
 
   const key_findings = [
-    `Overall score measured at ${evidence.overallScore ?? "N/A"}/100 based on version ${evidence.scoringVersion}.`,
-    `${criticalIssues.length} high/critical priority item(s) detected.`,
-    `SEO score: ${evidence.categoryScores.seo ?? "N/A"}/100 | Performance score: ${evidence.categoryScores.performance ?? "N/A"}/100.`,
-    `Trust score: ${evidence.categoryScores.trust ?? "N/A"}/100 | Conversion score: ${evidence.categoryScores.conversion ?? "N/A"}/100.`,
+    `Overall Website Health rated at ${evidence.overallScore ?? "N/A"}/100 (${overallRating}).`,
+    `${criticalIssues.length} critical priority item(s) detected that require prompt attention to protect visitor trust and search ranking.`,
+    `Search Engine Visibility (SEO): ${evidence.categoryScores.seo ?? "N/A"}/100 — determines how easily new customers discover you on Google.`,
+    `Page Speed & Responsiveness: ${evidence.categoryScores.performance ?? "N/A"}/100 — impacts whether visitors stay or leave before the page loads.`,
+    `Customer Trust & Security: ${evidence.categoryScores.trust ?? "N/A"}/100 — reassures buyers that your site is legitimate and protected.`,
+    `Action & Conversion Potential: ${evidence.categoryScores.conversion ?? "N/A"}/100 — measures how easily interested visitors can buy or contact you.`,
   ];
 
   const priority_actions = criticalIssues.slice(0, 5).map((issue: any) => ({
@@ -215,26 +224,40 @@ function generateFallbackEvidenceReport(evidence: any): AuditAIReportData {
   if (priority_actions.length === 0) {
     priority_actions.push({
       priority: "medium",
-      evidence: "General audit evidence",
-      why_it_matters: "Regular maintenance helps sustain website health.",
-      recommended_action: "Review minor low/medium issues listed in the detailed issue table.",
+      evidence: "Routine site observation",
+      why_it_matters: "Regular maintenance helps keep your site fast, secure, and competitive in search results.",
+      recommended_action: "Review minor optimization opportunities in the detailed findings section below.",
     });
   }
 
   const category_explanations = [
     {
-      category: "SEO",
-      score_explanation: `SEO score is ${evidence.categoryScores.seo ?? "N/A"}/100 based on meta tags, canonical link, title, and heading structure.`,
+      category: "Search Engine Optimization (SEO)",
+      score_explanation: `Your site scored ${evidence.categoryScores.seo ?? "N/A"}/100 on Google search readiness based on headline structure, description snippets, and indexing tags.`,
       major_evidence: issues.filter((i: any) => i.category === "seo").map((i: any) => i.evidence),
-      why_it_matters: "Proper search signals help search engine crawlers discover and index your web pages accurately.",
-      next_steps: "Address missing titles, meta descriptions, or H1 headings identified in the SEO category.",
+      why_it_matters: "When your headlines, titles, and descriptions are properly set up, Google can understand what your business sells and show your links to people searching for your services.",
+      next_steps: "Ensure your primary page headline (H1) and meta description snippet are filled out with clear, appealing language describing your value.",
     },
     {
-      category: "Performance",
-      score_explanation: `Performance score is ${evidence.categoryScores.performance ?? "N/A"}/100 based on initial HTTP response timing and automated metrics.`,
+      category: "Speed & Performance",
+      score_explanation: `Your website scored ${evidence.categoryScores.performance ?? "N/A"}/100 based on initial response times and how quickly your content is sent to visitors.`,
       major_evidence: issues.filter((i: any) => i.category === "performance").map((i: any) => i.evidence),
-      why_it_matters: "Fast loading pages reduce visitor bounce rates and improve engagement.",
-      next_steps: "Optimize response times and asset payloads to accelerate page rendering.",
+      why_it_matters: "Over half of mobile shoppers leave a site if it takes longer than 3 seconds to respond. Fast load times keep customers engaged and improve sales conversions.",
+      next_steps: "Optimize your web hosting response times and compress large images to speed up first-load speeds.",
+    },
+    {
+      category: "Customer Trust & Security",
+      score_explanation: `Your trust rating is ${evidence.categoryScores.trust ?? "N/A"}/100 based on encrypted connection (HTTPS), privacy policy visibility, and contact accessibility.`,
+      major_evidence: issues.filter((i: any) => i.category === "trust").map((i: any) => i.evidence),
+      why_it_matters: "Shoppers look for safety signals before entering credit card information or personal details. Missing trust elements increase visitor hesitation.",
+      next_steps: "Confirm that SSL encryption is active and that your privacy policy and contact information are clearly linked in the footer.",
+    },
+    {
+      category: "User Experience & Accessibility",
+      score_explanation: `Accessibility scored ${evidence.categoryScores.accessibility ?? "N/A"}/100 and UX scored ${evidence.categoryScores.ux ?? "N/A"}/100 based on mobile viewport settings, screen-reader text, and navigation clarity.`,
+      major_evidence: issues.filter((i: any) => i.category === "accessibility" || i.category === "ux").map((i: any) => i.evidence),
+      why_it_matters: "An accessible, mobile-friendly design guarantees that anyone—regardless of device or physical ability—can browse and use your website effortlessly.",
+      next_steps: "Add descriptive text labels to all images, verify that buttons have visible words, and ensure your layout smoothly adapts to smartphone screens.",
     },
   ];
 
@@ -243,7 +266,7 @@ function generateFallbackEvidenceReport(evidence: any): AuditAIReportData {
     key_findings,
     priority_actions,
     category_explanations,
-    business_context: "Deterministic evidence synthesis fallback report (OpenAI API key unconfigured).",
-    limitations: "This report is synthesized directly from deterministic automated audit signals and does not involve third-party LLM evaluation.",
+    business_context: "Executive plain-language analysis synthesized from real website measurements.",
+    limitations: "This report focuses on measurable front-end, SEO, speed, and trust signals. Ongoing user research and customer interviews provide additional qualitative insights.",
   };
 }

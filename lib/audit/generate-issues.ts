@@ -17,10 +17,10 @@ export function generateAuditIssues(
     issues.push({
       category: "seo",
       severity: "critical",
-      title: "Non-200 HTTP response code",
-      description: "The website server did not return a successful 200 OK status code.",
-      evidence: `Target URL returned HTTP status code ${statusCode}.`,
-      recommendation: "Ensure the web server responds with a 200 OK status for legitimate requests.",
+      title: "Website Server Is Not Responding Properly",
+      description: "When potential customers or search engines visit your website, the server returns an error code instead of loading your page. Visitors likely see an error screen or blank page, which immediately drives traffic away.",
+      evidence: `The web server returned HTTP status code ${statusCode} instead of the expected 200 (Success).`,
+      recommendation: "Check your website hosting provider, DNS setup, and domain routing to ensure your site loads normally for all visitors.",
     });
     return issues;
   }
@@ -30,19 +30,19 @@ export function generateAuditIssues(
     issues.push({
       category: "seo",
       severity: "high",
-      title: "Missing page title tag",
-      description: "The page does not contain a <title> HTML element.",
-      evidence: "No <title> tag was found in the page header.",
-      recommendation: "Add a concise, descriptive <title> tag summarizing the page contents.",
+      title: "Missing Page Title in Search Results",
+      description: "Your page does not have a title tag. Search engines like Google use this title as the main clickable headline in search results. Without it, Google cannot describe your business accurately and your search ranking will drop.",
+      evidence: "No <title> HTML tag was found in the page header.",
+      recommendation: "Add a clear, catchy title (30–60 characters) summarizing what your business offers so customers recognize your site in Google search.",
     });
   } else if (signals.titleLength < 10 || signals.titleLength > 70) {
     issues.push({
       category: "seo",
       severity: "medium",
-      title: "Suboptimal title tag length",
-      description: "Page title should ideally be between 30 and 60 characters for search snippet optimization.",
-      evidence: `Title length is currently ${signals.titleLength} characters ("${signals.titleText.substring(0, 45)}...").`,
-      recommendation: "Adjust title length to be between 30 and 60 characters.",
+      title: "Page Title Needs Length Adjustment",
+      description: `Your headline title is currently ${signals.titleLength} characters. Titles that are too short fail to tell customers what you do, while titles over 60 characters get abruptly cut off with '...' in Google search results.`,
+      evidence: `Current page title has ${signals.titleLength} characters: "${signals.titleText.substring(0, 45)}...". Ideal range is 30 to 60 characters.`,
+      recommendation: "Keep your page title between 30 and 60 characters so the full name and value proposition are cleanly readable on search results.",
     });
   }
 
@@ -50,10 +50,10 @@ export function generateAuditIssues(
     issues.push({
       category: "seo",
       severity: "high",
-      title: "Missing meta description tag",
-      description: "The page does not contain a <meta name=\"description\"> tag.",
-      evidence: "No meta description element was found in the page HTML.",
-      recommendation: "Add a concise meta description summarizing the page value for search engines.",
+      title: "Missing Search Summary (Meta Description)",
+      description: "Your page lacks a summary snippet for search engines. When your website appears on Google, visitors normally read this 1-2 sentence preview to decide whether to click your link.",
+      evidence: "No meta description tag was found in the page header.",
+      recommendation: "Write an engaging 1–2 sentence summary (about 120–155 characters) explaining why customers should choose your service.",
     });
   }
 
@@ -61,19 +61,19 @@ export function generateAuditIssues(
     issues.push({
       category: "seo",
       severity: "high",
-      title: "Missing H1 main heading",
-      description: "The page does not contain a primary <h1> heading tag.",
-      evidence: "No <h1> element was detected in the document hierarchy.",
-      recommendation: "Add a single primary <h1> heading tag to establish content hierarchy.",
+      title: "Missing Main Headline on Page",
+      description: "When people arrive on your page, there is no primary heading (H1) that immediately tells them what your website is about. Visitors might feel confused about what you offer within the first 3 seconds.",
+      evidence: "No primary <h1> headline tag detected in the page content.",
+      recommendation: "Add a prominent main headline at the top of your page clearly stating what your product or service provides.",
     });
   } else if (signals.h1Count > 1) {
     issues.push({
       category: "seo",
       severity: "medium",
-      title: "Multiple H1 headings detected",
-      description: "Pages should ideally contain only one primary <h1> heading tag.",
-      evidence: `Page contains ${signals.h1Count} separate <h1> tags.`,
-      recommendation: "Consolidate your main page title into a single <h1> and use <h2>/<h3> tags for sub-sections.",
+      title: "Multiple Competing Main Headlines",
+      description: "Your website contains more than one main headline tag. This can confuse search engine crawlers and website readers about what the primary focus of the page is.",
+      evidence: `Page contains ${signals.h1Count} primary <h1> heading tags.`,
+      recommendation: "Keep one single main headline at the top of the page, and change any secondary section titles to subheadings (H2 or H3).",
     });
   }
 
@@ -81,10 +81,10 @@ export function generateAuditIssues(
     issues.push({
       category: "seo",
       severity: "low",
-      title: "Missing canonical URL link tag",
-      description: "Canonical tags prevent duplicate content issues across search engines.",
-      evidence: "No <link rel=\"canonical\"> tag was found.",
-      recommendation: "Add a canonical URL tag pointing to the authoritative URL of this page.",
+      title: "Missing Preferred Address Tag (Canonical Link)",
+      description: "Search engines might see duplicate copies of your website (e.g. 'http://', 'https://', or '?ref=' variations) and split your search authority instead of focusing on your main URL.",
+      evidence: "No canonical link (<link rel='canonical'>) found in page header.",
+      recommendation: "Add a canonical URL tag so search engines know which address is your official primary link.",
     });
   }
 
@@ -93,10 +93,10 @@ export function generateAuditIssues(
     issues.push({
       category: "accessibility",
       severity: "high",
-      title: "Missing document language attribute",
-      description: "The <html> tag does not specify a lang attribute.",
-      evidence: "HTML tag is missing the lang attribute (e.g. <html lang=\"en\">).",
-      recommendation: "Add an explicit lang attribute to the <html> tag to support screen readers.",
+      title: "Missing Language Setting for Screen Readers",
+      description: "The website does not declare which language it is written in. Assistive tools and speech synthesizers used by visually impaired visitors cannot automatically select the right pronunciation.",
+      evidence: "The top-level <html> tag is missing the 'lang' attribute (e.g., lang='en').",
+      recommendation: "Specify your site's primary language (e.g. lang='en') so translation software and screen reading tools work seamlessly.",
     });
   }
 
@@ -104,10 +104,10 @@ export function generateAuditIssues(
     issues.push({
       category: "accessibility",
       severity: "high",
-      title: "Images missing alt text attributes",
-      description: "Screen readers rely on alt text attributes to describe visual images.",
-      evidence: `${signals.imagesMissingAltCount} out of ${signals.totalImageCount} image(s) on the page are missing alt text attributes.`,
-      recommendation: "Add descriptive alt attributes to all non-decorative <img> tags.",
+      title: "Images Missing Descriptions for Visually Impaired Visitors",
+      description: `${signals.imagesMissingAltCount} image(s) on your website do not have text descriptions. People using screen-reading software will only hear 'image' with zero context, and search engines won't understand what the images show.`,
+      evidence: `${signals.imagesMissingAltCount} out of ${signals.totalImageCount} image(s) lack an 'alt' text description attribute.`,
+      recommendation: "Add a short, descriptive sentence or label to each image explaining what is shown in the picture.",
     });
   }
 
@@ -115,10 +115,10 @@ export function generateAuditIssues(
     issues.push({
       category: "accessibility",
       severity: "medium",
-      title: "Buttons or links missing accessible names",
-      description: "Interactive elements must have visible text or an aria-label.",
-      evidence: "One or more <a> or <button> tags contain no text, aria-label, or title attributes.",
-      recommendation: "Ensure all buttons and link elements contain descriptive inner text or aria-label attributes.",
+      title: "Buttons or Clickable Links Without Visible Names",
+      description: "Some buttons or links on your site do not contain text or accessibility labels (often icon-only buttons). Visitors relying on assistive tools won't know where the button leads or what clicking it does.",
+      evidence: "Clickable elements (<button> or <a>) were found with no readable label, text, or title.",
+      recommendation: "Add clear labels or aria-label text to every button (e.g. 'Open Search', 'Close Menu') so its purpose is immediately clear.",
     });
   }
 
@@ -127,10 +127,10 @@ export function generateAuditIssues(
     issues.push({
       category: "performance",
       severity: loadTimeMs > 4000 ? "high" : "medium",
-      title: "Slow server response time",
-      description: "Initial page document response time exceeds 2.5 seconds.",
-      evidence: `Server HTML response time was ${loadTimeMs}ms.`,
-      recommendation: "Optimize server-side response times, database queries, and caching headers.",
+      title: "Website Takes Too Long to Start Loading",
+      description: `Your server took ${(loadTimeMs / 1000).toFixed(1)} seconds just to send the first piece of page data. Research shows that more than half of mobile visitors abandon a website if it takes longer than 3 seconds to respond.`,
+      evidence: `Initial server response time was ${loadTimeMs}ms (optimal threshold is under 800ms).`,
+      recommendation: "Upgrade server hosting, enable page caching, or optimize database queries to make your site feel instant for visitors.",
     });
   }
 
@@ -139,10 +139,10 @@ export function generateAuditIssues(
     issues.push({
       category: "trust",
       severity: "critical",
-      title: "Website not using secure HTTPS connection",
-      description: "HTTP connections expose user data to interception and trigger browser security warnings.",
-      evidence: "URL uses unencrypted HTTP protocol instead of HTTPS.",
-      recommendation: "Migrate website to HTTPS and enforce SSL redirection across all pages.",
+      title: "Connection Is Not Secure (Missing HTTPS / SSL)",
+      description: "Your website is using an unencrypted connection. Modern browsers like Chrome and Safari will display a scary 'Not Secure' warning to visitors, severely hurting credibility and customer conversions.",
+      evidence: "The website uses plain 'http://' instead of encrypted 'https://'.",
+      recommendation: "Install an SSL security certificate and enable automatic HTTPS redirection for all website traffic.",
     });
   }
 
@@ -150,10 +150,10 @@ export function generateAuditIssues(
     issues.push({
       category: "trust",
       severity: "medium",
-      title: "Missing privacy policy link",
-      description: "Privacy links establish credibility and comply with privacy regulations.",
-      evidence: "No link containing 'privacy' was detected in page navigation or footer links.",
-      recommendation: "Add a visible Privacy Policy link to your website footer.",
+      title: "No Visible Privacy Policy Found",
+      description: "Prospective customers and modern advertising platforms look for a privacy policy to verify that your company is reputable and respects user data. Missing this hurts buyer trust.",
+      evidence: "No link mentioning 'Privacy' was detected in the website navigation or footer.",
+      recommendation: "Place a visible Privacy Policy link in your website footer to reassure customers and comply with standard regulations.",
     });
   }
 
@@ -161,10 +161,10 @@ export function generateAuditIssues(
     issues.push({
       category: "trust",
       severity: "medium",
-      title: "Missing contact information or link",
-      description: "Visitors need straightforward channels to reach customer support or sales.",
-      evidence: "No link containing 'contact', phone number (tel:), or email (mailto:) was detected.",
-      recommendation: "Add clear contact information or a dedicated Contact page link.",
+      title: "Hard for Customers to Find Contact Details",
+      description: "Visitors have no obvious way to reach out for sales inquiries or customer support. When contact details are hidden or missing, potential buyers often hesitate and leave without purchasing.",
+      evidence: "No phone number, email address, or dedicated 'Contact' link was detected on the page.",
+      recommendation: "Add clear contact information (such as an email, support form, or phone link) in your header or footer.",
     });
   }
 

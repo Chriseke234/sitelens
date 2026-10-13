@@ -7,15 +7,16 @@ import {
   Loader2,
   Printer,
   Share2,
-  Download,
   Check,
-  Copy,
+  Link as LinkIcon,
   ShieldCheck,
   CheckCircle2,
   Layers,
   Sparkles,
-  Link as LinkIcon,
-  Globe,
+  AlertTriangle,
+  ArrowRight,
+  Code,
+  CheckSquare,
 } from "lucide-react";
 
 export default function ProjectReportPage() {
@@ -118,8 +119,8 @@ export default function ProjectReportPage() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      <div className="flex h-64 items-center justify-center border-[3px] border-[#080808] bg-white shadow-[6px_6px_0px_#080808]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#080808]" />
       </div>
     );
   }
@@ -129,90 +130,93 @@ export default function ProjectReportPage() {
   const openFindings = (findings || []).filter((f: any) => f.lifecycle_status !== "resolved");
 
   return (
-    <div className="space-y-8 print:p-0 print:space-y-4">
+    <div className="space-y-6 print:p-0 print:space-y-4">
       {/* Action Bar (Hidden during Print) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 print:hidden">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
-            <FileText className="h-3.5 w-3.5" />
-            Aigenstra Engineering Report
+      <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808] print:hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="inline-block border-2 border-[#080808] bg-[#FFE500] px-2.5 py-0.5 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[1.5px_1.5px_0px_#080808]">
+              EXECUTIVE SPEC & AUDIT REPORT
+            </div>
+            <h1 className="font-sans text-2xl font-black uppercase tracking-tight text-[#080808] sm:text-3xl">
+              Project Engineering & Audit Report
+            </h1>
+            <p className="font-sans text-xs sm:text-sm font-medium text-[#080808]/80 max-w-2xl">
+              Complete formal specification, architecture decisions, verified code audit findings, and launch readiness checklist.
+            </p>
           </div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
-            Executive Engineering & Audit Report
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-            Complete formal specification, ADR decisions, 16-part prompts, audit findings, and production checklist.
-          </p>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {shareToken ? (
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            {shareToken ? (
+              <button
+                type="button"
+                onClick={handleCopyShareLink}
+                className="inline-flex items-center gap-1.5 border-2 border-[#080808] bg-[#B7FF6A] px-4 py-2 font-mono text-xs font-black uppercase text-[#080808] shadow-[2.5px_2.5px_0px_#080808] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+              >
+                {copiedShare ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 stroke-[2.5]" />
+                    <span>Copied Share Link!</span>
+                  </>
+                ) : (
+                  <>
+                    <LinkIcon className="h-3.5 w-3.5 stroke-[2.5]" />
+                    <span>Copy Read-Only Link</span>
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleCreateShareLink}
+                disabled={generatingShare}
+                className="inline-flex items-center gap-1.5 border-2 border-[#080808] bg-white px-4 py-2 font-mono text-xs font-black uppercase text-[#080808] shadow-[2.5px_2.5px_0px_#080808] hover:bg-[#F8F6EC] transition-all"
+              >
+                <Share2 className="h-3.5 w-3.5 stroke-[2.5]" />
+                <span>Generate Share Link</span>
+              </button>
+            )}
+
             <button
               type="button"
-              onClick={handleCopyShareLink}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-all dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300"
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 border-2 border-[#080808] bg-[#FFE500] px-4 py-2 font-mono text-xs font-black uppercase text-[#080808] shadow-[2.5px_2.5px_0px_#080808] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
             >
-              {copiedShare ? (
-                <>
-                  <Check className="h-3.5 w-3.5 text-emerald-600" />
-                  Copied Share Link!
-                </>
-              ) : (
-                <>
-                  <LinkIcon className="h-3.5 w-3.5" />
-                  Copy Read-Only Link
-                </>
-              )}
+              <Printer className="h-3.5 w-3.5 stroke-[2.5]" />
+              <span>Print / Save PDF</span>
             </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleCreateShareLink}
-              disabled={generatingShare}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
-            >
-              <Share2 className="h-3.5 w-3.5" />
-              Generate Share Link
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-indigo-700 transition-all"
-          >
-            <Printer className="h-3.5 w-3.5" />
-            Print / Save PDF
-          </button>
+          </div>
         </div>
       </div>
 
       {/* Main Document Body */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 sm:p-12 shadow-sm dark:border-slate-800 dark:bg-slate-900 print:border-none print:shadow-none print:p-0 space-y-10 font-sans text-slate-800 dark:text-slate-200">
+      <div className="border-[3px] border-[#080808] bg-white p-6 sm:p-10 shadow-[6px_6px_0px_#080808] print:border-none print:shadow-none print:p-0 space-y-8 font-sans text-[#080808]">
         {/* Document Header */}
-        <div className="border-b border-slate-200 pb-6 dark:border-slate-800">
+        <div className="border-b-2 border-[#080808] pb-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 font-black text-xl text-slate-900 dark:text-white">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-white text-xs">A</span>
-              Aigenstra Project Engineering Report
+            <div className="flex items-center gap-2 font-black text-lg text-[#080808] uppercase tracking-tight">
+              <span className="flex h-7 w-7 items-center justify-center border-2 border-[#080808] bg-[#FFE500] text-[#080808] text-xs font-mono font-black shadow-[1.5px_1.5px_0px_#080808]">
+                A
+              </span>
+              Aigenstra Project Engineering & Audit Report
             </div>
-            <span className="text-xs text-slate-400 font-mono">
+            <span className="font-mono text-xs font-bold text-[#080808]/60">
               Date: {new Date().toLocaleDateString()}
             </span>
           </div>
 
-          <div className="mt-6 space-y-1">
-            <h2 className="text-3xl font-black text-slate-900 dark:text-white">
+          <div className="mt-5 space-y-2">
+            <h2 className="font-sans text-3xl font-black uppercase tracking-tight text-[#080808]">
               {project?.name || "Project Workspace"}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-3xl leading-relaxed">
+            <p className="font-sans text-sm font-medium text-[#080808]/85 max-w-3xl leading-relaxed">
               {project?.description || project?.raw_idea || "AI-assisted product engineering workspace."}
             </p>
-            <div className="flex flex-wrap gap-2 pt-2 text-xs">
-              <span className="rounded bg-indigo-50 px-2 py-0.5 font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+            <div className="flex flex-wrap gap-2 pt-2">
+              <span className="border border-[#080808] bg-[#F8F6EC] px-2.5 py-0.5 font-mono text-xs font-bold text-[#080808] shadow-[1px_1px_0px_#080808]">
                 Type: {project?.product_type || "SaaS"}
               </span>
-              <span className="rounded bg-slate-100 px-2 py-0.5 font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+              <span className="border border-[#080808] bg-[#F8F6EC] px-2.5 py-0.5 font-mono text-xs font-bold text-[#080808] shadow-[1px_1px_0px_#080808]">
                 Environment: {project?.coding_environment || "Cursor"}
               </span>
             </div>
@@ -221,20 +225,30 @@ export default function ProjectReportPage() {
 
         {/* 1. Executive Summary & Product Spec */}
         <section className="space-y-4">
-          <h3 className="text-lg font-black text-slate-900 dark:text-white border-b border-slate-100 pb-2 dark:border-slate-800">
-            1. Product Requirements & Personas
-          </h3>
-          <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-            {productSpec?.problem_statement || "Problem statement formulated during discovery stage."}
-          </p>
+          <div className="border-b-2 border-[#080808] pb-2">
+            <h3 className="font-sans text-lg font-black uppercase tracking-tight text-[#080808]">
+              1. What This Product Solves & Core Personas
+            </h3>
+          </div>
+          <div className="border-2 border-[#080808] bg-[#F8F6EC] p-4 shadow-[2px_2px_0px_#080808]">
+            <span className="font-mono text-[10px] font-black uppercase text-[#080808] block mb-1">
+              Core Problem Solved:
+            </span>
+            <p className="font-sans text-xs sm:text-sm font-medium text-[#080808] leading-relaxed">
+              {productSpec?.problem_statement || "Formulated during project discovery stage."}
+            </p>
+          </div>
 
           {productSpec?.personas && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
               {productSpec.personas.map((p: any, idx: number) => (
-                <div key={idx} className="rounded-xl border border-slate-200 bg-slate-50/50 p-3.5 text-xs dark:border-slate-800 dark:bg-slate-950">
-                  <div className="font-bold text-slate-900 dark:text-white">{p.name} (Tech Ability: {p.technicalAbility})</div>
-                  <div className="text-slate-600 dark:text-slate-400 mt-1">Goal: {p.goal}</div>
-                  <div className="text-slate-600 dark:text-slate-400">Primary Task: {p.primaryTask}</div>
+                <div key={idx} className="border-2 border-[#080808] bg-white p-4 shadow-[3px_3px_0px_#080808] space-y-1.5 text-xs">
+                  <div className="font-sans font-black text-sm text-[#080808] flex items-center justify-between border-b border-[#080808]/20 pb-1">
+                    <span>{p.name}</span>
+                    <span className="font-mono text-[10px] font-bold text-[#080808]/70">Tech Level: {p.technicalAbility}</span>
+                  </div>
+                  <div className="text-[#080808]/90 font-medium pt-1"><span className="font-bold">Goal:</span> {p.goal}</div>
+                  <div className="text-[#080808]/80 font-medium"><span className="font-bold">Primary Action:</span> {p.primaryTask}</div>
                 </div>
               ))}
             </div>
@@ -243,20 +257,22 @@ export default function ProjectReportPage() {
 
         {/* 2. Architecture Decisions (ADRs) */}
         <section className="space-y-4">
-          <h3 className="text-lg font-black text-slate-900 dark:text-white border-b border-slate-100 pb-2 dark:border-slate-800">
-            2. Architecture Decision Records (ADRs)
-          </h3>
+          <div className="border-b-2 border-[#080808] pb-2">
+            <h3 className="font-sans text-lg font-black uppercase tracking-tight text-[#080808]">
+              2. Key Architecture Decisions (ADRs)
+            </h3>
+          </div>
           <div className="space-y-3">
             {(decisions || []).map((dec: any, idx: number) => (
-              <div key={idx} className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 text-xs dark:border-slate-800 dark:bg-slate-950">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-indigo-600 dark:text-indigo-400">
-                    ADR-{String(dec.decision_number).padStart(3, "0")}:
+              <div key={idx} className="border-2 border-[#080808] bg-white p-4 shadow-[3px_3px_0px_#080808] text-xs space-y-1">
+                <div className="flex items-center gap-2 border-b border-[#080808]/20 pb-1.5 mb-1.5">
+                  <span className="font-mono text-xs font-black uppercase px-1.5 py-0.5 border border-[#080808] bg-[#FFE500]">
+                    ADR-{String(dec.decision_number).padStart(3, "0")}
                   </span>
-                  <span className="font-bold text-slate-900 dark:text-white">{dec.topic}</span>
+                  <span className="font-sans font-black text-sm text-[#080808]">{dec.topic}</span>
                 </div>
-                <p className="mt-1 text-slate-700 dark:text-slate-300"><span className="font-bold">Decision:</span> {dec.decision}</p>
-                <p className="mt-1 text-slate-500"><span className="font-bold">Reason:</span> {dec.reason}</p>
+                <p className="text-[#080808] font-bold"><span className="font-mono text-[10px] uppercase text-[#080808]/70 mr-1">Decision:</span> {dec.decision}</p>
+                <p className="text-[#080808]/80 font-medium"><span className="font-mono text-[10px] uppercase text-[#080808]/70 mr-1">Rationale:</span> {dec.reason}</p>
               </div>
             ))}
           </div>
@@ -264,25 +280,45 @@ export default function ProjectReportPage() {
 
         {/* 3. Audit & Security Findings */}
         <section className="space-y-4">
-          <h3 className="text-lg font-black text-slate-900 dark:text-white border-b border-slate-100 pb-2 dark:border-slate-800">
-            3. 9-Agent Audit & Security Findings
-          </h3>
-          <div className="grid grid-cols-2 gap-4 text-xs">
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50/30 p-4 dark:border-emerald-950 dark:bg-slate-950">
-              <div className="font-bold text-emerald-800 dark:text-emerald-300">Verified & Resolved ({resolvedFindings.length})</div>
-              <ul className="mt-2 space-y-1 text-slate-600 dark:text-slate-400">
+          <div className="border-b-2 border-[#080808] pb-2">
+            <h3 className="font-sans text-lg font-black uppercase tracking-tight text-[#080808]">
+              3. Codebase Audit & Security Status
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div className="border-2 border-[#080808] bg-[#B7FF6A]/20 p-4 shadow-[3px_3px_0px_#080808]">
+              <div className="font-mono text-xs font-black uppercase text-[#080808] flex items-center gap-1.5 border-b-2 border-[#080808] pb-2 mb-2">
+                <CheckCircle2 className="h-4 w-4 stroke-[2.5]" />
+                <span>Verified & Resolved Items ({resolvedFindings.length})</span>
+              </div>
+              <ul className="space-y-2 font-medium text-[#080808]">
                 {resolvedFindings.map((rf: any) => (
-                  <li key={rf.id}>✓ [{rf.finding_code}] {rf.title}</li>
+                  <li key={rf.id} className="flex items-start gap-1.5">
+                    <Check className="h-3.5 w-3.5 stroke-[2.5] shrink-0 mt-0.5" />
+                    <span>[{rf.finding_code}] {rf.title}</span>
+                  </li>
                 ))}
+                {resolvedFindings.length === 0 && (
+                  <li className="font-mono text-[#080808]/60">No resolved findings recorded yet.</li>
+                )}
               </ul>
             </div>
 
-            <div className="rounded-xl border border-amber-200 bg-amber-50/30 p-4 dark:border-amber-950 dark:bg-slate-950">
-              <div className="font-bold text-amber-800 dark:text-amber-300">Open Items ({openFindings.length})</div>
-              <ul className="mt-2 space-y-1 text-slate-600 dark:text-slate-400">
+            <div className="border-2 border-[#080808] bg-[#FF4F9A]/15 p-4 shadow-[3px_3px_0px_#080808]">
+              <div className="font-mono text-xs font-black uppercase text-[#080808] flex items-center gap-1.5 border-b-2 border-[#080808] pb-2 mb-2">
+                <AlertTriangle className="h-4 w-4 stroke-[2.5]" />
+                <span>Open Priority Items ({openFindings.length})</span>
+              </div>
+              <ul className="space-y-2 font-medium text-[#080808]">
                 {openFindings.map((of: any) => (
-                  <li key={of.id}>• [{of.finding_code}] {of.title} ({of.severity})</li>
+                  <li key={of.id} className="flex items-start gap-1.5">
+                    <span className="font-mono font-bold shrink-0">•</span>
+                    <span>[{of.finding_code}] {of.title} ({of.severity})</span>
+                  </li>
                 ))}
+                {openFindings.length === 0 && (
+                  <li className="font-mono text-[#080808]/60">Zero open blockers remaining.</li>
+                )}
               </ul>
             </div>
           </div>
@@ -290,16 +326,25 @@ export default function ProjectReportPage() {
 
         {/* 4. Production Checklist Status */}
         <section className="space-y-4">
-          <h3 className="text-lg font-black text-slate-900 dark:text-white border-b border-slate-100 pb-2 dark:border-slate-800">
-            4. Production Launch Checklist Status
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <div className="border-b-2 border-[#080808] pb-2">
+            <h3 className="font-sans text-lg font-black uppercase tracking-tight text-[#080808]">
+              4. Production Launch Readiness
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             {(checklist || []).map((chk: any) => (
-              <div key={chk.id} className="flex items-center gap-2 py-1">
-                <span className={chk.is_checked ? "text-emerald-600 font-bold" : "text-slate-400 font-bold"}>
-                  {chk.is_checked ? "✓" : "○"}
-                </span>
-                <span className={chk.is_checked ? "text-slate-900 dark:text-white font-medium" : "text-slate-500"}>
+              <div
+                key={chk.id}
+                className="border-2 border-[#080808] bg-white p-3 shadow-[2px_2px_0px_#080808] flex items-center gap-2.5"
+              >
+                <div
+                  className={`h-4 w-4 flex items-center justify-center border-2 border-[#080808] text-[10px] font-mono font-black ${
+                    chk.is_checked ? "bg-[#B7FF6A] text-[#080808]" : "bg-white text-transparent"
+                  }`}
+                >
+                  {chk.is_checked ? "✓" : ""}
+                </div>
+                <span className={`font-sans font-medium ${chk.is_checked ? "text-[#080808] font-bold" : "text-[#080808]/70"}`}>
                   {chk.title}
                 </span>
               </div>

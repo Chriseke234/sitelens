@@ -312,31 +312,31 @@ export function AuditDashboardView({
     switch (severity) {
       case "CRITICAL":
         return (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-500/20">
-            <ShieldAlert className="w-2.5 h-2.5" /> Critical
+          <span className="inline-flex items-center gap-1 font-mono text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#FF4F9A] text-white shadow-[1px_1px_0px_#080808]">
+            <ShieldAlert className="w-2.5 h-2.5 stroke-[2.5]" /> Critical Blocker
           </span>
         );
       case "HIGH":
         return (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-500/20">
-            <AlertTriangle className="w-2.5 h-2.5" /> High
+          <span className="inline-flex items-center gap-1 font-mono text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#FFE500] text-[#080808] shadow-[1px_1px_0px_#080808]">
+            <AlertTriangle className="w-2.5 h-2.5 stroke-[2.5]" /> High Priority
           </span>
         );
       case "MEDIUM":
         return (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-950/70 dark:text-yellow-300 border border-yellow-500/20">
-            Medium
+          <span className="inline-flex items-center gap-1 font-mono text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#B7FF6A] text-[#080808] shadow-[1px_1px_0px_#080808]">
+            Recommended
           </span>
         );
       case "LOW":
         return (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300 border border-sky-500/20">
-            Low
+          <span className="inline-flex items-center gap-1 font-mono text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-white text-[#080808] shadow-[1px_1px_0px_#080808]">
+            Minor Tweak
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <span className="inline-flex items-center gap-1 font-mono text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#F8F6EC] text-[#080808] shadow-[1px_1px_0px_#080808]">
             Info
           </span>
         );
@@ -346,35 +346,35 @@ export function AuditDashboardView({
   const getVerificationBadge = (finding: Phase7Finding) => {
     if (finding.verificationStatus === "REGRESSED") {
       return (
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-600 text-white shadow-sm">
-          <AlertOctagon className="w-2.5 h-2.5" /> Regressed
+        <span className="inline-flex items-center gap-1 font-mono text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#FF4F9A] text-white shadow-[1.5px_1.5px_0px_#080808]">
+          <AlertOctagon className="w-2.5 h-2.5 stroke-[2.5]" /> Regressed
         </span>
       );
     }
     if (finding.verificationStatus === "RESOLVED" || finding.status === "VERIFIED") {
       return (
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-500/20">
-          <CheckCircle2 className="w-2.5 h-2.5" /> Verified Resolved
+        <span className="inline-flex items-center gap-1 font-mono text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#B7FF6A] text-[#080808] shadow-[1.5px_1.5px_0px_#080808]">
+          <CheckCircle2 className="w-2.5 h-2.5 stroke-[2.5]" /> Verified Resolved
         </span>
       );
     }
     if (finding.verificationStatus === "PARTIALLY_RESOLVED") {
       return (
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-500/20">
-          <RotateCcw className="w-2.5 h-2.5" /> Partially Resolved
+        <span className="inline-flex items-center gap-1 font-mono text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#FFE500] text-[#080808] shadow-[1.5px_1.5px_0px_#080808]">
+          <RotateCcw className="w-2.5 h-2.5 stroke-[2.5]" /> Partially Resolved
         </span>
       );
     }
     if (finding.verificationStatus === "STILL_PRESENT") {
       return (
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-500/20">
+        <span className="inline-flex items-center gap-1 font-mono text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#FF4F9A] text-white shadow-[1.5px_1.5px_0px_#080808]">
           Still Present
         </span>
       );
     }
     if (finding.verificationStatus === "UNABLE_TO_VERIFY") {
       return (
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+        <span className="inline-flex items-center gap-1 font-mono text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-white text-[#080808] shadow-[1.5px_1.5px_0px_#080808]">
           Unverified
         </span>
       );
@@ -395,23 +395,23 @@ export function AuditDashboardView({
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+      <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808]">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-indigo-50 dark:bg-indigo-950/50 rounded-xl text-indigo-600 dark:text-indigo-400">
-              <ShieldCheck className="w-6 h-6" />
+            <div className="p-3 border-2 border-[#080808] bg-[#FFE500] text-[#080808] shadow-[2px_2px_0px_#080808]">
+              <ShieldCheck className="w-6 h-6 stroke-[2.5]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-                  Project Audit & Verification Hub
+                <h1 className="font-sans text-xl font-black uppercase tracking-tight text-[#080808]">
+                  Codebase Audit & Verification Hub
                 </h1>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                  Phase 8
+                <span className="font-mono text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-[#B7FF6A] text-[#080808] shadow-[1px_1px_0px_#080808]">
+                  STAGE 04
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Verifies implementation fixes, catches regressions, and tracks factual project health.
+              <p className="font-sans text-xs sm:text-sm font-medium text-[#080808]/75 mt-0.5">
+                Verifies implementation fixes, catches regressions, and tracks plain-English project health.
               </p>
             </div>
           </div>
@@ -421,7 +421,7 @@ export function AuditDashboardView({
               value={selectedScope}
               onChange={(e) => setSelectedScope(e.target.value as AuditScope)}
               disabled={isAuditing || !hasConnectedRepo}
-              className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-700 dark:text-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="font-mono text-xs bg-[#F8F6EC] border-2 border-[#080808] shadow-[2px_2px_0px_#080808] px-3 py-2 text-[#080808] font-bold focus:outline-none"
             >
               <option value="FULL">Scope: Full Project Re-Audit</option>
               <option value="PRODUCT">Scope: Product Requirements</option>
@@ -435,17 +435,17 @@ export function AuditDashboardView({
             <button
               onClick={handleRunAudit}
               disabled={isAuditing || !hasConnectedRepo}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FFE500] hover:bg-[#FFE500]/80 border-2 border-[#080808] text-[#080808] font-mono text-xs font-black uppercase shadow-[2.5px_2.5px_0px_#080808] transition disabled:opacity-50"
             >
               {isAuditing ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin text-[#080808]" />
                   <span>Auditing Codebase...</span>
                 </>
               ) : (
                 <>
-                  <RefreshCw className="w-4 h-4" />
-                  <span>Re-Audit Project</span>
+                  <RefreshCw className="w-4 h-4 stroke-[2.5]" />
+                  <span>Re-Audit Code</span>
                 </>
               )}
             </button>
@@ -455,24 +455,24 @@ export function AuditDashboardView({
 
       {/* Repository Not Connected Banner */}
       {!hasConnectedRepo && (
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/80 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="border-[3px] border-[#080808] bg-[#FFE500] p-5 shadow-[4px_4px_0px_#080808] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <FolderGit2 className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <FolderGit2 className="w-6 h-6 text-[#080808] shrink-0 stroke-[2.5]" />
             <div>
-              <h3 className="text-xs font-bold text-amber-900 dark:text-amber-200">
+              <h3 className="font-sans text-sm font-black uppercase text-[#080808]">
                 No Repository Connected Yet
               </h3>
-              <p className="text-[11px] text-amber-700 dark:text-amber-300">
-                Aigenstra needs to inspect your codebase before it can audit against your blueprint.
+              <p className="font-sans text-xs font-medium text-[#080808]/85">
+                Connect your repository so Aigenstra can inspect what your AI agent built against your product blueprint.
               </p>
             </div>
           </div>
           <Link
             href={`/projects/${projectId}/intelligence`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow-sm self-start sm:self-auto"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border-2 border-[#080808] text-[#080808] font-mono text-xs font-black uppercase shadow-[2px_2px_0px_#080808] hover:bg-[#F8F6EC] transition self-start sm:self-auto"
           >
             <span>Connect Project Repository</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
           </Link>
         </div>
       )}
@@ -485,25 +485,25 @@ export function AuditDashboardView({
         </div>
       )}
 
-      {/* FACTUAL PROJECT HEALTH OVERVIEW BAR (Phase 8 - Zero Fake Scores) */}
+      {/* FACTUAL PROJECT HEALTH OVERVIEW BAR (Neo-Brutalist Bento Grid) */}
       {audit && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808] space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b-2 border-[#080808]">
             <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-indigo-500" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Project Health & Verification Status
+              <Activity className="w-4 h-4 stroke-[2.5] text-[#080808]" />
+              <h2 className="font-mono text-xs font-black uppercase tracking-wider text-[#080808]">
+                Codebase Health & Production Readiness
               </h2>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-slate-400">Status within scope:</span>
+              <span className="font-mono text-[11px] font-bold text-[#080808]/70">Overall Status:</span>
               <span
-                className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                className={`inline-flex items-center gap-1 font-mono text-[11px] font-black uppercase px-2.5 py-0.5 border-2 border-[#080808] shadow-[1.5px_1.5px_0px_#080808] ${
                   (health?.healthStatus || (audit.summary.criticalCount > 0 ? "HIGH_RISK" : "HEALTHY_WITHIN_SCOPE")) === "HIGH_RISK"
-                    ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                    ? "bg-[#FF4F9A] text-white"
                     : (health?.healthStatus || "") === "NEEDS_ATTENTION"
-                    ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-                    : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                    ? "bg-[#FFE500] text-[#080808]"
+                    : "bg-[#B7FF6A] text-[#080808]"
                 }`}
               >
                 {health?.healthStatus?.replace(/_/g, " ") || (audit.summary.criticalCount > 0 ? "HIGH RISK" : "HEALTHY WITHIN SCOPE")}
@@ -512,45 +512,45 @@ export function AuditDashboardView({
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-              <div className="text-[10px] font-semibold text-slate-500 uppercase">Critical Findings</div>
-              <div className="text-lg font-black text-rose-600 mt-0.5">{audit.summary.criticalCount}</div>
+            <div className="p-3 bg-[#F8F6EC] border-2 border-[#080808] shadow-[2px_2px_0px_#080808] text-center">
+              <div className="font-mono text-[10px] font-black uppercase text-[#080808]/75">Urgent Blockers</div>
+              <div className="font-mono text-2xl font-black text-[#FF4F9A] mt-0.5">{audit.summary.criticalCount}</div>
             </div>
 
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-              <div className="text-[10px] font-semibold text-slate-500 uppercase">High Findings</div>
-              <div className="text-lg font-black text-amber-600 mt-0.5">{audit.summary.highCount}</div>
+            <div className="p-3 bg-[#F8F6EC] border-2 border-[#080808] shadow-[2px_2px_0px_#080808] text-center">
+              <div className="font-mono text-[10px] font-black uppercase text-[#080808]/75">High Priority</div>
+              <div className="font-mono text-2xl font-black text-[#080808] mt-0.5">{audit.summary.highCount}</div>
             </div>
 
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-              <div className="text-[10px] font-semibold text-slate-500 uppercase">Regressions</div>
-              <div className={`text-lg font-black mt-0.5 ${(health?.regressionCount || 0) > 0 ? "text-rose-600" : "text-slate-700 dark:text-slate-300"}`}>
+            <div className="p-3 bg-[#F8F6EC] border-2 border-[#080808] shadow-[2px_2px_0px_#080808] text-center">
+              <div className="font-mono text-[10px] font-black uppercase text-[#080808]/75">Regressions</div>
+              <div className={`font-mono text-2xl font-black mt-0.5 ${(health?.regressionCount || 0) > 0 ? "text-[#FF4F9A]" : "text-[#080808]"}`}>
                 {health?.regressionCount || audit.findings.filter((f) => f.verificationStatus === "REGRESSED").length}
               </div>
             </div>
 
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-              <div className="text-[10px] font-semibold text-slate-500 uppercase">Blueprint Alignment</div>
-              <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-1.5">
+            <div className="p-3 bg-[#F8F6EC] border-2 border-[#080808] shadow-[2px_2px_0px_#080808] text-center">
+              <div className="font-mono text-[10px] font-black uppercase text-[#080808]/75">Blueprint Match</div>
+              <div className="font-mono text-xs font-black text-[#080808] mt-2">
                 {health?.blueprintAlignment || "ALIGNED"}
               </div>
             </div>
 
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800 text-center col-span-2 sm:col-span-1">
-              <div className="text-[10px] font-semibold text-slate-500 uppercase">Audit Recency</div>
-              <div className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-1.5">
+            <div className="p-3 bg-[#F8F6EC] border-2 border-[#080808] shadow-[2px_2px_0px_#080808] text-center col-span-2 sm:col-span-1">
+              <div className="font-mono text-[10px] font-black uppercase text-[#080808]/75">Audit Recency</div>
+              <div className="font-mono text-xs font-black text-[#080808] mt-2">
                 {audit.completedAt ? "Up to date" : "Just now"}
               </div>
             </div>
           </div>
 
           {/* Actionable Next Priority */}
-          <div className="p-3.5 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 rounded-xl flex items-start gap-2.5 text-xs">
-            <Zap className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold text-slate-900 dark:text-white">Recommended Action: </span>
-              <span className="text-slate-600 dark:text-slate-300">
-                {health?.recommendedNextAction || audit.summary.nextRecommendedAction || "All inspected requirements match code evidence."}
+          <div className="border-2 border-[#080808] bg-[#FFE500] p-4 shadow-[2px_2px_0px_#080808] flex items-start gap-2.5">
+            <Zap className="w-4 h-4 stroke-[2.5] text-[#080808] shrink-0 mt-0.5" />
+            <div className="font-sans text-xs">
+              <span className="font-black text-[#080808] uppercase font-mono mr-1">Recommended Next Step:</span>
+              <span className="font-bold text-[#080808]">
+                {health?.recommendedNextAction || audit.summary.nextRecommendedAction || "All inspected codebase features match user specifications."}
               </span>
             </div>
           </div>
@@ -559,15 +559,15 @@ export function AuditDashboardView({
 
       {/* Filter and Finding Controls */}
       {audit && audit.findings.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white border-[3px] border-[#080808] shadow-[4px_4px_0px_#080808]">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1 text-xs text-slate-500 font-semibold px-2">
-              <Filter className="w-3.5 h-3.5" /> Filter:
+            <div className="flex items-center gap-1 font-mono text-xs font-black uppercase text-[#080808] px-1">
+              <Filter className="w-3.5 h-3.5 stroke-[2.5]" /> Filter Findings:
             </div>
             <select
               value={selectedSeverity}
               onChange={(e) => setSelectedSeverity(e.target.value)}
-              className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-200 font-medium focus:outline-none"
+              className="font-mono text-xs bg-[#F8F6EC] border-2 border-[#080808] shadow-[1.5px_1.5px_0px_#080808] px-2.5 py-1.5 text-[#080808] font-bold focus:outline-none"
             >
               <option value="ALL">All Severities</option>
               <option value="CRITICAL">Critical</option>
@@ -579,7 +579,7 @@ export function AuditDashboardView({
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-200 font-medium focus:outline-none"
+              className="font-mono text-xs bg-[#F8F6EC] border-2 border-[#080808] shadow-[1.5px_1.5px_0px_#080808] px-2.5 py-1.5 text-[#080808] font-bold focus:outline-none"
             >
               <option value="ALL">All Categories</option>
               <option value="SECURITY">Security</option>
@@ -593,7 +593,7 @@ export function AuditDashboardView({
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-200 font-medium focus:outline-none"
+              className="font-mono text-xs bg-[#F8F6EC] border-2 border-[#080808] shadow-[1.5px_1.5px_0px_#080808] px-2.5 py-1.5 text-[#080808] font-bold focus:outline-none"
             >
               <option value="ALL">All Statuses</option>
               <option value="OPEN">Open Issues</option>
@@ -602,7 +602,7 @@ export function AuditDashboardView({
             </select>
           </div>
 
-          <span className="text-xs text-slate-500 font-medium">
+          <span className="font-mono text-xs text-[#080808]/75 font-bold">
             Showing {filteredFindings.length} of {audit.findings.length} findings
           </span>
         </div>
@@ -621,53 +621,51 @@ export function AuditDashboardView({
             return (
               <div
                 key={finding.id}
-                className={`bg-white dark:bg-slate-900 border ${
+                className={`border-[3px] border-[#080808] p-6 shadow-[5px_5px_0px_#080808] space-y-4 transition ${
                   isRegressed
-                    ? "border-rose-400 dark:border-rose-700 ring-2 ring-rose-500/10"
+                    ? "bg-[#FF4F9A]/10 border-[#FF4F9A]"
                     : isResolved
-                    ? "border-emerald-200 dark:border-emerald-900/60 opacity-80"
+                    ? "bg-[#B7FF6A]/20"
                     : isDismissed
-                    ? "border-slate-100 dark:border-slate-800/40 opacity-60"
+                    ? "bg-[#F8F6EC] opacity-60"
                     : finding.severity === "CRITICAL"
-                    ? "border-rose-200 dark:border-rose-900/60"
-                    : finding.severity === "HIGH"
-                    ? "border-amber-200 dark:border-amber-900/60"
-                    : "border-slate-200 dark:border-slate-800"
-                } rounded-2xl p-6 shadow-sm space-y-4 transition`}
+                    ? "bg-white border-[#080808]"
+                    : "bg-white"
+                }`}
               >
                 {/* Header row */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-[#080808] pb-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-slate-400">
+                    <span className="font-mono text-xs font-black uppercase text-[#080808] bg-[#F8F6EC] px-2 py-0.5 border border-[#080808]">
                       {finding.findingCode}
                     </span>
                     {getSeverityBadge(finding.severity)}
                     {getVerificationBadge(finding)}
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                    <span className="font-mono text-[10px] font-black uppercase px-2 py-0.5 border border-[#080808] bg-white text-[#080808]">
                       {finding.category}
                     </span>
                     {finding.confidence && (
-                      <span className="text-[10px] text-slate-400">
+                      <span className="font-mono text-[10px] text-[#080808]/70 font-bold">
                         {finding.confidence} confidence
                       </span>
                     )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    {/* VERIFY FIX BUTTON (Phase 8 Core Action) */}
+                    {/* VERIFY FIX BUTTON */}
                     <button
                       onClick={() => handleVerifyFinding(finding)}
                       disabled={isVerifying}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 rounded-xl transition border border-indigo-200 dark:border-indigo-800 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-xs font-black uppercase text-[#080808] bg-[#B7FF6A] hover:bg-[#B7FF6A]/80 border-2 border-[#080808] shadow-[2px_2px_0px_#080808] transition disabled:opacity-50"
                     >
                       {isVerifying ? (
                         <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#080808]" />
                           <span>Verifying...</span>
                         </>
                       ) : (
                         <>
-                          <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#080808] stroke-[2.5]" />
                           <span>Verify Fix</span>
                         </>
                       )}
@@ -675,16 +673,16 @@ export function AuditDashboardView({
 
                     <button
                       onClick={() => handleConvertFindingToTask(finding)}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 font-mono text-xs font-black uppercase text-[#080808] bg-white hover:bg-[#F8F6EC] border-2 border-[#080808] shadow-[2px_2px_0px_#080808] transition"
                     >
                       {taskAddedFindingId === finding.id ? (
                         <>
-                          <Check className="w-3.5 h-3.5 text-emerald-500" />
-                          <span className="text-emerald-600">Task Created!</span>
+                          <Check className="w-3.5 h-3.5 text-[#080808] stroke-[2.5]" />
+                          <span>Task Created!</span>
                         </>
                       ) : (
                         <>
-                          <PlusCircle className="w-3.5 h-3.5" />
+                          <PlusCircle className="w-3.5 h-3.5 stroke-[2.5]" />
                           <span>Add to Tasks</span>
                         </>
                       )}
@@ -692,47 +690,47 @@ export function AuditDashboardView({
 
                     <button
                       onClick={() => handleOpenFixPrompt(finding)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition shadow-sm"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-xs font-black uppercase text-[#080808] bg-[#FFE500] hover:bg-[#FFE500]/80 border-2 border-[#080808] shadow-[2px_2px_0px_#080808] transition"
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <Sparkles className="w-3.5 h-3.5 stroke-[2.5]" />
                       <span>Fix Prompt</span>
                     </button>
 
                     <button
                       onClick={() => setDismissingFinding(finding)}
                       title="Dismiss finding"
-                      className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition"
+                      className="p-1.5 text-[#080808]/60 hover:text-[#080808] border border-transparent hover:border-[#080808] transition"
                     >
-                      <EyeOff className="w-4 h-4" />
+                      <EyeOff className="w-4 h-4 stroke-[2.5]" />
                     </button>
                   </div>
                 </div>
 
-                {/* Finding Title & Layer 1 Beginner Explanation */}
+                {/* Finding Title & Plain Business English Summary */}
                 <div className="space-y-1.5">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  <h3 className="font-sans text-base sm:text-lg font-black tracking-tight text-[#080808]">
                     {finding.title}
                   </h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                  <p className="font-sans text-xs sm:text-sm font-medium text-[#080808]/85 leading-relaxed">
                     {finding.summary || finding.description}
                   </p>
                 </div>
 
-                {/* Why It Matters & Recommendation Box */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                {/* Plain-English Why It Matters & Recommendation Box */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs bg-[#F8F6EC] p-4 border-2 border-[#080808] shadow-[2.5px_2.5px_0px_#080808]">
                   <div>
-                    <span className="font-bold text-slate-900 dark:text-white block mb-0.5">
-                      Why it matters
+                    <span className="font-mono text-[11px] font-black uppercase text-[#080808] block mb-1">
+                      Why this matters for your application:
                     </span>
-                    <span className="text-slate-600 dark:text-slate-400">
+                    <span className="font-sans text-xs font-medium text-[#080808]/90 leading-relaxed block">
                       {finding.impact}
                     </span>
                   </div>
                   <div>
-                    <span className="font-bold text-slate-900 dark:text-white block mb-0.5">
-                      Recommended action
+                    <span className="font-mono text-[11px] font-black uppercase text-[#080808] block mb-1">
+                      Recommended Next Step:
                     </span>
-                    <span className="text-slate-600 dark:text-slate-400">
+                    <span className="font-sans text-xs font-bold text-[#080808] leading-relaxed block">
                       {finding.recommendation}
                     </span>
                   </div>

@@ -43,10 +43,10 @@ export function runFullUXAnalysis(
     issues.push({
       category: "ux",
       severity: "medium",
-      title: "No semantic navigation element detected",
-      description: "The page lacks a semantic <nav> or role='navigation' landmark element to assist user navigation.",
-      evidence: "No <nav> element found in page document.",
-      recommendation: "Wrap major site navigation links in a semantic <nav> element.",
+      title: "Main Navigation Menu Is Hard for Tools to Recognize",
+      description: "Your website navigation links are not placed inside a recognized navigation section. Visitors using accessibility tools or keyboard navigation will find it frustrating to jump straight to other pages.",
+      evidence: "No semantic <nav> landmark element was found around your site header links.",
+      recommendation: "Wrap your website menu links inside a standard navigation bar element so browsers and assistive tools handle it smoothly.",
     });
   }
 
@@ -54,10 +54,10 @@ export function runFullUXAnalysis(
     issues.push({
       category: "ux",
       severity: "medium",
-      title: "Empty or unlabeled navigation link(s) detected",
-      description: `${navigation.emptyNavLinkCount} link(s) in navigation lack readable text or aria-labels.`,
-      evidence: `${navigation.emptyNavLinkCount} empty <a> element(s) in header/nav.`,
-      recommendation: "Provide clear text labels or descriptive aria-label attributes for all navigation links.",
+      title: "Menu Links Without Words or Readable Labels",
+      description: `${navigation.emptyNavLinkCount} menu link(s) don't have readable text (such as icon buttons). Screen reader users will hear a blank link and won't know where clicking leads.`,
+      evidence: `${navigation.emptyNavLinkCount} empty link(s) detected in the top navigation.`,
+      recommendation: "Give every menu item an unambiguous word label or an accessibility tag so its destination is crystal clear.",
     });
   }
 
@@ -66,19 +66,19 @@ export function runFullUXAnalysis(
     issues.push({
       category: "ux",
       severity: "high",
-      title: "No primary heading detected",
-      description: "The page does not feature an <h1> heading, making it harder for visitors to immediately understand page purpose.",
-      evidence: "0 <h1> elements detected in HTML.",
-      recommendation: "Add a clear, descriptive <h1> heading summarizing the main value proposition or page title.",
+      title: "No Clear Main Headline to Greet Visitors",
+      description: "When people arrive on your page, there is no main headline explaining what your product or service actually does. First-time visitors might bounce away in confusion within seconds.",
+      evidence: "Zero primary <h1> heading tags detected in the page document.",
+      recommendation: "Add an eye-catching main headline at the top of the page clearly stating your core offer.",
     });
   } else if (signals.h1Count > 1) {
     issues.push({
       category: "ux",
       severity: "medium",
-      title: "Multiple primary headings detected",
-      description: `Found ${signals.h1Count} <h1> headings on the page, which can dilute content hierarchy.`,
-      evidence: `${signals.h1Count} <h1> headings found (First: "${signals.h1Text}").`,
-      recommendation: "Use a single <h1> for the primary page header and <h2>-<h6> for sub-sections.",
+      title: "Multiple Main Headlines Competing for Attention",
+      description: `Your page has ${signals.h1Count} primary headlines. Having multiple main titles confuses readers and dilutes your core marketing message.`,
+      evidence: `${signals.h1Count} main headline tags found (First one: "${signals.h1Text}").`,
+      recommendation: "Feature one primary main headline at the top, and format other sub-topics as secondary subheadings.",
     });
   }
 
@@ -87,17 +87,17 @@ export function runFullUXAnalysis(
     issues.push({
       category: "conversion",
       severity: "high",
-      title: "No obvious action element detected",
-      description: "No prominent Call-To-Action buttons or links with explicit action language (e.g. 'Get started', 'Contact us', 'Book') were found.",
-      evidence: "No CTA buttons/links matching standard conversion keywords.",
-      recommendation: "Add a clear primary Call-To-Action button above the fold guiding visitors to take action.",
+      title: "Missing Call-to-Action Button (Visitors Don't Know How to Buy)",
+      description: "There is no prominent, obvious action button (like 'Get Started', 'Schedule a Call', or 'Buy Now') on the page. Interested visitors might browse without knowing how to take the next step.",
+      evidence: "No primary action buttons detected matching standard conversion phrases.",
+      recommendation: "Add a bright, unmistakable action button near the top of the page prompting visitors to take action immediately.",
     });
   } else if (cta.ctaCount === 1) {
     opportunities.push({
       category: "conversion",
-      observation: `Primary CTA detected: "${cta.ctaElements[0]?.text}".`,
-      opportunity: "Consider secondary conversion pathways (such as direct email or chat) for visitors who are not ready for the primary CTA.",
-      evidence: `Single primary action element found: "${cta.ctaElements[0]?.text}".`,
+      observation: `Primary action button identified: "${cta.ctaElements[0]?.text}".`,
+      opportunity: "Consider adding a low-commitment secondary choice (like 'Learn More', 'Watch Demo', or 'Chat With Us') for visitors who aren't ready to purchase right away.",
+      evidence: `Single main action button found: "${cta.ctaElements[0]?.text}".`,
     });
   }
 
@@ -106,26 +106,26 @@ export function runFullUXAnalysis(
     issues.push({
       category: "ux",
       severity: "high",
-      title: "Form input appears to lack an associated label",
-      description: `${forms.totalUnlabeledInputs} input field(s) lack associated <label> elements or accessible names.`,
-      evidence: `${forms.totalUnlabeledInputs} unlabeled form input(s) detected.`,
-      recommendation: "Associate each input with an explicit <label for='input-id'> tag or aria-label attribute.",
+      title: "Form Input Fields Lack Explanatory Labels",
+      description: `${forms.totalUnlabeledInputs} input box(es) do not have descriptive labels above them. Customers may not understand what information you are asking for, causing them to abandon the form.`,
+      evidence: `${forms.totalUnlabeledInputs} form input(s) detected without associated text labels.`,
+      recommendation: "Add an explicit label above or beside each field (e.g. 'Your Work Email', 'Phone Number') so filling out the form is frictionless.",
     });
   }
 
   if (forms.hasContactForm) {
     opportunities.push({
       category: "conversion",
-      observation: "An interactive contact or lead generation form is present on the page.",
-      opportunity: "Ensure the form asks for minimal required fields to reduce friction for prospective leads.",
+      observation: "A lead capture or contact form is present on this page.",
+      opportunity: "Keep the form fields as short as possible (name and email are often enough). Every extra field reduces form completions by up to 10%.",
       evidence: `Form with ${forms.forms[0]?.fieldCount || 0} fields detected.`,
     });
   } else if (signals.hasContactLink) {
     opportunities.push({
       category: "conversion",
-      observation: "A contact page link exists in navigation or body text.",
-      opportunity: "Make the primary contact action easier to discover directly from the homepage above the fold.",
-      evidence: "Contact page link detected without inline contact form.",
+      observation: "A link to your contact page was found in the text or footer.",
+      opportunity: "Make getting in touch even easier by adding a quick inquiry form or scheduling button directly on your main page.",
+      evidence: "Contact link found without an embedded form on the homepage.",
     });
   }
 
@@ -134,10 +134,10 @@ export function runFullUXAnalysis(
     issues.push({
       category: "ux",
       severity: "critical",
-      title: "Missing mobile viewport meta tag",
-      description: "The page lacks a viewport meta tag, causing mobile browsers to display the desktop layout at scaled-down width.",
-      evidence: "<meta name='viewport'> tag missing.",
-      recommendation: "Add <meta name='viewport' content='width=device-width, initial-scale=1.0'> to <head>.",
+      title: "Website Does Not Adjust for Mobile Phones",
+      description: "Your page lacks mobile responsiveness instructions. Smartphone users will see a tiny, unreadable desktop version that forces them to zoom in and scroll sideways, driving mobile shoppers away.",
+      evidence: "Mobile viewport meta tag is missing from the page header.",
+      recommendation: "Add standard mobile viewport tags so your layout automatically adapts to any smartphone screen.",
     });
   } else if (!mobile.allowsUserZoom) {
     issues.push({

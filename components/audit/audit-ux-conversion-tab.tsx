@@ -2,8 +2,7 @@
 
 import React from "react";
 import { UXOpportunity } from "@/lib/audit/types";
-import { Badge } from "@/components/ui/badge";
-import { MousePointer, Eye, FileText, CheckCircle2, ArrowRight } from "lucide-react";
+import { MousePointer, CheckCircle2, ArrowRight, Sparkles, TrendingUp } from "lucide-react";
 
 interface AuditUXConversionTabProps {
   opportunities?: UXOpportunity[];
@@ -13,55 +12,66 @@ export function AuditUXConversionTab({ opportunities = [] }: AuditUXConversionTa
   return (
     <div className="space-y-6">
       {/* Overview Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
-        <div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">UX & Conversion Opportunities</h3>
-          <p className="text-xs text-slate-500">
-            Observation-based friction reduction and conversion path opportunities.
-          </p>
+      <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808]">
+        <div className="inline-block border-2 border-[#080808] bg-[#FFE500] px-2.5 py-0.5 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[1.5px_1.5px_0px_#080808]">
+          CONVERSION & USER JOURNEY
         </div>
+        <h3 className="mt-2 font-sans text-xl font-black uppercase tracking-tight text-[#080808]">
+          UX & Customer Conversion Opportunities
+        </h3>
+        <p className="mt-1 font-sans text-xs sm:text-sm font-medium text-[#080808]/80 max-w-2xl">
+          Friction-reduction ideas designed to turn casual website visitors into leads, buyers, or subscribers.
+        </p>
       </div>
 
       {opportunities && opportunities.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {opportunities.map((opp, idx) => (
             <div
               key={idx}
-              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+              className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808] space-y-4"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
-                <span className="font-semibold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <MousePointer className="h-3.5 w-3.5 text-blue-600" />
-                  {opp.category.toUpperCase()} Opportunity
+              <div className="flex items-center justify-between border-b-2 border-[#080808] pb-3">
+                <span className="font-mono text-xs font-black uppercase text-[#080808] flex items-center gap-1.5">
+                  <TrendingUp className="h-4 w-4 stroke-[2.5]" />
+                  {opp.category} Enhancement
                 </span>
-                <Badge variant="outline" className="text-[10px]">
-                  Optimization Signal
-                </Badge>
+                <span className="border-2 border-[#080808] bg-[#B7FF6A] px-2 py-0.5 font-mono text-[10px] font-black uppercase text-[#080808] shadow-[1px_1px_0px_#080808]">
+                  Sales Opportunity
+                </span>
               </div>
 
-              <div className="mt-3 space-y-2 text-xs">
-                <div>
-                  <span className="font-bold text-slate-700 dark:text-slate-300 block mb-0.5">Observation:</span>
-                  <p className="text-slate-600 dark:text-slate-400">{opp.observation}</p>
+              <div className="space-y-3 font-sans text-xs">
+                <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 shadow-[2px_2px_0px_#080808]">
+                  <span className="font-mono text-[10px] font-black uppercase text-[#080808] block mb-1">
+                    What was observed:
+                  </span>
+                  <p className="text-[#080808]/90 font-medium leading-relaxed">
+                    {opp.observation}
+                  </p>
                 </div>
 
-                <div>
-                  <span className="font-bold text-blue-700 dark:text-blue-300 block mb-0.5">Opportunity:</span>
-                  <p className="text-slate-600 dark:text-slate-400">{opp.opportunity}</p>
+                <div className="border-2 border-[#080808] bg-[#FFE500] p-3 shadow-[2px_2px_0px_#080808]">
+                  <span className="font-mono text-[10px] font-black uppercase text-[#080808] block mb-1">
+                    How to improve conversions:
+                  </span>
+                  <p className="text-[#080808] font-bold leading-relaxed">
+                    {opp.opportunity}
+                  </p>
                 </div>
 
-                <div className="rounded bg-slate-50 p-2 dark:bg-slate-950 text-[11px]">
-                  <span className="font-semibold text-slate-500">Evidence: </span>
-                  <span className="font-mono text-slate-700 dark:text-slate-300">{opp.evidence}</span>
+                <div className="bg-white border border-[#080808]/40 p-2 font-mono text-[11px] text-[#080808]/75">
+                  <span className="font-black text-[#080808]">Evidence: </span>
+                  <span>{opp.evidence}</span>
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 text-center">
-          <p className="text-xs text-slate-500">
-            No specific UX/conversion optimization opportunities detected beyond the standard audit issues list.
+        <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[5px_5px_0px_#080808] text-center">
+          <p className="font-mono text-xs font-bold text-[#080808]/70">
+            No specific UX friction points detected beyond the issues listed in the Findings tab.
           </p>
         </div>
       )}
