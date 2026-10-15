@@ -190,7 +190,7 @@ export function PromptStudioView({
             </span>
             <div className="space-y-0.5">
               <div className="text-xs font-black uppercase text-[#080808]">
-                Understand What You're Building
+                Understand What You&apos;re Building
               </div>
               <p className="text-[11px] font-medium text-[#080808]/75 leading-tight">
                 Inspect the visual UI mockup, targeted screen, and affected entities below before generating code.
