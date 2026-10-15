@@ -11,6 +11,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { Project } from "@/types";
+import { DeleteProjectModal } from "@/components/projects/delete-project-modal";
 
 export const metadata = {
   title: "AI Workspaces | Aigenstra",
@@ -138,13 +139,21 @@ export default async function ProjectsPage() {
                     </span>
                   </div>
 
-                  <Link
-                    href={`/projects/${project.id}/overview`}
-                    className="mt-4 flex w-full items-center justify-center gap-2 border-2 border-[#080808] bg-[#FFE500] py-2.5 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[3px_3px_0px_#080808] transition-all group-hover:bg-[#080808] group-hover:text-white group-hover:shadow-[2px_2px_0px_#FFE500]"
-                  >
-                    <span>Open Workspace</span>
-                    <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
-                  </Link>
+                  <div className="mt-4 flex items-center gap-2">
+                    <Link
+                      href={`/projects/${project.id}`}
+                      className="flex-1 flex items-center justify-center gap-2 border-2 border-[#080808] bg-[#FFE500] py-2.5 font-mono text-xs font-black uppercase tracking-wider text-[#080808] shadow-[3px_3px_0px_#080808] transition-all hover:bg-[#080808] hover:text-[#FFE500]"
+                    >
+                      <span>Open Studio</span>
+                      <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
+                    </Link>
+
+                    <DeleteProjectModal
+                      projectId={project.id}
+                      projectName={project.name}
+                      variant="button"
+                    />
+                  </div>
                 </div>
               </div>
             );

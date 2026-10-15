@@ -106,7 +106,7 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
       if (onSuccess) {
         onSuccess(data.project.id);
       } else {
-        router.push(`/projects/${data.project.id}/overview`);
+        router.push(`/projects/${data.project.id}`);
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "An unexpected error occurred.";
