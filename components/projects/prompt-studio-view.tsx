@@ -35,6 +35,7 @@ import {
   PromptQualityStatus,
   PromptSection,
   AigenstraTask,
+  DiscoveryQnA,
   SoftwareBlueprint,
 } from "@/types";
 
@@ -42,6 +43,7 @@ interface PromptStudioViewProps {
   prompt: CompiledPrompt;
   task?: AigenstraTask | null;
   blueprint?: SoftwareBlueprint | null;
+  qnaList?: DiscoveryQnA[];
   projectName?: string;
   onSelectAgent: (agent: CodingAgentProfile) => void;
   onRecompile?: () => void;
@@ -53,7 +55,8 @@ export function PromptStudioView({
   prompt,
   task,
   blueprint,
-  projectName = "Your Application",
+  qnaList = [],
+  projectName = "Project",
   onSelectAgent,
   onRecompile,
   isCompiling = false,
@@ -71,6 +74,26 @@ export function PromptStudioView({
     ACCEPTANCE_CRITERIA: true,
   });
   const [showHandoffGuide, setShowHandoffGuide] = useState(false);
+
+  const matchedScreens =
+    blueprint?.screens?.filter(
+      (s) =>
+        task?.affected_screens?.includes(s.routePath) ||
+        task?.affected_screens?.includes(s.screenName)
+    ) || [];
+  const wireframeScreens =
+    matchedScreens.length > 0
+      ? matchedScreens
+      : blueprint?.screens?.slice(0, 2) || [];
+
+  const matchedEntities =
+    blueprint?.dataEntities?.filter((e) =>
+      task?.affected_entities?.includes(e.entityName)
+    ) || [];
+  const wireframeEntities =
+    matchedEntities.length > 0
+      ? matchedEntities
+      : blueprint?.dataEntities?.slice(0, 3) || [];
 
   const agentProfiles: Array<{
     id: CodingAgentProfile;
@@ -193,7 +216,7 @@ export function PromptStudioView({
                 Understand What You&apos;re Building
               </div>
               <p className="text-[11px] font-medium text-[#080808]/75 leading-tight">
-                Inspect the visual UI mockup, targeted screen, and affected entities below before generating code.
+                Inspect the real-time wireframe specification, screen components, and schema fields below.
               </p>
             </div>
           </div>
@@ -230,7 +253,7 @@ export function PromptStudioView({
         </div>
       </div>
 
-      {/* Visual "What You Are Building" Wireframe Mockup Card */}
+      {/* Real-Time Product Wireframe & Architecture Specification Card */}
       {task && (
         <div className="border-[3px] border-[#080808] bg-white p-6 shadow-[6px_6px_0px_#080808] space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#080808] pb-3">
@@ -240,10 +263,10 @@ export function PromptStudioView({
               </div>
               <div>
                 <h3 className="text-sm font-black uppercase text-[#080808]">
-                  Step 1 Preview: What You Are Building Right Now
+                  Real-Time Wireframe & Task Specification: {projectName}
                 </h3>
                 <p className="text-[11px] font-medium text-[#080808]/70">
-                  Visual specification generated from real project scope
+                  Synthesized directly from your confirmed discovery answers and software blueprint
                 </p>
               </div>
             </div>
@@ -258,111 +281,146 @@ export function PromptStudioView({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-            {/* Left: Interactive Wireframe Mockup representation */}
-            <div className="lg:col-span-7 border-[2.5px] border-[#080808] bg-[#F8F6EC] p-4 shadow-[3px_3px_0px_#080808] flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between border-b-2 border-[#080808] pb-2 mb-3">
+            {/* Left: Real-Time Screen & Component Wireframe Blueprint */}
+            <div className="lg:col-span-7 border-[2.5px] border-[#080808] bg-[#F8F6EC] p-4 shadow-[3px_3px_0px_#080808] flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between border-b-2 border-[#080808] pb-2">
                   <div className="flex items-center gap-2">
                     <span className="flex h-2.5 w-2.5 rounded-full border border-[#080808] bg-[#FF4F9A]" />
                     <span className="flex h-2.5 w-2.5 rounded-full border border-[#080808] bg-[#FFE500]" />
                     <span className="flex h-2.5 w-2.5 rounded-full border border-[#080808] bg-[#B7FF6A]" />
                     <span className="text-[11px] font-black uppercase text-[#080808] ml-1">
-                      {task.affected_screens?.[0] || `${projectName} · UI Screen`}
+                      {task.affected_screens?.[0] || wireframeScreens[0]?.routePath || `${projectName} Spec`}
                     </span>
                   </div>
                   <span className="text-[10px] font-black uppercase text-[#080808]/60">
-                    Live Layout Wireframe
+                    Blueprint Wireframe
                   </span>
                 </div>
 
-                {/* Simulated Neo-Brutalist Screen Mockup */}
-                <div className="border-2 border-[#080808] bg-white p-4 shadow-[2px_2px_0px_#080808] space-y-3">
-                  {/* Mock Screen Header */}
-                  <div className="flex items-center justify-between border-b border-[#080808] pb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="h-4 w-12 border border-[#080808] bg-[#FFE500]" />
-                      <div className="h-2.5 w-20 bg-[#080808]/20" />
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="h-5 w-14 border border-[#080808] bg-[#B7FF6A] text-[9px] font-black uppercase flex items-center justify-center">
-                        Active
-                      </div>
-                    </div>
+                {/* Task Objective Block */}
+                <div className="border-2 border-[#080808] bg-white p-3.5 shadow-[2px_2px_0px_#080808] space-y-2">
+                  <div className="text-xs font-black uppercase text-[#080808]">
+                    {task.title}
                   </div>
-
-                  {/* Mock Screen Main Hero/Body */}
-                  <div className="space-y-2 py-1">
-                    <div className="text-xs font-black uppercase text-[#080808]">
-                      {task.title}
-                    </div>
-                    <p className="text-[11px] font-medium text-[#080808]/75 leading-relaxed bg-[#F8F6EC] border border-[#080808] p-2.5">
-                      {task.purpose || task.short_description || "Target feature implementation"}
-                    </p>
-                  </div>
-
-                  {/* Mock Screen Content Blocks / Form or Cards */}
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <div className="border border-[#080808] bg-[#F8F6EC] p-2 space-y-1">
-                      <div className="text-[9px] font-black uppercase text-[#080808]/60">
-                        Primary Screen Route
-                      </div>
-                      <div className="text-[11px] font-black uppercase text-[#080808] truncate">
-                        {task.affected_screens?.[0] || "/dashboard/feature"}
-                      </div>
-                    </div>
-                    <div className="border border-[#080808] bg-[#F8F6EC] p-2 space-y-1">
-                      <div className="text-[9px] font-black uppercase text-[#080808]/60">
-                        Database Schema
-                      </div>
-                      <div className="text-[11px] font-black uppercase text-[#080808] truncate">
-                        {task.affected_entities?.[0] || "Supabase Tables"}
-                      </div>
-                    </div>
-                  </div>
+                  <p className="text-[11px] font-medium text-[#080808]/80 leading-relaxed bg-[#F8F6EC] border border-[#080808] p-2.5">
+                    {task.purpose || task.short_description}
+                  </p>
                 </div>
+
+                {/* Synthesized Blueprint Screens & Key Components */}
+                {wireframeScreens.length > 0 && (
+                  <div className="space-y-2.5">
+                    {wireframeScreens.map((scr) => (
+                      <div
+                        key={scr.id}
+                        className="border-2 border-[#080808] bg-white p-3.5 shadow-[2px_2px_0px_#080808] space-y-2"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-black uppercase text-[#080808]">
+                            {scr.screenName}
+                          </span>
+                          <code className="border border-[#080808] bg-[#FFE500] px-2 py-0.5 text-[10px] font-black text-[#080808]">
+                            {scr.routePath}
+                          </code>
+                        </div>
+                        <p className="text-[11px] font-medium text-[#080808]/75">
+                          {scr.simplePurpose}
+                        </p>
+                        {Array.isArray(scr.keyComponents) && scr.keyComponents.length > 0 && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                            {scr.keyComponents.map((comp, idx) => (
+                              <div
+                                key={idx}
+                                className="border border-[#080808] bg-[#F8F6EC] px-2.5 py-1.5 text-[10px] font-bold text-[#080808] flex items-center gap-1.5"
+                              >
+                                <Layers className="h-3 w-3 shrink-0 stroke-[2.5]" />
+                                <span className="truncate">{comp}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Wireframe footer note */}
-              <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-[#080808]/70 border-t border-[#080808]/20 pt-2">
-                <span>Viewport: Desktop & Mobile Responsive</span>
-                <span>Component Styling: Tailwind + Bento Borders</span>
+              <div className="flex items-center justify-between text-[10px] font-bold text-[#080808]/70 border-t border-[#080808]/20 pt-2">
+                <span>Responsive: Mobile (360px+), Tablet & Desktop</span>
+                <span>Zero Placeholder Data</span>
               </div>
             </div>
 
-            {/* Right: User Value & Scope Breakdown */}
+            {/* Right: Data Entities, Confirmed User Decisions & Change Boundaries */}
             <div className="lg:col-span-5 flex flex-col justify-between space-y-3">
               <div className="border-2 border-[#080808] bg-[#FFE500]/20 p-3.5 shadow-[2.5px_2.5px_0px_#080808] space-y-1.5">
                 <div className="flex items-center gap-1.5 text-xs font-black uppercase text-[#080808]">
                   <Sparkles className="h-3.5 w-3.5 stroke-[2.5]" />
-                  <span>Real User Outcome & Value</span>
+                  <span>User Outcome & Value</span>
                 </div>
                 <p className="text-xs font-medium text-[#080808]/85 leading-relaxed">
-                  {task.user_value || "Enables end-users to interact with the core capability without friction."}
+                  {task.user_value}
                 </p>
               </div>
 
               <div className="border-2 border-[#080808] bg-white p-3.5 shadow-[2.5px_2.5px_0px_#080808] space-y-2">
                 <div className="flex items-center gap-1.5 text-xs font-black uppercase text-[#080808]">
                   <Database className="h-3.5 w-3.5 stroke-[2.5]" />
-                  <span>Affected Database Entities</span>
+                  <span>Blueprint Data Entities & Fields</span>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {task.affected_entities && task.affected_entities.length > 0 ? (
-                    task.affected_entities.map((ent, idx) => (
+                {wireframeEntities.length > 0 ? (
+                  <div className="space-y-2">
+                    {wireframeEntities.map((ent) => (
+                      <div
+                        key={ent.id}
+                        className="border border-[#080808] bg-[#F8F6EC] p-2 space-y-1"
+                      >
+                        <div className="text-[11px] font-black uppercase text-[#080808]">
+                          {ent.entityName}
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {(ent.attributes || []).map((attr, i) => (
+                            <span
+                              key={i}
+                              className="border border-[#080808] bg-white px-1.5 py-0.5 text-[9px] font-bold text-[#080808]"
+                            >
+                              {attr.name}: {attr.type}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {(task.affected_entities || []).map((ent, idx) => (
                       <span
                         key={idx}
                         className="border border-[#080808] bg-[#F8F6EC] px-2 py-0.5 text-[10px] font-black uppercase text-[#080808]"
                       >
                         {ent}
                       </span>
-                    ))
-                  ) : (
-                    <span className="text-[11px] text-[#080808]/60">
-                      Standard Supabase Tables
-                    </span>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
+
+              {qnaList.length > 0 && (
+                <div className="border-2 border-[#080808] bg-white p-3.5 shadow-[2.5px_2.5px_0px_#080808] space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-xs font-black uppercase text-[#080808]">
+                    <ShieldCheck className="h-3.5 w-3.5 stroke-[2.5]" />
+                    <span>Confirmed Discovery Answers</span>
+                  </div>
+                  <div className="space-y-1 max-h-28 overflow-y-auto pr-1 text-[10px]">
+                    {qnaList.map((q, idx) => (
+                      <div key={q.id} className="border-l-2 border-[#080808] pl-2">
+                        <strong>D{idx + 1}:</strong> {q.answer}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="border-2 border-[#080808] bg-white p-3.5 shadow-[2.5px_2.5px_0px_#080808] space-y-2">
                 <div className="flex items-center gap-1.5 text-xs font-black uppercase text-[#080808]">
@@ -370,13 +428,13 @@ export function PromptStudioView({
                   <span>Change Boundaries</span>
                 </div>
                 <div className="text-[11px] space-y-1 font-medium text-[#080808]/80">
-                  <div className="truncate">
+                  <div>
                     <strong className="text-[#080808]">MUST CHANGE:</strong>{" "}
-                    {task.change_boundaries?.mustChange?.slice(0, 2).join(", ") || "app/, components/"}
+                    {task.change_boundaries?.mustChange?.join(", ") || "Target files"}
                   </div>
-                  <div className="truncate">
-                    <strong className="text-[#080808]">LEAVE ALONE:</strong>{" "}
-                    {task.change_boundaries?.mustNotChange?.slice(0, 1).join(", ") || "middleware.ts, auth config"}
+                  <div>
+                    <strong className="text-[#080808]">MUST NOT CHANGE:</strong>{" "}
+                    {task.change_boundaries?.mustNotChange?.join(", ") || "Protected modules"}
                   </div>
                 </div>
               </div>

@@ -21,6 +21,8 @@ export async function GET(
       .from("research_documents")
       .select("*")
       .eq("project_id", id)
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     return NextResponse.json({ researchDoc });
@@ -59,19 +61,55 @@ export async function POST(
     const { data: qnaList } = await supabase
       .from("discovery_qna")
       .select("*")
-      .eq("project_id", id);
+      .eq("project_id", id)
+      .order("step_order", { ascending: true });
 
     const doc = await generateResearchDocument(
       project.name,
-      project.description,
-      (qnaList || []).map((q) => ({ question: q.question, answer: q.answer }))
+      project.raw_idea || project.description,
+      (qnaList || []).map((q) => ({ question: q.question, answer: q.answer })),
+      project.product_type || "SaaS",
+      {
+        targetAudience: project.target_audience,
+        problemStatement: project.problem_statement,
+        goal: project.goal,
+        techStack: project.tech_stack,
+      }
     );
 
-    // Upsert into research_documents
-    const { data: savedDoc, error } = await supabase
+    const { data: existingDoc } = await supabase
       .from("research_documents")
-      .upsert(
-        {
+      .select("id")
+      .eq("project_id", id)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let savedDoc = null;
+    if (existingDoc) {
+      const { data, error } = await supabase
+        .from("research_documents")
+        .update({
+          market_context: doc.market_context,
+          user_context: doc.user_context,
+          competitor_analysis: doc.competitor_analysis,
+          user_needs: doc.user_needs,
+          risks: doc.risks,
+          opportunities: doc.opportunities,
+          assumptions: doc.assumptions,
+          hypotheses: doc.hypotheses,
+          sources: doc.sources,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingDoc.id)
+        .select("*")
+        .single();
+      if (error) throw error;
+      savedDoc = data;
+    } else {
+      const { data, error } = await supabase
+        .from("research_documents")
+        .insert({
           project_id: id,
           market_context: doc.market_context,
           user_context: doc.user_context,
@@ -83,20 +121,19 @@ export async function POST(
           hypotheses: doc.hypotheses,
           sources: doc.sources,
           updated_at: new Date().toISOString(),
-        },
-        { onConflict: "project_id" }
-      )
-      .select("*")
-      .single();
-
-    if (error) {
-      console.error("Research upsert error:", error);
-      return NextResponse.json({ error: "Failed to save research document." }, { status: 500 });
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      savedDoc = data;
     }
 
     return NextResponse.json({ researchDoc: savedDoc });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Research POST error:", err);
-    return NextResponse.json({ error: "An unexpected server error occurred." }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Failed to synthesize real-time product research." },
+      { status: 500 }
+    );
   }
 }

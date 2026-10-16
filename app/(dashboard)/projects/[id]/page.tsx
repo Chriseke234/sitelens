@@ -2,11 +2,13 @@ import React from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { UnifiedStudioView } from "@/components/projects/unified-studio-view";
-import { Project, AigenstraTask } from "@/types";
+import { checkDiscoverySufficiency } from "@/lib/ai/product-understanding";
+import { Project, AigenstraTask, SoftwareBlueprint } from "@/types";
 
 export const metadata = {
   title: "AI Product Studio | Aigenstra",
-  description: "Unified AI Copilot and Prompt Studio inspired by Cursor and ChatGPT.",
+  description:
+    "Two-process real-time AI Product Studio: 1. Idea & Architecture, 2. Agent Prompts & Wireframe.",
 };
 
 export default async function ProjectPage({
@@ -38,19 +40,51 @@ export default async function ProjectPage({
 
   const project = projectData as Project;
 
-  // Fetch tasks if available
-  const { data: archDoc } = await supabase
-    .from("architecture_docs")
-    .select("storage")
-    .eq("project_id", id)
-    .maybeSingle();
+  // Check discovery sufficiency before exposing any tasks or blueprint
+  const [qnaRes, archRes, specRes] = await Promise.all([
+    supabase
+      .from("discovery_qna")
+      .select("*")
+      .eq("project_id", id)
+      .order("step_order", { ascending: true }),
+    supabase
+      .from("architecture_docs")
+      .select("storage")
+      .eq("project_id", id)
+      .maybeSingle(),
+    supabase
+      .from("product_specs")
+      .select("problem_statement")
+      .eq("project_id", id)
+      .maybeSingle(),
+  ]);
 
-  const storedTasks = (archDoc?.storage as any)?.tasks as AigenstraTask[] | undefined;
+  const qnas = qnaRes.data || [];
+  const sufficiency = checkDiscoverySufficiency(qnas);
+
+  const storedTasks = sufficiency.isSufficient
+    ? ((archRes.data?.storage as any)?.tasks as AigenstraTask[] | undefined) || []
+    : [];
+
+  let storedBlueprint: SoftwareBlueprint | null = null;
+  if (
+    sufficiency.isSufficient &&
+    specRes.data?.problem_statement &&
+    specRes.data.problem_statement.startsWith("{")
+  ) {
+    try {
+      storedBlueprint = JSON.parse(specRes.data.problem_statement);
+    } catch {
+      storedBlueprint = null;
+    }
+  }
 
   return (
     <UnifiedStudioView
       project={project}
-      initialTasks={storedTasks || []}
+      initialTasks={storedTasks}
+      initialBlueprint={storedBlueprint}
+      initialIsDiscoveryComplete={sufficiency.isSufficient}
     />
   );
 }

@@ -1,130 +1,269 @@
 import { getGeminiApiKey } from "./client";
+import { getProductTypeProfile } from "./product-type-profiles";
 import {
   UserPersona,
   FunctionalRequirement,
   NonFunctionalRequirement,
   AdaptiveDiscoveryQuestion,
-  QuestionPriority,
 } from "@/types";
 
+export interface ResearchContextInput {
+  market_context?: string;
+  user_context?: string;
+  user_needs?: string[];
+  risks?: Array<{ risk: string; severity: string; mitigation: string }>;
+  opportunities?: string[];
+  competitor_analysis?: Array<{
+    name: string;
+    strengths: string;
+    weaknesses: string;
+    differentiation: string;
+  }>;
+}
+
 /**
- * Generate Adaptive Discovery Questions classified by MUST KNOW, HELPFUL, and OPTIONAL.
- * Includes "Why we're asking" rationale and sensible defaults for "I don't know" answers.
+ * Step 1: Generate Real-Time Research Synthesis Document BEFORE asking discovery questions.
+ * Tailored strictly to the user's Product Type (SaaS, Landing Page, E-commerce, Web App, etc.)
+ * and raw product concept. Zero fictional fallback data.
+ */
+export async function generateResearchDocument(
+  projectName: string,
+  productDescription: string,
+  qnaContext: Array<{ question: string; answer?: string | null }> = [],
+  productType?: string | null,
+  projectDetails?: {
+    targetAudience?: string | null;
+    problemStatement?: string | null;
+    goal?: string | null;
+    techStack?: string | null;
+  }
+) {
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) {
+    throw new Error(
+      "Gemini API key is required for real-time product research. Fictional fallback data is disabled."
+    );
+  }
+
+  const profile = getProductTypeProfile(productType);
+
+  const prompt = `
+System Instruction:
+You are the Lead Product & Architecture Research AI Agent for Aigenstra.
+Before we ask the user any discovery questions or compile any prompts, conduct a deep, real-time domain and architectural research analysis for their specific product.
+
+CRITICAL RULES:
+1. ZERO GUESSWORK / ZERO GENERIC BOILERPLATE: Analyze the exact product ("${projectName}") and its Product Type ("${profile.productType}" — ${profile.label}).
+2. TAILOR TO PRODUCT TYPE (${profile.productType}):
+   - Architectural Summary: ${profile.architecturalSummary}
+   - Research Focus Areas: ${profile.researchFocusAreas.join(" | ")}
+   - Anti-Bloat Guardrails: ${profile.antiBloatGuardrails.join(" | ")}
+3. Explicitly label all assumptions using ONLY:
+   - "VERIFIED" (explicitly stated by the user in their description or Q&A)
+   - "INFERRED" (direct logical deduction from the domain and product type)
+   - "ASSUMPTION" (unverified premise that requires asking the user)
+   - "NEEDS RESEARCH" (open domain question we must ask the user next)
+
+Project Context:
+- Project Name: ${projectName}
+- Product Type: ${profile.productType} (${profile.label})
+- Raw Idea / Description: ${productDescription}
+- Target Audience: ${projectDetails?.targetAudience || "To be clarified with user"}
+- Problem Statement: ${projectDetails?.problemStatement || "Derived from description"}
+- Target Goal: ${projectDetails?.goal || "Build production-ready " + profile.productType}
+- Tech Stack: ${projectDetails?.techStack || "Next.js 15, Supabase, Tailwind CSS"}
+- Answered Discovery Context So Far: ${JSON.stringify(qnaContext, null, 2)}
+
+Return a valid JSON object matching this exact schema:
+{
+  "market_context": "Detailed domain & architectural research specific to ${projectName} as a ${profile.productType}...",
+  "user_context": "Target user workflow, core pain points, and interaction expectations for this specific ${profile.productType}...",
+  "competitor_analysis": [
+    {
+      "name": "Real or category-specific alternative in this domain",
+      "strengths": "What existing solutions do well",
+      "weaknesses": "Where existing solutions fail users",
+      "differentiation": "How ${projectName} solves this better"
+    }
+  ],
+  "user_needs": [
+    "Specific user need 1 for ${projectName}",
+    "Specific user need 2 for ${projectName}",
+    "Specific user need 3 for ${projectName}"
+  ],
+  "risks": [
+    {
+      "risk": "Specific architectural or UX risk for this ${profile.productType}",
+      "severity": "HIGH",
+      "mitigation": "Concrete technical mitigation in Next.js + Supabase"
+    }
+  ],
+  "opportunities": [
+    "High-impact product opportunity 1",
+    "High-impact product opportunity 2"
+  ],
+  "assumptions": [
+    {
+      "assumption": "Specific architectural or workflow detail not yet specified by user",
+      "status": "NEEDS RESEARCH"
+    }
+  ],
+  "hypotheses": [
+    "Testable product/conversion hypothesis tailored to ${projectName}"
+  ],
+  "sources": [
+    {
+      "title": "${profile.label} Architecture & UX Standards",
+      "notes": "Domain research synthesis for ${projectName}"
+    }
+  ]
+}
+`;
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          response_mime_type: "application/json",
+          temperature: 0.2,
+        },
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "Unknown AI error");
+    throw new Error(`Real-time research synthesis failed (HTTP ${res.status}): ${errText.slice(0, 150)}`);
+  }
+
+  const resData = await res.json();
+  const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!rawText) {
+    throw new Error("AI Research Agent returned an empty response.");
+  }
+
+  return JSON.parse(rawText);
+}
+
+/**
+ * Step 2: Generate Adaptive Discovery Questions AFTER Research has been synthesized.
+ * Grounded strictly in the Research Document and tailored to the user's Product Type
+ * (SaaS, Web App, Landing Page, E-commerce, Marketplace, Mobile App, Internal Tool, AI Product, API).
+ * Zero hardcoded fictional fallback questions.
  */
 export async function generateAdaptiveDiscoveryQuestions(
   projectName: string,
   productDescription: string,
-  previousQnA: Array<{ question: string; answer?: string | null }>
+  previousQnA: Array<{ question: string; answer?: string | null }>,
+  productType?: string | null,
+  researchContext?: ResearchContextInput | null
 ): Promise<AdaptiveDiscoveryQuestion[]> {
   const apiKey = getGeminiApiKey();
-
-  const fallbackQuestions: AdaptiveDiscoveryQuestion[] = [
-    {
-      question: "Will customers need accounts to log in and track their orders or saved items?",
-      priority: "MUST_KNOW",
-      whyItMatters: "Determines whether authentication, session management, and private user databases are required.",
-      suggestedOptions: ["Yes, accounts required", "Guest flow with tracking links", "No accounts needed"],
-      defaultRecommendation: "Yes, accounts with optional guest checkout",
-      defaultAssumption: "Customers will have accounts to access their order history securely.",
-    },
-    {
-      question: "Will different types of people have different levels of access (e.g. Customers vs Staff vs Admins)?",
-      priority: "MUST_KNOW",
-      whyItMatters: "Directly shapes data ownership rules, dashboard permissions, and security policies.",
-      suggestedOptions: ["Multiple roles (Customer, Staff, Admin)", "Single role (All users equal)", "Admin portal only"],
-      defaultRecommendation: "Two primary roles: Customer and Administrator",
-      defaultAssumption: "Platform has standard Customer and Administrator permission boundaries.",
-    },
-    {
-      question: "Will you accept online payments directly inside the application?",
-      priority: "HELPFUL",
-      whyItMatters: "Influences webhook architecture, payment provider integrations, and checkout state machines.",
-      suggestedOptions: ["Yes, direct card/online payments", "Manual offline payment on fulfillment", "Free platform / Monetized later"],
-      defaultRecommendation: "Direct online payments via standard checkout gateway",
-      defaultAssumption: "Transactions will be processed via integrated payment provider.",
-    },
-    {
-      question: "Do users need automated notifications (e.g. Email or SMS updates when status changes)?",
-      priority: "OPTIONAL",
-      whyItMatters: "Adds notification triggers and transactional messaging services.",
-      suggestedOptions: ["Yes, email and SMS", "Email only", "In-app notifications only"],
-      defaultRecommendation: "Email alerts for major status milestones",
-      defaultAssumption: "Order state changes will send automated email notifications.",
-    },
-  ];
-
   if (!apiKey) {
-    return fallbackQuestions;
+    throw new Error(
+      "Gemini API key is required to generate research-backed discovery questions. Fictional fallback questions are disabled."
+    );
   }
 
+  const profile = getProductTypeProfile(productType);
   const answeredTexts = (previousQnA || []).map((q) => q.question.toLowerCase());
+
+  const researchSummaryBlock = researchContext
+    ? `
+Synthesized Product Research Findings (Use this research to formulate your questions):
+- Market & Domain Context: ${researchContext.market_context || "N/A"}
+- User Workflow Context: ${researchContext.user_context || "N/A"}
+- Identified User Needs: ${(researchContext.user_needs || []).join("; ")}
+- Key Architectural Risks to Resolve: ${(researchContext.risks || []).map((r) => `${r.risk} (${r.mitigation})`).join("; ")}
+`
+    : "";
 
   const prompt = `
 System Instruction:
-You are the Principal Discovery AI Guide for Aigenstra.
-Analyze the user's project idea and previous Q&A. Generate 3 to 4 prioritized, progressive, human questions.
-CRITICAL RULES FOR ADAPTIVE QUESTIONS:
-1. DEDUPLICATION: DO NOT ask about topics already covered or answered in previous Q&A or obvious from the description.
-   Previous questions asked: ${JSON.stringify(answeredTexts)}
-2. CATEGORIES TO REASON ACROSS:
-   - ACTORS: Who are the different types of users?
-   - ACCESS: Do users need accounts or can they browse as guests?
-   - GOAL & WORKFLOW: What is the primary action a user performs?
-   - PAYMENTS: Are direct in-app payments required?
-   - COMMUNICATION: Are notifications (email/SMS) needed on status changes?
-   - DATA & CONTENT: What major records need to be created and tracked?
-   - INTEGRATIONS: Does the product depend on outside APIs/services?
-   - ADMIN: Does a platform manager need a dedicated oversight portal?
-3. CLASSIFICATION:
-   - MUST_KNOW: Critical architecture decisions that materially change data models, auth, or core workflows.
-   - HELPFUL: Decisions that clarify UX and feature scope without blocking initial architecture.
-   - OPTIONAL: Nice-to-have features or future scale considerations.
-4. TONE: Human, friendly, beginner-accessible plain English (never use technical jargon like "RBAC", "RLS", "Webhooks", "Stateless auth").
-5. Provide "whyItMatters", sensible "defaultRecommendation", and "defaultAssumption" for each question.
+You are the Principal Discovery & Architecture AI Guide for Aigenstra.
+You have just completed domain and architectural research on the user's project ("${projectName}", Product Type: "${profile.productType}" — ${profile.label}).
+Now generate 4 highly tailored, progressive discovery questions that resolve the exact architectural, UX, data schema, and workflow decisions needed before we build their ${profile.productType} prompts and wireframes.
 
-Project: ${projectName}
-Description: ${productDescription}
+CRITICAL RULES FOR RESEARCH-BACKED, PRODUCT-TAILORED QUESTIONS:
+1. TAILOR STRICTLY TO PRODUCT TYPE ("${profile.productType}"):
+   - Product Type Architectural Summary: ${profile.architecturalSummary}
+   - Essential Dimensions to Cover for ${profile.productType}:
+     ${profile.essentialQuestionDimensions.map((d, i) => `${i + 1}. ${d}`).join("\n     ")}
+   - Typical Screens for ${profile.productType}: ${profile.typicalScreenPatterns.join(" | ")}
+   - Anti-Bloat Guardrails: ${profile.antiBloatGuardrails.join(" | ")}
+2. NO GENERIC MISMATCHED QUESTIONS:
+   - If the user is building a "Landing Page", ask about conversion goals, CTA action, lead capture fields in Supabase, hero/section structure, social proof, and interactive elements—NEVER ask about multi-tenant order tracking or complex admin roles unless mentioned in their idea.
+   - If the user is building "SaaS", ask about tenant/workspace structure, core workflow execution, role permissions, and billing/tier rules.
+   - If the user is building "E-commerce", ask about product catalog/variants, guest vs. account checkout, payment provider, and order fulfillment states.
+   - If the user is building a "Web App", "Marketplace", "Mobile App", "Internal Tool", "AI Product", or "API", tailor every question to "${projectName}" and "${profile.productType}".
+3. DEDUPLICATION: Do NOT ask about anything already answered in previous Q&A or already explicitly stated in the user's description.
+   Previous questions asked: ${JSON.stringify(answeredTexts)}
+4. TONE & OPTIONS:
+   - Clear, direct, founder-friendly language.
+   - Provide 3 concrete "suggestedOptions" tailored to "${projectName}" so the user can either click an option or type a custom response.
+   - Provide "whyItMatters" explaining how this answer shapes their wireframe, Supabase schema, and agent prompts.
+
+Project Name: ${projectName}
+Product Type: ${profile.productType} (${profile.label})
+User's Raw Idea / Description: ${productDescription}
+${researchSummaryBlock}
 
 Previous Q&A Context:
 ${JSON.stringify(previousQnA, null, 2)}
 
-Return a valid JSON array of objects with this schema:
+Return a valid JSON array of 4 objects matching this exact schema:
 [
   {
-    "question": "Plain English question?",
+    "question": "Specific question tailored to ${projectName} (${profile.productType})?",
     "priority": "MUST_KNOW" | "HELPFUL" | "OPTIONAL",
-    "whyItMatters": "Why this matters for your product in simple terms",
-    "suggestedOptions": ["Option A", "Option B", "Option C"],
-    "defaultRecommendation": "Recommended choice for this type of product",
-    "defaultAssumption": "Provisional assumption to use if user is unsure"
+    "whyItMatters": "How this decision directly shapes the ${profile.productType} wireframe, Supabase tables, and coding prompt",
+    "suggestedOptions": [
+      "Tailored Option A for ${projectName}",
+      "Tailored Option B for ${projectName}",
+      "Tailored Option C for ${projectName}"
+    ],
+    "defaultRecommendation": "Recommended architectural choice for ${projectName} based on research",
+    "defaultAssumption": "Explicit assumption recorded if the user selects the recommended option"
   }
 ]
 `;
 
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: {
-            response_mime_type: "application/json",
-            temperature: 0.2,
-          },
-        }),
-      }
-    );
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          response_mime_type: "application/json",
+          temperature: 0.2,
+        },
+      }),
+    }
+  );
 
-    const resData = await res.json();
-    const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-    const parsed = JSON.parse(rawText);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallbackQuestions;
-  } catch (err) {
-    console.error("Adaptive question generation error:", err);
-    return fallbackQuestions;
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "Unknown AI error");
+    throw new Error(`Discovery question synthesis failed (HTTP ${res.status}): ${errText.slice(0, 150)}`);
   }
+
+  const resData = await res.json();
+  const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!rawText) {
+    throw new Error("Discovery AI returned an empty response.");
+  }
+
+  const parsed = JSON.parse(rawText);
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    throw new Error("Discovery AI did not return a valid list of questions.");
+  }
+
+  return parsed;
 }
 
 /**
@@ -133,121 +272,37 @@ Return a valid JSON array of objects with this schema:
 export async function generateDiscoveryQuestions(
   projectName: string,
   productDescription: string,
-  previousQnA: Array<{ question: string; answer?: string | null }>
+  previousQnA: Array<{ question: string; answer?: string | null }>,
+  productType?: string | null
 ): Promise<string[]> {
-  const adaptive = await generateAdaptiveDiscoveryQuestions(projectName, productDescription, previousQnA);
+  const adaptive = await generateAdaptiveDiscoveryQuestions(
+    projectName,
+    productDescription,
+    previousQnA,
+    productType
+  );
   return adaptive.map((q) => q.question);
 }
 
 /**
- * Generate Research Synthesis document with explicit label tagging:
- * VERIFIED, INFERRED, ASSUMPTION, NEEDS RESEARCH.
- */
-export async function generateResearchDocument(
-  projectName: string,
-  productDescription: string,
-  qnaContext: Array<{ question: string; answer?: string | null }>
-) {
-  const apiKey = getGeminiApiKey();
-
-  const prompt = `
-System Instruction:
-You are the Lead Research AI Agent for Aigenstra.
-Synthesize market context, user context, competitor landscape, user needs, risks, assumptions, and hypotheses for ${projectName}.
-CRITICAL RULE: Explicitly label all assumptions and findings using these exact labels:
-- VERIFIED (proven fact or user confirmed)
-- INFERRED (logical deduction from context)
-- ASSUMPTION (unverified premise)
-- NEEDS RESEARCH (unknown requiring validation)
-
-Project: ${projectName}
-Description: ${productDescription}
-Discovery Insights:
-${JSON.stringify(qnaContext, null, 2)}
-
-Return a valid JSON object matching this schema:
-{
-  "market_context": "Detailed market overview...",
-  "user_context": "Target user context & workflow...",
-  "competitor_analysis": [
-    { "name": "Competitor Name", "strengths": "...", "weaknesses": "...", "differentiation": "..." }
-  ],
-  "user_needs": ["Need 1", "Need 2"],
-  "risks": [
-    { "risk": "Risk description", "severity": "HIGH/MEDIUM/LOW", "mitigation": "..." }
-  ],
-  "opportunities": ["Opportunity 1", "Opportunity 2"],
-  "assumptions": [
-    { "assumption": "Users prefer WhatsApp over mobile app download", "status": "ASSUMPTION" },
-    { "assumption": "Local providers have stable smartphone access", "status": "VERIFIED" },
-    { "assumption": "Average ticket size justifies 5% transaction commission", "status": "NEEDS RESEARCH" }
-  ],
-  "hypotheses": ["Guest checkout increases conversion by 30%"],
-  "sources": [
-    { "title": "Industry E-Commerce & Service Benchmarks", "notes": "Baseline metrics" }
-  ]
-}
-`;
-
-  if (!apiKey) {
-    return {
-      market_context: `The market for ${projectName} represents a high-growth opportunity in on-demand service and workflow automation.`,
-      user_context: `Target users experience high friction in manual scheduling and status tracking.`,
-      competitor_analysis: [
-        { name: "Legacy Alternatives", strengths: "Brand presence", weaknesses: "Clunky UI, mandatory signup barriers", differentiation: "Instant AI-assisted workflows & friction-free checkout" }
-      ],
-      user_needs: ["Rapid task execution", "Transparent pricing", "Data security"],
-      risks: [{ risk: "User abandonment at signup modal", severity: "HIGH", mitigation: "Enable guest flow with secure order tokens" }],
-      opportunities: ["Automated status notifications", "Mobile-optimized progressive app"],
-      assumptions: [
-        { assumption: "Target users prefer quick mobile web access over app store downloads", status: "VERIFIED" as const },
-        { assumption: "Providers can manage orders via simple web dashboard", status: "INFERRED" as const },
-        { assumption: "Average user repeats orders twice per month", status: "NEEDS RESEARCH" as const },
-      ],
-      hypotheses: ["Zero-friction onboarding increases completion rates by 35%"],
-      sources: [{ title: "Aigenstra Service Benchmarks", notes: "Standard SaaS & marketplace metrics" }],
-    };
-  }
-
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: {
-            response_mime_type: "application/json",
-            temperature: 0.2,
-          },
-        }),
-      }
-    );
-
-    const resData = await res.json();
-    const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-    return JSON.parse(rawText);
-  } catch (err) {
-    console.error("Research document generation error:", err);
-    throw err;
-  }
-}
-
-/**
- * Generate Visual User Journey document.
+ * Generate Visual User Journey document tailored to the product type and user answers.
  */
 export async function generateUserJourneyDocument(
   projectName: string,
-  productDescription: string
+  productDescription: string,
+  productType?: string | null
 ) {
   const apiKey = getGeminiApiKey();
+  if (!apiKey) {
+    throw new Error("Gemini API key is required for real-time user journey synthesis.");
+  }
+
+  const profile = getProductTypeProfile(productType);
 
   const prompt = `
 System Instruction:
 You are the Lead UX AI Agent for Aigenstra.
-Generate a complete visual user journey mapping out step-by-step interactions for ${projectName}:
-Discovery → Landing Page → Sign Up / Guest → Onboarding → Dashboard → Core Action → Confirmation → Return / Retention.
+Generate a complete, real-time visual user journey mapping out step-by-step interactions for ${projectName} (${profile.productType} — ${profile.label}).
 
 For every stage capture:
 - User Goal
@@ -257,98 +312,62 @@ For every stage capture:
 - Possible Failure
 - Security Consideration
 
-Also include Happy Path, Edge Cases, and Failure Recovery Paths.
+Also include Happy Path, Edge Cases, and Failure Recovery Paths tailored specifically to a ${profile.productType}.
 
 Project: ${projectName}
+Product Type: ${profile.productType}
 Description: ${productDescription}
 
 Return a valid JSON object matching this schema:
 {
-  "title": "Core Customer Journey — ${projectName}",
-  "persona": "Primary User",
+  "title": "Core User Journey — ${projectName} (${profile.productType})",
+  "persona": "Primary Target User",
   "steps": [
     {
       "stepNumber": 1,
-      "title": "Discovery & Landing Page",
-      "userGoal": "Understand value proposition and options",
-      "userAction": "Browses services and pricing",
-      "systemResponse": "Renders responsive hero and value propositions",
-      "friction": "Ambiguous CTAs",
-      "possibleFailure": "Slow asset load",
-      "errorStates": ["Failed image load"],
-      "alternativePaths": ["Direct search query"],
-      "security": "HTTPS & Content Security Policy enforced"
+      "title": "Stage Title",
+      "userGoal": "...",
+      "userAction": "...",
+      "systemResponse": "...",
+      "friction": "...",
+      "possibleFailure": "...",
+      "errorStates": ["..."],
+      "alternativePaths": ["..."],
+      "security": "..."
     }
   ],
-  "happy_path": ["Discovery", "Select Option", "Provide Details", "Confirm & Pay", "Receive Value", "Repeat"],
+  "happy_path": ["Step 1", "Step 2", "Step 3"],
   "edge_cases": [
-    { "scenario": "Network disconnect during submission", "resolution": "Local state autosave and offline retry indicator" }
+    { "scenario": "...", "resolution": "..." }
   ],
   "failure_paths": [
-    { "trigger": "Payment authorization failure", "userMessage": "Payment failed. Please verify details or try another method.", "fallbackAction": "Allow retry without losing form input state" }
+    { "trigger": "...", "userMessage": "...", "fallbackAction": "..." }
   ]
 }
 `;
 
-  if (!apiKey) {
-    return {
-      title: `Core Customer Journey — ${projectName}`,
-      persona: "Primary User",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Discovery & Value Understanding",
-          userGoal: "Understand service offering and pricing",
-          userAction: "Visits landing page",
-          systemResponse: "Displays clear headline, demo, and primary action button",
-          friction: "Too much text above fold",
-          possibleFailure: "Slow initial render",
-          errorStates: ["CDN asset timeout"],
-          alternativePaths: ["Direct link to order form"],
-          security: "HTTPS & CSRF protection",
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          response_mime_type: "application/json",
+          temperature: 0.2,
         },
-        {
-          stepNumber: 2,
-          title: "Configuration & Order Entry",
-          userGoal: "Configure preferences and submit request",
-          userAction: "Fills out responsive order form",
-          systemResponse: "Real-time client validation and subtotal computation",
-          friction: "Unclear input labels",
-          possibleFailure: "Validation errors",
-          errorStates: ["Invalid phone/email format"],
-          alternativePaths: ["Save draft locally"],
-          security: "Zod server-side sanitization",
-        },
-      ],
-      happy_path: ["Landing", "Configuration", "Confirmation", "Tracking", "Retention"],
-      edge_cases: [{ scenario: "User navigates away mid-order", resolution: "Restore draft state on return" }],
-      failure_paths: [{ trigger: "Form validation error", userMessage: "Please check highlighted fields", fallbackAction: "Auto-focus first error field" }],
-    };
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`User journey synthesis failed with HTTP ${res.status}`);
   }
 
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: {
-            response_mime_type: "application/json",
-            temperature: 0.2,
-          },
-        }),
-      }
-    );
-
-    const resData = await res.json();
-    const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-    return JSON.parse(rawText);
-  } catch (err) {
-    console.error("User journey generation error:", err);
-    throw err;
-  }
+  const resData = await res.json();
+  const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+  return JSON.parse(rawText);
 }
 
 /**
@@ -356,122 +375,74 @@ Return a valid JSON object matching this schema:
  */
 export async function generateProductSpecDocument(
   projectName: string,
-  productDescription: string
+  productDescription: string,
+  productType?: string | null
 ) {
   const apiKey = getGeminiApiKey();
+  if (!apiKey) {
+    throw new Error("Gemini API key is required for real-time product specification synthesis.");
+  }
+
+  const profile = getProductTypeProfile(productType);
 
   const prompt = `
 System Instruction:
 You are the Principal Product Agent for Aigenstra.
-Generate a structured Product Requirements Document (PRD) for ${projectName}.
-Include:
-1. Problem Statement
-2. Target Users & Lightweight Personas (Goal, Pain, Technical Ability [Low/Medium/High], Primary Task)
-3. Core Goals & Non-Goals (Anti-bloat filter)
-4. Structured Functional Requirements (e.g. FR-001: Users can create an account)
-5. Structured Non-Functional Requirements (e.g. NFR-001: Sub-second latency, NFR-002: Server-side authorization)
-6. Automatic Edge Cases for every major feature
-7. Business Rules & Acceptance Criteria
-8. MVP Scope vs Future Scope
+Generate a structured Product Requirements Document (PRD) for ${projectName} (${profile.productType} — ${profile.label}).
+Anti-Bloat Guardrails: ${profile.antiBloatGuardrails.join(" | ")}
 
 Project: ${projectName}
+Product Type: ${profile.productType}
 Description: ${productDescription}
 
 Return a valid JSON object matching this schema:
 {
   "problem_statement": "...",
-  "target_users": ["User Segment 1", "User Segment 2"],
+  "target_users": ["..."],
   "personas": [
-    { "name": "Business Owner", "goal": "Get orders without manual phone calls", "pain": "Repeated customer questions", "technicalAbility": "Low", "primaryTask": "Create and manage orders" }
+    { "name": "...", "goal": "...", "pain": "...", "technicalAbility": "Medium", "primaryTask": "..." }
   ],
-  "goals": ["Goal 1", "Goal 2"],
-  "non_goals": ["In-app social feed (anti-bloat)"],
+  "goals": ["..."],
+  "non_goals": ["..."],
   "user_stories": [
-    { "title": "Place Order", "asA": "customer", "iWantTo": "book service quickly", "soThat": "I save time", "priority": "CRITICAL" }
+    { "title": "...", "asA": "...", "iWantTo": "...", "soThat": "...", "priority": "CRITICAL" }
   ],
-  "functional_reqs": ["FR-001: Users can create account", "FR-002: Users can place orders"],
+  "functional_reqs": ["FR-001: ..."],
   "structured_functional_reqs": [
-    { "code": "FR-001", "title": "User Account & Guest Flow", "description": "Users can authenticate or proceed with secure guest order tokens.", "priority": "CRITICAL" },
-    { "code": "FR-002", "title": "Order Management", "description": "Users can view real-time status of submitted orders.", "priority": "HIGH" }
+    { "code": "FR-001", "title": "...", "description": "...", "priority": "CRITICAL" }
   ],
-  "non_functional_reqs": ["NFR-001: Sub-second page load", "NFR-002: Server-side authorization"],
+  "non_functional_reqs": ["NFR-001: ..."],
   "structured_non_functional_reqs": [
-    { "code": "NFR-001", "title": "Security & Authorization", "description": "Every API endpoint must enforce server-side ownership checks.", "category": "Security" },
-    { "code": "NFR-002", "title": "Mobile Responsiveness", "description": "UI must render seamlessly across 360px to 4K displays.", "category": "Usability" }
+    { "code": "NFR-001", "title": "...", "description": "...", "category": "Security" }
   ],
-  "business_rules": ["Order cancellation permitted up to 1 hour prior to pickup"],
-  "acceptance_criteria": ["Order confirmation returns valid tracking code and SMS link"],
-  "edge_cases": [
-    "Email already registered during guest checkout upgrade",
-    "Network disconnect mid-payment submission",
-    "Duplicate request submitted within 30 seconds"
-  ],
-  "mvp_scope": ["Landing page", "Order booking form", "Order status view", "Admin portal"],
-  "future_scope": ["Subscription recurring billing", "Native mobile push notifications"]
+  "business_rules": ["..."],
+  "acceptance_criteria": ["..."],
+  "edge_cases": ["..."],
+  "mvp_scope": ["..."],
+  "future_scope": ["..."]
 }
 `;
 
-  if (!apiKey) {
-    return {
-      problem_statement: `Users lack an efficient, transparent way to request and track ${projectName} services online.`,
-      target_users: ["Busy urban professionals", "Service providers"],
-      personas: [
-        {
-          name: "Busy Professional",
-          goal: "Book services quickly on mobile without phone calls",
-          pain: "Unpredictable wait times and confusing pricing",
-          technicalAbility: "Medium" as const,
-          primaryTask: "Submit request and track status",
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          response_mime_type: "application/json",
+          temperature: 0.2,
         },
-      ],
-      goals: ["Enable 2-minute booking flow", "Provide real-time status updates"],
-      non_goals: ["In-app social networking", "Complex multi-tier loyalty exchange (anti-bloat)"],
-      user_stories: [
-        { title: "Service Booking", asA: "busy customer", iWantTo: "book service in 2 minutes", soThat: "I don't waste time", priority: "CRITICAL" },
-      ],
-      functional_reqs: ["FR-001: Secure authentication & guest checkout", "FR-002: Real-time status tracking"],
-      structured_functional_reqs: [
-        { code: "FR-001", title: "Authentication & Guest Flow", description: "Users can register or proceed as guest with secure order tokens.", priority: "CRITICAL" as const },
-        { code: "FR-002", title: "Status Tracking", description: "Live progress dashboard for active orders.", priority: "HIGH" as const },
-      ],
-      non_functional_reqs: ["NFR-001: Server-side authorization", "NFR-002: Mobile responsiveness"],
-      structured_non_functional_reqs: [
-        { code: "NFR-001", title: "Security & Authorization", description: "Enforce ownership verification on all resource routes.", category: "Security" as const },
-        { code: "NFR-002", title: "Mobile Performance", description: "Sub-second page loading speed on 4G connections.", category: "Performance" as const },
-      ],
-      business_rules: ["Order cancellation allowed up to 1h before pickup"],
-      acceptance_criteria: ["Form submission generates tracking code and displays confirmation screen"],
-      edge_cases: [
-        "User registers with already existing email address",
-        "Network drop during form submission",
-        "Duplicate order submission within 30 seconds",
-      ],
-      mvp_scope: ["Landing page", "Order booking flow", "Status tracking", "Admin overview"],
-      future_scope: ["Recurring subscriptions", "Native mobile app push notifications"],
-    };
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Product specification synthesis failed with HTTP ${res.status}`);
   }
 
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: {
-            response_mime_type: "application/json",
-            temperature: 0.2,
-          },
-        }),
-      }
-    );
-
-    const resData = await res.json();
-    const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-    return JSON.parse(rawText);
-  } catch (err) {
-    console.error("Product spec generation error:", err);
-    throw err;
-  }
+  const resData = await res.json();
+  const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+  return JSON.parse(rawText);
 }

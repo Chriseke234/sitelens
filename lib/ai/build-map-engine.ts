@@ -1,258 +1,111 @@
 import { getGeminiApiKey } from "./client";
+import { getProductTypeProfile } from "./product-type-profiles";
 import { BuildMap, BuildStage, SoftwareBlueprint } from "@/types";
 
 /**
- * Generates an actionable, sequential Build Map based on a project's Software Blueprint.
+ * Generates an actionable, sequential Build Map strictly tailored to the project's
+ * Software Blueprint and Product Type. Zero fictional fallback stages.
  */
 export async function generateBuildMap(
   projectId: string,
   blueprint: SoftwareBlueprint
 ): Promise<BuildMap> {
   const apiKey = getGeminiApiKey();
-
-  const fallbackBuildMap = createDeterministicBuildMap(projectId, blueprint);
-
   if (!apiKey) {
-    return fallbackBuildMap;
+    throw new Error(
+      "Gemini API key is required to generate your tailored Build Map. Fictional fallback stages are disabled."
+    );
   }
+
+  const profile = getProductTypeProfile(blueprint.overview?.productType);
 
   const prompt = `
 System Instruction:
 You are the Principal Build Architect for Aigenstra.
-Your task is to transform the provided Software Blueprint into a chronologically sequenced, actionable Build Map.
+Transform the provided Software Blueprint into a chronologically sequenced, actionable Build Map tailored specifically for "${blueprint.overview.name}" (Product Type: "${profile.productType}" — ${profile.label}).
 
 CRITICAL RULES:
-1. AIGENSTRA IS A PROMPT BUILDER, NOT AN APP BUILDER. The build map prepares structured development increments for external coding agents (Google Antigravity, Claude Code, Cursor, Codex).
-2. Human-Centric Ordering: Order stages logically (Foundation/DB -> Auth/Profiles -> Primary Dashboard -> Core Creation Flow -> Administration/Integrations -> Quality/Security/Hardening).
-3. "Why This Exists": Provide a clear, plain-English explanation for why this stage is sequenced where it is.
-4. Deliverables: List concrete screens, database entities, and workflows delivered in each stage.
+1. AIGENSTRA IS A PROMPT BUILDER, NOT AN APP BUILDER. The build map sequences bounded development increments for external coding agents (Google Antigravity, Claude Code, Cursor, Codex).
+2. TAILOR STRICTLY TO PRODUCT TYPE ("${profile.productType}"):
+   - Architectural Summary: ${profile.architecturalSummary}
+   - Expected Screen Patterns: ${profile.typicalScreenPatterns.join(" | ")}
+   - Anti-Bloat Guardrails: ${profile.antiBloatGuardrails.join(" | ")}
+3. Reference ONLY the actual screens (${blueprint.screens.map((s) => s.routePath).join(", ")}) and actual data entities (${blueprint.dataEntities.map((e) => e.entityName).join(", ")}) from the project's blueprint. NEVER invent generic "CoreResource" or "WorkspaceItem" entities.
 
-Blueprint Summary:
-- Product: ${blueprint.overview.name} (${blueprint.overview.productType})
+Blueprint Context:
+- Product: ${blueprint.overview.name} (${profile.productType})
 - Summary: ${blueprint.overview.summary}
+- Problem Solved: ${blueprint.overview.problemStatement}
 - Roles: ${blueprint.usersRoles.map((r) => r.roleName).join(", ")}
-- Screens: ${blueprint.screens.map((s) => `${s.screenName} (${s.routePath})`).join(", ")}
-- Entities: ${blueprint.dataEntities.map((e) => e.entityName).join(", ")}
-- Core Features: ${blueprint.features.filter((f) => f.category === "CORE_MVP").map((f) => f.title).join(", ")}
+- Screens: ${blueprint.screens.map((s) => `${s.screenName} (${s.routePath}): ${s.simplePurpose}`).join(" | ")}
+- Entities: ${blueprint.dataEntities.map((e) => `${e.entityName} (${e.attributes.map((a) => a.name).join(", ")})`).join(" | ")}
+- Core Features: ${blueprint.features.map((f) => `${f.title}: ${f.simpleDescription}`).join(" | ")}
 
-Return a valid JSON object matching this schema:
+Return a valid JSON object matching this exact schema:
 {
   "stages": [
     {
       "id": "stage_1",
       "stageNumber": 1,
-      "title": "Foundation & Schema Architecture",
-      "userCentricName": "Project Setup & Data Core",
-      "whyThisExists": "Establishes database models, types, and base layout so all subsequent features have a solid foundation.",
+      "title": "Stage Title Tailored to ${blueprint.overview.name}",
+      "userCentricName": "Clear Human-Readable Stage Name",
+      "whyThisExists": "Plain-English explanation of why this stage is sequenced here for ${blueprint.overview.name}",
       "deliverables": [
-        "Database schema with Supabase tables and RLS",
-        "TypeScript shared interfaces and Zod validation schemas",
-        "Next.js App Router root layout and theme config"
+        "Concrete deliverable 1",
+        "Concrete deliverable 2",
+        "Concrete deliverable 3"
       ],
-      "associatedScreens": ["/"],
-      "associatedEntities": ["UserProfile", "CoreResource"],
+      "associatedScreens": ["/actual-route"],
+      "associatedEntities": ["ActualEntityName"],
       "dependencies": [],
       "status": "READY",
-      "agentGuidance": "Create PostgreSQL migration scripts first with RLS policies, then build TypeScript types matching the schema.",
+      "agentGuidance": "Specific technical guidance for the coding agent executing this stage",
       "estimatedComplexity": "MEDIUM"
-    },
-    {
-      "id": "stage_2",
-      "stageNumber": 2,
-      "title": "Authentication & User Profiles",
-      "userCentricName": "User Accounts & Security",
-      "whyThisExists": "Allows users to securely register, log in, and manage their identity before accessing workspace features.",
-      "deliverables": [
-        "Sign in and sign up pages with validation",
-        "Session middleware for protected routes",
-        "User profile management view"
-      ],
-      "associatedScreens": ["/login", "/signup", "/dashboard/settings"],
-      "associatedEntities": ["UserProfile"],
-      "dependencies": ["stage_1"],
-      "status": "NOT_STARTED",
-      "agentGuidance": "Use @supabase/ssr helpers for server-side auth cookie handling and middleware protection.",
-      "estimatedComplexity": "LOW"
     }
   ]
 }
 
-DO NOT include markdown code blocks (such as \`\`\`json) in your response. Output raw JSON only.
+DO NOT include markdown code blocks. Output raw JSON only.
 `;
 
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.3,
-            responseMimeType: "application/json",
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      console.warn("Gemini API error during build map generation, using deterministic fallback");
-      return fallbackBuildMap;
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: "application/json",
+        },
+      }),
     }
+  );
 
-    const data = await response.json();
-    const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!rawContent) {
-      return fallbackBuildMap;
-    }
-
-    const parsed = JSON.parse(rawContent);
-    const stages: BuildStage[] = Array.isArray(parsed.stages) && parsed.stages.length > 0
-      ? parsed.stages
-      : fallbackBuildMap.stages;
-
-    return {
-      project_id: projectId,
-      stages,
-      currentStageNumber: 1,
-      totalStages: stages.length,
-      completedStages: stages.filter((s) => s.status === "COMPLETED").length,
-      updated_at: new Date().toISOString(),
-    };
-  } catch (err) {
-    console.error("Failed to generate build map via AI:", err);
-    return fallbackBuildMap;
+  if (!response.ok) {
+    const errText = await response.text().catch(() => "Unknown error");
+    throw new Error(`Build Map synthesis failed (HTTP ${response.status}): ${errText.slice(0, 150)}`);
   }
-}
 
-/**
- * Deterministic build map generator if AI is unavailable.
- */
-function createDeterministicBuildMap(
-  projectId: string,
-  blueprint: SoftwareBlueprint
-): BuildMap {
-  const entityNames = blueprint.dataEntities.map((e) => e.entityName);
-  const screenPaths = blueprint.screens.map((s) => s.routePath);
+  const data = await response.json();
+  const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!rawContent) {
+    throw new Error("Build Map AI returned an empty response.");
+  }
 
-  const stages: BuildStage[] = [
-    {
-      id: "stage_01_foundation",
-      stageNumber: 1,
-      title: "Foundation & Data Architecture",
-      userCentricName: "Foundation & Data Architecture",
-      whyThisExists: "Creates the database schemas, security rules (RLS), and shared project types so all future pages have a reliable backend.",
-      deliverables: [
-        "PostgreSQL tables and Row-Level Security policies in Supabase",
-        "TypeScript shared domain types and Zod validation schemas",
-        "Base responsive layout and navigation system",
-      ],
-      associatedScreens: ["/dashboard"],
-      associatedEntities: entityNames,
-      dependencies: [],
-      status: "READY",
-      agentGuidance: "Execute database migrations first in Supabase, verify RLS policies, and generate TypeScript types.",
-      estimatedComplexity: "MEDIUM",
-    },
-    {
-      id: "stage_02_auth",
-      stageNumber: 2,
-      title: "Authentication & User Accounts",
-      userCentricName: "Authentication & Account Management",
-      whyThisExists: "Enables users to sign up, log in securely, and personalize their profiles before interacting with workspace items.",
-      deliverables: [
-        "Login, signup, and password recovery forms",
-        "Auth middleware protecting /dashboard routes",
-        "User profile and settings screen",
-      ],
-      associatedScreens: ["/login", "/signup", "/dashboard/settings"],
-      associatedEntities: ["UserProfile"],
-      dependencies: ["stage_01_foundation"],
-      status: "NOT_STARTED",
-      agentGuidance: "Implement Next.js App Router server actions with @supabase/ssr for cookie session tokens.",
-      estimatedComplexity: "LOW",
-    },
-    {
-      id: "stage_03_dashboard",
-      stageNumber: 3,
-      title: "Core Dashboard & Overview",
-      userCentricName: "Main Dashboard Experience",
-      whyThisExists: "Gives users an immediate visual landing hub to see their active data, status metrics, and next actions.",
-      deliverables: [
-        "Main dashboard page with responsive metric cards",
-        "Recent items list with empty and loading states",
-        "Quick action header to trigger item creation",
-      ],
-      associatedScreens: ["/dashboard"],
-      associatedEntities: entityNames.filter((e) => e !== "UserProfile"),
-      dependencies: ["stage_02_auth"],
-      status: "NOT_STARTED",
-      agentGuidance: "Build server-rendered dashboard components with clean loading skeletons and empty states.",
-      estimatedComplexity: "MEDIUM",
-    },
-    {
-      id: "stage_04_core_flow",
-      stageNumber: 4,
-      title: "Primary Creation & Management Flow",
-      userCentricName: "Core Resource Creation & Management",
-      whyThisExists: "Implements the main value proposition of the product where users create, edit, and interact with core resources.",
-      deliverables: [
-        "Interactive creation and edit forms with live validation",
-        "Resource listing with filtering, search, and sorting",
-        "Detailed resource view with status indicators",
-      ],
-      associatedScreens: screenPaths.filter((p) => p !== "/dashboard" && p !== "/dashboard/settings"),
-      associatedEntities: entityNames.filter((e) => e !== "UserProfile"),
-      dependencies: ["stage_03_dashboard"],
-      status: "NOT_STARTED",
-      agentGuidance: "Use react-hook-form with Zod resolvers. Handle error states gracefully with toasts.",
-      estimatedComplexity: "HIGH",
-    },
-    {
-      id: "stage_05_admin_ops",
-      stageNumber: 5,
-      title: "Administration & Operational Tools",
-      userCentricName: "Admin Tools & Operational Controls",
-      whyThisExists: "Provides administrators with moderation controls, health metrics, and user management capabilities.",
-      deliverables: [
-        "Admin console with role-scoped route protection",
-        "User management and status moderation table",
-        "Operational error logs and system health monitor",
-      ],
-      associatedScreens: ["/admin"],
-      associatedEntities: ["UserProfile"],
-      dependencies: ["stage_04_core_flow"],
-      status: "NOT_STARTED",
-      agentGuidance: "Protect admin routes with role-based checks in middleware and API handlers.",
-      estimatedComplexity: "MEDIUM",
-    },
-    {
-      id: "stage_06_hardening",
-      stageNumber: 6,
-      title: "Quality Hardening & Security Audit",
-      userCentricName: "Quality, Performance & Launch Readiness",
-      whyThisExists: "Ensures the application is responsive on mobile, meets accessibility standards, and protects user data before launch.",
-      deliverables: [
-        "Mobile responsive audit (360px to 1440px viewports)",
-        "WCAG accessibility and keyboard navigation verification",
-        "End-to-end user journey smoke tests",
-      ],
-      associatedScreens: screenPaths,
-      associatedEntities: entityNames,
-      dependencies: ["stage_05_admin_ops"],
-      status: "NOT_STARTED",
-      agentGuidance: "Run automated Lighthouse checks and test responsive layouts on mobile viewports.",
-      estimatedComplexity: "LOW",
-    },
-  ];
+  const parsed = JSON.parse(rawContent);
+  const stages: BuildStage[] = Array.isArray(parsed.stages) ? parsed.stages : [];
+  if (stages.length === 0) {
+    throw new Error("Build Map AI returned zero stages.");
+  }
 
   return {
     project_id: projectId,
     stages,
     currentStageNumber: 1,
     totalStages: stages.length,
-    completedStages: 0,
+    completedStages: stages.filter((s) => s.status === "COMPLETED").length,
     updated_at: new Date().toISOString(),
   };
 }

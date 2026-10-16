@@ -865,6 +865,8 @@ export interface DiscoveryQnA {
   category?: string;
   priority?: QuestionPriority;
   why_it_matters?: string;
+  suggested_options?: string[];
+  default_recommendation?: string;
   is_assumption?: boolean;
   step_order: number;
   created_at: string;

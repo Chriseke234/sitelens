@@ -31,12 +31,21 @@ export async function GET(
       return NextResponse.json({ error: "Project workspace not found." }, { status: 404 });
     }
 
-    // 2. Fetch existing discovery QnAs
-    const { data: qnas } = await supabase
-      .from("discovery_qna")
-      .select("*")
-      .eq("project_id", id)
-      .order("step_order", { ascending: true });
+    // 2. Fetch existing discovery QnAs and research document
+    const [qnaRes, researchRes] = await Promise.all([
+      supabase
+        .from("discovery_qna")
+        .select("*")
+        .eq("project_id", id)
+        .order("step_order", { ascending: true }),
+      supabase
+        .from("research_documents")
+        .select("*")
+        .eq("project_id", id)
+        .maybeSingle(),
+    ]);
+    const qnas = qnaRes.data;
+    const researchDoc = researchRes.data;
 
     // 3. Fetch existing product_specs to see if blueprint was already saved
     const { data: existingSpec } = await supabase
@@ -67,13 +76,11 @@ export async function GET(
         const hasFictionalData =
           serialized.includes("Users currently lack a unified") ||
           serialized.includes("CoreResource") ||
+          serialized.includes("WorkspaceItem") ||
           serialized.includes("Standard Item Lifecycle") ||
           parsed.overview?.problemStatement === "Users currently lack a unified, streamlined way to manage their workflows effectively.";
 
-        // Check if any answered discovery QnAs exist
-        const hasAnsweredQnas = (qnas || []).some((q) => q.answer && q.answer.trim().length > 0);
-
-        if (hasFictionalData || hasAnsweredQnas) {
+        if (hasFictionalData) {
           shouldResynthesize = true;
         } else {
           blueprint = parsed;
@@ -94,7 +101,7 @@ export async function GET(
         project.name,
         project.product_type || "SaaS",
         project.raw_idea || project.description,
-        null,
+        researchDoc,
         qnas || [],
         null,
         projectDetails
@@ -166,11 +173,20 @@ export async function POST(
 
     // Action: Regenerate Blueprint
     if (action === "regenerate") {
-      const { data: qnas } = await supabase
-        .from("discovery_qna")
-        .select("*")
-        .eq("project_id", id)
-        .order("step_order", { ascending: true });
+      const [qnaRes, researchRes] = await Promise.all([
+        supabase
+          .from("discovery_qna")
+          .select("*")
+          .eq("project_id", id)
+          .order("step_order", { ascending: true }),
+        supabase
+          .from("research_documents")
+          .select("*")
+          .eq("project_id", id)
+          .maybeSingle(),
+      ]);
+      const qnas = qnaRes.data;
+      const researchDoc = researchRes.data;
 
       const projectDetails = {
         problemStatement: project.problem_statement,
@@ -185,7 +201,7 @@ export async function POST(
         project.name,
         project.product_type || "SaaS",
         project.raw_idea || project.description,
-        null,
+        researchDoc,
         qnas || [],
         null,
         projectDetails

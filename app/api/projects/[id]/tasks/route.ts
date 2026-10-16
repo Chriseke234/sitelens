@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { generateProjectTasks } from "@/lib/ai/task-engine";
 import { generateBuildMap } from "@/lib/ai/build-map-engine";
 import { generateSoftwareBlueprint } from "@/lib/ai/blueprint-engine";
+import { checkDiscoverySufficiency } from "@/lib/ai/product-understanding";
 import {
   AigenstraTask,
   BuildMap,
@@ -10,6 +11,21 @@ import {
   SoftwareBlueprint,
   TaskRecommendation,
 } from "@/types";
+
+function hasLegacyFictionalTaskData(tasks?: AigenstraTask[]): boolean {
+  if (!tasks || tasks.length === 0) return true;
+  return tasks.some(
+    (t) =>
+      t.title.includes("CoreResource") ||
+      t.title.includes("WorkspaceItem") ||
+      t.title.includes("Resource Creation") ||
+      t.affected_entities?.includes("CoreResource") ||
+      t.affected_entities?.includes("WorkspaceItem") ||
+      t.change_boundaries?.mustChange?.includes(
+        "app/(dashboard)/projects/[id]/overview/page.tsx"
+      )
+  );
+}
 
 export async function GET(
   request: Request,
@@ -23,7 +39,10 @@ export async function GET(
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Authentication required." },
+        { status: 401 }
+      );
     }
 
     // 1. Fetch project
@@ -35,24 +54,53 @@ export async function GET(
       .single();
 
     if (projErr || !project) {
-      return NextResponse.json({ error: "Project workspace not found." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Project workspace not found." },
+        { status: 404 }
+      );
     }
 
-    // 2. Fetch architecture_docs to see if tasks are stored
-    const { data: archDoc } = await supabase
-      .from("architecture_docs")
-      .select("*")
-      .eq("project_id", id)
-      .maybeSingle();
-
-    let tasks: AigenstraTask[] = [];
-    let recommendation: TaskRecommendation | null = null;
-
+    // 2. Fetch discovery Q&A and check strict completion gate
     const { data: qnas } = await supabase
       .from("discovery_qna")
       .select("*")
       .eq("project_id", id)
       .order("step_order", { ascending: true });
+
+    const sufficiency = checkDiscoverySufficiency(qnas || []);
+
+    // STRICT GATING: Never expose or auto-generate tasks before Process 1 (Idea & Architecture) is complete
+    if (!sufficiency.isSufficient) {
+      return NextResponse.json({
+        tasks: [],
+        recommendation: null,
+        blueprint: null,
+        isDiscoveryComplete: false,
+      });
+    }
+
+    // 3. Fetch architecture_docs, product_specs, and research_documents
+    const [archRes, specRes, researchRes] = await Promise.all([
+      supabase
+        .from("architecture_docs")
+        .select("*")
+        .eq("project_id", id)
+        .maybeSingle(),
+      supabase
+        .from("product_specs")
+        .select("*")
+        .eq("project_id", id)
+        .maybeSingle(),
+      supabase
+        .from("research_documents")
+        .select("*")
+        .eq("project_id", id)
+        .maybeSingle(),
+    ]);
+
+    const archDoc = archRes.data;
+    const spec = specRes.data;
+    const researchDoc = researchRes.data;
 
     const projectDetails = {
       problemStatement: project.problem_statement,
@@ -62,93 +110,125 @@ export async function GET(
       codingEnvironment: project.coding_environment,
     };
 
-    const storedTasks = (archDoc?.storage as any)?.tasks as AigenstraTask[] | undefined;
-    const hasFictionalTasks = storedTasks?.some(
-      (t) =>
-        t.title.includes("CoreResource") ||
-        t.title.includes("Resource Creation") ||
-        t.affected_entities.includes("CoreResource")
-    );
+    const storedTasks = (archDoc?.storage as any)?.tasks as
+      | AigenstraTask[]
+      | undefined;
 
-    if (storedTasks && storedTasks.length > 0 && !hasFictionalTasks) {
-      tasks = storedTasks;
-      recommendation = (archDoc?.storage as any)?.recommendation;
-    } else {
-      // Load Software Blueprint & Build Map
-      let softwareBlueprint: SoftwareBlueprint;
-      const { data: spec } = await supabase
-        .from("product_specs")
-        .select("*")
-        .eq("project_id", id)
-        .maybeSingle();
-
-      if (spec && spec.problem_statement && spec.problem_statement.startsWith("{")) {
-        try {
-          softwareBlueprint = JSON.parse(spec.problem_statement);
-        } catch {
-          softwareBlueprint = await generateSoftwareBlueprint(
-            id,
-            project.name,
-            project.product_type || "SaaS",
-            project.raw_idea || project.description,
-            null,
-            qnas || [],
-            null,
-            projectDetails
-          );
+    let softwareBlueprint: SoftwareBlueprint | null = null;
+    if (
+      spec &&
+      spec.problem_statement &&
+      spec.problem_statement.startsWith("{")
+    ) {
+      try {
+        const parsed = JSON.parse(spec.problem_statement) as SoftwareBlueprint;
+        const raw = spec.problem_statement;
+        if (
+          !raw.includes("CoreResource") &&
+          !raw.includes("WorkspaceItem") &&
+          !raw.includes("Standard Item Lifecycle")
+        ) {
+          softwareBlueprint = parsed;
         }
-      } else {
-        softwareBlueprint = await generateSoftwareBlueprint(
-          id,
-          project.name,
-          project.product_type || "SaaS",
-          project.raw_idea || project.description,
-          null,
-          qnas || [],
-          null,
-          projectDetails
-        );
+      } catch {
+        softwareBlueprint = null;
       }
+    }
 
-      let buildMap: BuildMap;
-      if (archDoc && (archDoc.backend as any)?.stages) {
-        buildMap = archDoc.backend as unknown as BuildMap;
-      } else {
-        buildMap = await generateBuildMap(id, softwareBlueprint);
-      }
+    if (
+      storedTasks &&
+      storedTasks.length > 0 &&
+      !hasLegacyFictionalTaskData(storedTasks) &&
+      softwareBlueprint
+    ) {
+      return NextResponse.json({
+        tasks: storedTasks,
+        recommendation: (archDoc?.storage as any)?.recommendation || null,
+        blueprint: softwareBlueprint,
+        isDiscoveryComplete: true,
+      });
+    }
 
-      const engineeringBlueprint: EngineeringBlueprint | null = archDoc?.frontend as any || null;
-
-      const generated = await generateProjectTasks(
+    // Discovery is complete, synthesize real-time Blueprint, Build Map, and Tasks
+    if (!softwareBlueprint) {
+      softwareBlueprint = await generateSoftwareBlueprint(
         id,
         project.name,
         project.product_type || "SaaS",
-        buildMap,
-        softwareBlueprint,
-        engineeringBlueprint
+        project.raw_idea || project.description,
+        researchDoc,
+        qnas || [],
+        null,
+        projectDetails
       );
 
-      tasks = generated.tasks;
-      recommendation = generated.recommendation;
-
-      // Save tasks in architecture_docs (storage column)
-      if (archDoc) {
+      if (spec) {
         await supabase
-          .from("architecture_docs")
+          .from("product_specs")
           .update({
-            storage: { tasks, recommendation } as any,
+            problem_statement: JSON.stringify(softwareBlueprint),
+            target_users: softwareBlueprint.overview.targetOutcome
+              ? [softwareBlueprint.overview.targetOutcome]
+              : [],
             updated_at: new Date().toISOString(),
           })
-          .eq("id", archDoc.id);
+          .eq("id", spec.id);
       } else {
-        await supabase.from("architecture_docs").insert({
+        await supabase.from("product_specs").insert({
           project_id: id,
-          storage: { tasks, recommendation } as any,
+          problem_statement: JSON.stringify(softwareBlueprint),
+          target_users: softwareBlueprint.overview.targetOutcome
+            ? [softwareBlueprint.overview.targetOutcome]
+            : [],
         });
       }
     }
 
-    return NextResponse.json({ tasks, recommendation });
+    const buildMap: BuildMap = await generateBuildMap(id, softwareBlueprint);
+    const engineeringBlueprint: EngineeringBlueprint | null =
+      (archDoc?.frontend as any) || null;
+
+    const generated = await generateProjectTasks(
+      id,
+      project.name,
+      project.product_type || "SaaS",
+      buildMap,
+      softwareBlueprint,
+      engineeringBlueprint,
+      qnas || [],
+      researchDoc
+    );
+
+    if (archDoc) {
+      await supabase
+        .from("architecture_docs")
+        .update({
+          backend: buildMap as any,
+          storage: {
+            tasks: generated.tasks,
+            recommendation: generated.recommendation,
+          } as any,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", archDoc.id);
+    } else {
+      await supabase.from("architecture_docs").insert({
+        project_id: id,
+        backend: buildMap as any,
+        storage: {
+          tasks: generated.tasks,
+          recommendation: generated.recommendation,
+        } as any,
+      });
+    }
+
+    return NextResponse.json({
+      tasks: generated.tasks,
+      recommendation: generated.recommendation,
+      blueprint: softwareBlueprint,
+      buildMap,
+      isDiscoveryComplete: true,
+    });
   } catch (err: any) {
     console.error("Error in GET /api/projects/[id]/tasks:", err);
     return NextResponse.json(
@@ -170,7 +250,10 @@ export async function POST(
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Authentication required." },
+        { status: 401 }
+      );
     }
 
     const { data: project } = await supabase
@@ -181,42 +264,97 @@ export async function POST(
       .single();
 
     if (!project) {
-      return NextResponse.json({ error: "Project workspace not found." }, { status: 404 });
-    }
-
-    // Load Blueprint & Build Map
-    const { data: spec } = await supabase
-      .from("product_specs")
-      .select("*")
-      .eq("project_id", id)
-      .maybeSingle();
-
-    let softwareBlueprint: SoftwareBlueprint;
-    if (spec && spec.problem_statement && spec.problem_statement.startsWith("{")) {
-      softwareBlueprint = JSON.parse(spec.problem_statement);
-    } else {
-      softwareBlueprint = await generateSoftwareBlueprint(
-        id,
-        project.name,
-        project.product_type || "SaaS",
-        project.raw_idea || project.description
+      return NextResponse.json(
+        { error: "Project workspace not found." },
+        { status: 404 }
       );
     }
 
-    const { data: archDoc } = await supabase
-      .from("architecture_docs")
-      .select("*")
-      .eq("project_id", id)
-      .maybeSingle();
+    const [qnaRes, researchRes, specRes, archRes] = await Promise.all([
+      supabase
+        .from("discovery_qna")
+        .select("*")
+        .eq("project_id", id)
+        .order("step_order", { ascending: true }),
+      supabase
+        .from("research_documents")
+        .select("*")
+        .eq("project_id", id)
+        .maybeSingle(),
+      supabase
+        .from("product_specs")
+        .select("*")
+        .eq("project_id", id)
+        .maybeSingle(),
+      supabase
+        .from("architecture_docs")
+        .select("*")
+        .eq("project_id", id)
+        .maybeSingle(),
+    ]);
 
-    let buildMap: BuildMap;
-    if (archDoc && (archDoc.backend as any)?.stages) {
-      buildMap = archDoc.backend as unknown as BuildMap;
-    } else {
-      buildMap = await generateBuildMap(id, softwareBlueprint);
+    const qnas = qnaRes.data || [];
+    const sufficiency = checkDiscoverySufficiency(qnas);
+
+    if (!sufficiency.isSufficient) {
+      return NextResponse.json(
+        {
+          error:
+            "Please complete all discovery questions in 1. Idea & Architecture before generating tasks and prompts.",
+          isDiscoveryComplete: false,
+        },
+        { status: 400 }
+      );
     }
 
-    const engineeringBlueprint: EngineeringBlueprint | null = archDoc?.frontend as any || null;
+    const researchDoc = researchRes.data;
+    const spec = specRes.data;
+    const archDoc = archRes.data;
+
+    const projectDetails = {
+      problemStatement: project.problem_statement,
+      targetAudience: project.target_audience,
+      goal: project.goal,
+      techStack: project.tech_stack,
+      codingEnvironment: project.coding_environment,
+    };
+
+    // Synthesize fresh Software Blueprint from confirmed answers + research
+    const softwareBlueprint = await generateSoftwareBlueprint(
+      id,
+      project.name,
+      project.product_type || "SaaS",
+      project.raw_idea || project.description,
+      researchDoc,
+      qnas,
+      null,
+      projectDetails
+    );
+
+    if (spec) {
+      await supabase
+        .from("product_specs")
+        .update({
+          problem_statement: JSON.stringify(softwareBlueprint),
+          target_users: softwareBlueprint.overview.targetOutcome
+            ? [softwareBlueprint.overview.targetOutcome]
+            : [],
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", spec.id);
+    } else {
+      await supabase.from("product_specs").insert({
+        project_id: id,
+        problem_statement: JSON.stringify(softwareBlueprint),
+        target_users: softwareBlueprint.overview.targetOutcome
+          ? [softwareBlueprint.overview.targetOutcome]
+          : [],
+      });
+    }
+
+    const buildMap: BuildMap = await generateBuildMap(id, softwareBlueprint);
+    const engineeringBlueprint: EngineeringBlueprint | null =
+      (archDoc?.frontend as any) || null;
 
     const generated = await generateProjectTasks(
       id,
@@ -224,28 +362,41 @@ export async function POST(
       project.product_type || "SaaS",
       buildMap,
       softwareBlueprint,
-      engineeringBlueprint
+      engineeringBlueprint,
+      qnas,
+      researchDoc
     );
 
     if (archDoc) {
       await supabase
         .from("architecture_docs")
         .update({
-          storage: { tasks: generated.tasks, recommendation: generated.recommendation } as any,
+          backend: buildMap as any,
+          storage: {
+            tasks: generated.tasks,
+            recommendation: generated.recommendation,
+          } as any,
           updated_at: new Date().toISOString(),
         })
         .eq("id", archDoc.id);
     } else {
       await supabase.from("architecture_docs").insert({
         project_id: id,
-        storage: { tasks: generated.tasks, recommendation: generated.recommendation } as any,
+        backend: buildMap as any,
+        storage: {
+          tasks: generated.tasks,
+          recommendation: generated.recommendation,
+        } as any,
       });
     }
 
     return NextResponse.json({
       tasks: generated.tasks,
       recommendation: generated.recommendation,
-      message: "Project tasks generated successfully.",
+      blueprint: softwareBlueprint,
+      buildMap,
+      isDiscoveryComplete: true,
+      message: "Project blueprint, build map, and tasks synthesized in real time.",
     });
   } catch (err: any) {
     console.error("Error in POST /api/projects/[id]/tasks:", err);
@@ -268,7 +419,10 @@ export async function PATCH(
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Authentication required." },
+        { status: 401 }
+      );
     }
 
     const body = await request.json();
@@ -281,7 +435,10 @@ export async function PATCH(
       .maybeSingle();
 
     if (!archDoc || !(archDoc.storage as any)?.tasks) {
-      return NextResponse.json({ error: "Task store not found." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Task store not found." },
+        { status: 404 }
+      );
     }
 
     const taskStore = archDoc.storage as any;

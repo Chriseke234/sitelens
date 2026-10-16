@@ -45,11 +45,26 @@ export async function GET(
     } else {
       // Load blueprint to generate build map
       let blueprint: SoftwareBlueprint;
-      const { data: spec } = await supabase
-        .from("product_specs")
-        .select("*")
-        .eq("project_id", id)
-        .maybeSingle();
+      const [specRes, qnaRes, researchRes] = await Promise.all([
+        supabase
+          .from("product_specs")
+          .select("*")
+          .eq("project_id", id)
+          .maybeSingle(),
+        supabase
+          .from("discovery_qna")
+          .select("*")
+          .eq("project_id", id)
+          .order("step_order", { ascending: true }),
+        supabase
+          .from("research_documents")
+          .select("*")
+          .eq("project_id", id)
+          .maybeSingle(),
+      ]);
+      const spec = specRes.data;
+      const qnas = qnaRes.data || [];
+      const researchDoc = researchRes.data;
 
       if (spec && spec.problem_statement && spec.problem_statement.startsWith("{")) {
         try {
@@ -59,7 +74,9 @@ export async function GET(
             id,
             project.name,
             project.product_type || "SaaS",
-            project.raw_idea || project.description
+            project.raw_idea || project.description,
+            researchDoc,
+            qnas
           );
         }
       } else {
@@ -67,7 +84,9 @@ export async function GET(
           id,
           project.name,
           project.product_type || "SaaS",
-          project.raw_idea || project.description
+          project.raw_idea || project.description,
+          researchDoc,
+          qnas
         );
       }
 
