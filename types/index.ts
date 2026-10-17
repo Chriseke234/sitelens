@@ -138,6 +138,7 @@ export type ProductType =
   | "AI Product"
   | "API"
   | "Landing Page"
+  | "Business Website"
   | "Other";
 
 export type ProjectStage =
@@ -1804,5 +1805,94 @@ export interface ProjectHealthSnapshot {
   createdAt: string;
 }
 
+// ==========================================
+// PHASE 2: SHARED PRODUCT DEVELOPMENT STANDARD
+// ==========================================
 
+export type DevelopmentPillarId =
+  | "PROBLEM_AND_USERS"
+  | "BUSINESS_AND_MONETIZATION"
+  | "MVP_SCOPE_AND_PRIORITIZATION"
+  | "JOURNEYS_SCREENS_AND_STATES"
+  | "FUNCTIONAL_AND_NON_FUNCTIONAL_REQS"
+  | "DATA_MODELS_AND_RELATIONSHIPS"
+  | "AUTH_AND_PERMISSIONS"
+  | "APIS_AND_INTEGRATIONS"
+  | "SECURITY_PRIVACY_AND_VALIDATION"
+  | "A11Y_RESPONSIVE_AND_PERFORMANCE"
+  | "TESTING_AND_ACCEPTANCE"
+  | "DEPLOYMENT_AND_OPERATIONS";
 
+export type FeatureLifecycleState =
+  | "INTENDED_ONLY"          // Planned in requirements or blueprint, no code evidence yet
+  | "IMPLEMENTED_UNVERIFIED" // Present in codebase/routes/files, but not yet verified with passing tests
+  | "VERIFIED_WORKING"       // Demonstrated to work through automated test execution or runtime verification
+  | "REGRESSED"              // Previously verified, now failing or broken
+  | "DEPRECATED_OR_DROPPED";
+
+export interface FeatureStateRecord {
+  featureId: string;
+  featureTitle: string;
+  pillar: DevelopmentPillarId;
+  lifecycleState: FeatureLifecycleState;
+
+  // 1. Intended Product: what should exist
+  intended: {
+    specification: string;
+    acceptanceCriteria: string[];
+    priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+    belongsInMvp: boolean;
+    userValue: string;
+    dependencies: string[];
+  };
+
+  // 2. Actual Implementation: what available code or evidence shows exists
+  implementation: {
+    isDetectedInCode: boolean;
+    evidenceFiles: string[];
+    evidenceRoutes: string[];
+    evidenceTables: string[];
+    confidence: "CONFIRMED_BY_SOURCE" | "HEURISTIC" | "NOT_FOUND";
+    notes?: string;
+  };
+
+  // 3. Verified State: what has been demonstrated to work
+  verification: {
+    isVerified: boolean;
+    verifiedAt?: string;
+    verificationMethod?: "AUTOMATED_TEST" | "TYPECHECK" | "RUNTIME_CHECK" | "MANUAL_ASSERTION";
+    testSuiteRef?: string;
+    passedAssertions?: string[];
+    failedAssertions?: string[];
+    notes?: string;
+  };
+}
+
+export interface SharedProductStandardPillar {
+  id: DevelopmentPillarId;
+  title: string;
+  description: string;
+  isRelevantForProject: boolean;
+  relevanceRationale: string;
+  requiredForMvp: boolean;
+  intendedRequirements: string[];
+  actualEvidencedItems: string[];
+  verifiedItems: string[];
+  riskLevel: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+}
+
+export interface SharedProductDevelopmentRecord {
+  projectId: string;
+  productType: ProductType;
+  updatedAt: string;
+  pillars: Record<DevelopmentPillarId, SharedProductStandardPillar>;
+  featureStates: FeatureStateRecord[];
+  summaryMetrics: {
+    totalIntendedFeatures: number;
+    totalImplementedFeatures: number;
+    totalVerifiedFeatures: number;
+    implementationGapCount: number; // intended but not implemented
+    verificationGapCount: number;   // implemented but not verified
+    overallReadinessScore: number;  // 0 - 100 based strictly on verified state
+  };
+}

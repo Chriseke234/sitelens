@@ -1,5 +1,6 @@
 import { getGeminiApiKey } from "./client";
 import { getProductTypeProfile } from "./product-type-profiles";
+import { runBuiltInBlueprintAgent } from "./aigenstra-local-agent";
 import {
   SoftwareBlueprint,
   DiscoveryQnA,
@@ -11,7 +12,8 @@ import { evaluateBlueprintHealth } from "./blueprint-health";
 /**
  * Generates a real-time, product-tailored 13-section Software Blueprint from project details,
  * product-type architecture profile, research synthesis, and user discovery answers.
- * Zero fictional fallback data.
+ * Hybrid Architecture: Uses Gemini API when configured and reachable; automatically switches
+ * to Aigenstra's Built-In Adaptive Blueprint Agent when Gemini API is missing or offline.
  */
 export async function generateSoftwareBlueprint(
   projectId: string,
@@ -36,11 +38,35 @@ export async function generateSoftwareBlueprint(
     opportunities?: string[];
   } | null
 ): Promise<SoftwareBlueprint> {
+  const normalizedDetails = projectDetails
+    ? {
+        problemStatement: projectDetails.problemStatement || undefined,
+        targetAudience: projectDetails.targetAudience || undefined,
+        goal: projectDetails.goal || undefined,
+        techStack: projectDetails.techStack || undefined,
+        codingEnvironment: projectDetails.codingEnvironment || undefined,
+      }
+    : undefined;
+
+  const buildLocalFallback = () => {
+    const bp = runBuiltInBlueprintAgent(
+      projectId,
+      projectName,
+      productType,
+      rawIdea,
+      researchDoc,
+      qnas || [],
+      normalizedDetails
+    );
+    const health = evaluateBlueprintHealth(bp);
+    bp.healthScore = health.score;
+    bp.healthWarnings = health.issues.map((i) => i.message);
+    return bp;
+  };
+
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    throw new Error(
-      "Gemini API key is required to synthesize your Software Blueprint. Fictional fallback data is disabled."
-    );
+    return buildLocalFallback();
   }
 
   const profile = getProductTypeProfile(productType);
@@ -76,6 +102,7 @@ CRITICAL ARCHITECTURAL RULES (ZERO GUESSWORK / ZERO FICTIONAL DATA):
    - Anti-Bloat Guardrails: ${profile.antiBloatGuardrails.join(" | ")}
 3. RESPECT USER ANSWERS: Every screen, routePath, dataEntity, workflow, and businessRule MUST directly reflect the user's answered Discovery Questions below. NEVER invent generic entities like "WorkspaceItem" or "CoreResource".
 4. Tag every item with 'source' ('USER_CONFIRMED' | 'USER_DESCRIBED' | 'SYSTEM_INFERRED' | 'SYSTEM_RECOMMENDED') and 'status' ('CONFIRMED' | 'PROPOSED').
+5. SHARED PRODUCT DEVELOPMENT STANDARD: The Software Blueprint defines the authoritative INTENDED PRODUCT specification (what should exist). Every feature and workflow must include measurable criteria so external coding agents and auditors can verify implementation without guesswork.
 
 Project Details:
 - Project Name: ${projectName}
@@ -245,57 +272,61 @@ Return a valid JSON object matching the exact SoftwareBlueprint schema:
 DO NOT include markdown code blocks. Output raw JSON only.
 `;
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          response_mime_type: "application/json",
-          temperature: 0.2,
-        },
-      }),
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: {
+            response_mime_type: "application/json",
+            temperature: 0.2,
+          },
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      return buildLocalFallback();
     }
-  );
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "Unknown AI error");
-    throw new Error(`Software Blueprint synthesis failed (HTTP ${res.status}): ${errText.slice(0, 150)}`);
+    const resData = await res.json();
+    const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) {
+      return buildLocalFallback();
+    }
+
+    const parsed = JSON.parse(rawText);
+
+    const generatedBlueprint: SoftwareBlueprint = {
+      project_id: projectId,
+      overview: parsed.overview,
+      usersRoles: parsed.usersRoles || [],
+      userJourneys: parsed.userJourneys || [],
+      features: parsed.features || [],
+      screens: parsed.screens || [],
+      workflows: parsed.workflows || [],
+      businessRules: parsed.businessRules || [],
+      dataEntities: parsed.dataEntities || [],
+      integrations: parsed.integrations || [],
+      adminTools: parsed.adminTools || [],
+      security: parsed.security || [],
+      quality: parsed.quality || [],
+      futureConsiderations: parsed.futureConsiderations || [],
+      healthScore: 100,
+      healthWarnings: [],
+      updated_at: new Date().toISOString(),
+    };
+
+    const health = evaluateBlueprintHealth(generatedBlueprint);
+    generatedBlueprint.healthScore = health.score;
+    generatedBlueprint.healthWarnings = health.issues.map((i) => i.message);
+
+    return generatedBlueprint;
+  } catch {
+    return buildLocalFallback();
   }
-
-  const resData = await res.json();
-  const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) {
-    throw new Error("Blueprint AI returned an empty response.");
-  }
-
-  const parsed = JSON.parse(rawText);
-
-  const generatedBlueprint: SoftwareBlueprint = {
-    project_id: projectId,
-    overview: parsed.overview,
-    usersRoles: parsed.usersRoles || [],
-    userJourneys: parsed.userJourneys || [],
-    features: parsed.features || [],
-    screens: parsed.screens || [],
-    workflows: parsed.workflows || [],
-    businessRules: parsed.businessRules || [],
-    dataEntities: parsed.dataEntities || [],
-    integrations: parsed.integrations || [],
-    adminTools: parsed.adminTools || [],
-    security: parsed.security || [],
-    quality: parsed.quality || [],
-    futureConsiderations: parsed.futureConsiderations || [],
-    healthScore: 100,
-    healthWarnings: [],
-    updated_at: new Date().toISOString(),
-  };
-
-  const health = evaluateBlueprintHealth(generatedBlueprint);
-  generatedBlueprint.healthScore = health.score;
-  generatedBlueprint.healthWarnings = health.issues.map((i) => i.message);
-
-  return generatedBlueprint;
 }
+

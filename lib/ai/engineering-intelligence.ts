@@ -37,6 +37,11 @@ export async function generateEngineeringBlueprint(
     return fallback;
   }
 
+  const primaryEntity = blueprint.dataEntities?.[0]?.entityName || "WorkspaceRecord";
+  const secondaryEntity = blueprint.dataEntities?.[1]?.entityName || "ActivityLog";
+  const primaryEndpoint = `/api/${primaryEntity.toLowerCase().replace(/[^a-z0-9]/g, "_")}s`;
+  const primaryScreen = blueprint.screens?.[0]?.routePath || "/dashboard";
+
   const prompt = `
 System Instruction:
 You are the Principal Systems & Engineering Architect for Aigenstra.
@@ -48,6 +53,7 @@ CRITICAL PRODUCT RULES:
 3. Proportional Engineering: Recommend the simplest appropriate architecture for this product scale. Do NOT overengineer.
 4. Technical Recommendations: Include tradeoffs, downsides, and alternatives for key stack decisions (Database, Auth, etc.).
 5. Traceability: Map each core product feature to its screens, APIs, database entities, and test cases.
+6. ZERO GUESSWORK: Reference only the actual screens (${blueprint.screens?.map((s) => s.routePath).join(", ")}) and actual entities (${blueprint.dataEntities?.map((e) => e.entityName).join(", ")}). Never invent generic placeholders.
 
 Project: ${projectName} (${productType})
 Summary: ${blueprint.overview?.summary}
@@ -75,8 +81,8 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
         "whyItMatters": "Keeps code organized and prevents changes in one feature from breaking another.",
         "technicalSpecification": "Modular Next.js route groups: (dashboard), (auth), (public), and (api).",
         "affectedFeatures": ["Main Dashboard"],
-        "affectedScreens": ["/dashboard"],
-        "affectedEntities": ["UserProfile"],
+        "affectedScreens": ["${primaryScreen}"],
+        "affectedEntities": ["${primaryEntity}"],
         "source": "SYSTEM_RECOMMENDED",
         "status": "CONFIRMED",
         "priority": "CRITICAL"
@@ -90,9 +96,9 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
         "simpleExplanation": "Every user action shows immediate confirmation, clear error toasts, and preserved form drafts.",
         "whyItMatters": "Prevents user frustration and lost work if a network glitch occurs.",
         "technicalSpecification": "Optimistic UI mutations with React SWR / React Query cache rollback.",
-        "affectedFeatures": ["Core Resource Creation"],
-        "affectedScreens": ["/dashboard/items/new"],
-        "affectedEntities": ["CoreResource"],
+        "affectedFeatures": ["Core ${primaryEntity} Flow"],
+        "affectedScreens": ["${primaryScreen}"],
+        "affectedEntities": ["${primaryEntity}"],
         "source": "SYSTEM_RECOMMENDED",
         "status": "CONFIRMED",
         "priority": "HIGH"
@@ -138,9 +144,9 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
         "simpleExplanation": "All actions are checked and verified on the server before anything is written to the database.",
         "whyItMatters": "Prevents bad data, protects against tampering, and ensures business rules are enforced.",
         "technicalSpecification": "Server Actions and API route handlers with Zod schema validation.",
-        "affectedFeatures": ["Resource Management"],
-        "affectedScreens": ["/dashboard"],
-        "affectedEntities": ["CoreResource"],
+        "affectedFeatures": ["${primaryEntity} Management"],
+        "affectedScreens": ["${primaryScreen}"],
+        "affectedEntities": ["${primaryEntity}"],
         "source": "SYSTEM_RECOMMENDED",
         "status": "CONFIRMED",
         "priority": "CRITICAL"
@@ -154,9 +160,9 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
         "simpleExplanation": "Clear contracts for how the frontend talks to the backend using standard HTTP codes.",
         "whyItMatters": "Allows clean debugging and error handling across both client and server.",
         "technicalSpecification": "JSON payloads, standard status codes (200, 201, 400, 401, 403, 404, 500).",
-        "affectedFeatures": ["Resource CRUD"],
-        "affectedScreens": ["/dashboard"],
-        "affectedEntities": ["CoreResource"],
+        "affectedFeatures": ["${primaryEntity} CRUD"],
+        "affectedScreens": ["${primaryScreen}"],
+        "affectedEntities": ["${primaryEntity}"],
         "source": "SYSTEM_RECOMMENDED",
         "status": "CONFIRMED",
         "priority": "CRITICAL"
@@ -172,7 +178,7 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
         "technicalSpecification": "PostgreSQL schema with foreign key constraints, NOT NULL checks, and indexes.",
         "affectedFeatures": ["All Data"],
         "affectedScreens": ["All"],
-        "affectedEntities": ["UserProfile", "CoreResource"],
+        "affectedEntities": ["UserProfile", "${primaryEntity}"],
         "source": "SYSTEM_RECOMMENDED",
         "status": "CONFIRMED",
         "priority": "CRITICAL"
@@ -204,7 +210,7 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
         "technicalSpecification": "PostgreSQL Row Level Security (RLS) policies enforcing auth.uid() = user_id.",
         "affectedFeatures": ["Data Isolation"],
         "affectedScreens": ["All"],
-        "affectedEntities": ["CoreResource"],
+        "affectedEntities": ["${primaryEntity}"],
         "source": "SYSTEM_RECOMMENDED",
         "status": "CONFIRMED",
         "priority": "CRITICAL"
@@ -234,9 +240,9 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
         "simpleExplanation": "Fast page loading and instant data retrieval even as the database grows.",
         "whyItMatters": "Keeps the app responsive and avoids laggy user experiences.",
         "technicalSpecification": "B-tree indexes on foreign keys (user_id) and created_at timestamps.",
-        "affectedFeatures": ["Item Listing"],
-        "affectedScreens": ["/dashboard"],
-        "affectedEntities": ["CoreResource"],
+        "affectedFeatures": ["${primaryEntity} Listing"],
+        "affectedScreens": ["${primaryScreen}"],
+        "affectedEntities": ["${primaryEntity}"],
         "source": "SYSTEM_RECOMMENDED",
         "status": "CONFIRMED",
         "priority": "MEDIUM"
@@ -267,8 +273,8 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
         "whyItMatters": "Catches regressions before they reach production.",
         "technicalSpecification": "Integration tests verifying RLS policies and validation boundary cases.",
         "affectedFeatures": ["Core Workflow"],
-        "affectedScreens": ["/dashboard"],
-        "affectedEntities": ["CoreResource"],
+        "affectedScreens": ["${primaryScreen}"],
+        "affectedEntities": ["${primaryEntity}"],
         "source": "SYSTEM_RECOMMENDED",
         "status": "CONFIRMED",
         "priority": "HIGH"
@@ -310,11 +316,11 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
   "apiContracts": [
     {
       "id": "api_1",
-      "endpoint": "/api/resources",
+      "endpoint": "${primaryEndpoint}",
       "method": "GET",
-      "purpose": "Retrieves the authenticated user's list of resources",
+      "purpose": "Retrieves the authenticated user's list of records",
       "inputPayload": "None (uses cookie session token)",
-      "outputPayload": "{ items: CoreResource[] }",
+      "outputPayload": "{ items: ${primaryEntity}[] }",
       "errorCodes": [
         { "code": 401, "scenario": "Unauthenticated user", "resolution": "Redirect to /login" },
         { "code": 500, "scenario": "Database error", "resolution": "Display retry banner" }
@@ -325,11 +331,11 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
     },
     {
       "id": "api_2",
-      "endpoint": "/api/resources",
+      "endpoint": "${primaryEndpoint}",
       "method": "POST",
-      "purpose": "Creates a new resource for the authenticated user",
+      "purpose": "Creates a new record for the authenticated user",
       "inputPayload": "{ title: string, metadata?: object }",
-      "outputPayload": "{ item: CoreResource, message: string }",
+      "outputPayload": "{ item: ${primaryEntity}, message: string }",
       "errorCodes": [
         { "code": 400, "scenario": "Validation error (missing title)", "resolution": "Highlight field inline" },
         { "code": 401, "scenario": "Unauthenticated", "resolution": "Redirect to login" }
@@ -343,27 +349,27 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
     {
       "id": "rel_1",
       "fromEntity": "UserProfile",
-      "toEntity": "CoreResource",
+      "toEntity": "${primaryEntity}",
       "relationType": "ONE_TO_MANY",
-      "foreignKey": "CoreResource.user_id -> UserProfile.id",
+      "foreignKey": "${primaryEntity}.user_id -> UserProfile.id",
       "onDelete": "CASCADE",
-      "simpleMeaning": "One user can create and own multiple resources. Deleting a user deletes their resources."
+      "simpleMeaning": "One user can create and own multiple records. Deleting a user cascades."
     }
   ],
   "stateTransitions": [
     {
       "id": "st_1",
-      "entity": "CoreResource",
+      "entity": "${primaryEntity}",
       "fromState": "draft",
       "toState": "active",
       "allowedRoles": ["Primary User"],
-      "trigger": "User publishes item",
-      "sideEffects": ["Item becomes visible on public/client view", "Notification sent if configured"],
+      "trigger": "User publishes or activates item",
+      "sideEffects": ["Item becomes visible on active view", "Notification sent if configured"],
       "preventedIf": "Required fields are incomplete"
     },
     {
       "id": "st_2",
-      "entity": "CoreResource",
+      "entity": "${primaryEntity}",
       "fromState": "active",
       "toState": "archived",
       "allowedRoles": ["Primary User", "Platform Administrator"],
@@ -378,7 +384,7 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
       "area": "DATABASE",
       "requirement": "Reliable data storage with clear relationships between users, items, and settings.",
       "recommendedOption": "Relational PostgreSQL (via Supabase)",
-      "whyRecommended": "Your product has structured entities (users, resources) with foreign key relationships and strict ownership rules.",
+      "whyRecommended": "Your product has structured entities with foreign key relationships and strict ownership rules.",
       "tradeoffs": "Requires defined schema migrations, but guarantees data integrity and enables Row-Level Security.",
       "alternatives": [
         {
@@ -412,12 +418,12 @@ Return a valid JSON object matching the EngineeringBlueprint schema:
   "traceabilityMatrix": [
     {
       "featureId": "feat_core",
-      "featureTitle": "Core Resource Management",
-      "screens": ["/dashboard", "/dashboard/items/new"],
-      "workflows": ["Standard Item Lifecycle"],
-      "dataEntities": ["CoreResource", "UserProfile"],
-      "apiEndpoints": ["/api/resources"],
-      "backendServices": ["ResourceService.create", "ResourceService.list"],
+      "featureTitle": "Core ${primaryEntity} Management",
+      "screens": ["${primaryScreen}"],
+      "workflows": ["Core ${primaryEntity} Lifecycle"],
+      "dataEntities": ["${primaryEntity}", "${secondaryEntity}"],
+      "apiEndpoints": ["${primaryEndpoint}"],
+      "backendServices": ["${primaryEntity}Service.create", "${primaryEntity}Service.list"],
       "authorizationRules": ["auth.uid() = user_id (RLS)"],
       "testCases": ["Owner can create & edit", "Non-owner read attempt blocked with 403"]
     }
@@ -492,8 +498,13 @@ function createDeterministicEngineeringBlueprint(
   blueprint: SoftwareBlueprint
 ): EngineeringBlueprint {
   const primaryRole = blueprint.usersRoles?.[0]?.roleName || "Primary User";
-  const entityNames = blueprint.dataEntities?.map((e) => e.entityName) || ["UserProfile", "CoreResource"];
-  const screenPaths = blueprint.screens?.map((s) => s.routePath) || ["/dashboard"];
+  const primaryEntity = blueprint.dataEntities?.[0]?.entityName || "WorkspaceRecord";
+  const secondaryEntity = blueprint.dataEntities?.[1]?.entityName || "ActivityLog";
+  const entityNames = blueprint.dataEntities?.length ? blueprint.dataEntities.map((e) => e.entityName) : [primaryEntity, secondaryEntity];
+  const screenPaths = blueprint.screens?.length ? blueprint.screens.map((s) => s.routePath) : ["/dashboard"];
+  const primaryScreen = screenPaths[0] || "/dashboard";
+  const primaryEndpoint = `/api/${primaryEntity.toLowerCase().replace(/[^a-z0-9]/g, "_")}s`;
+  const coreWorkflowName = blueprint.workflows?.[0]?.name || `${primaryEntity} Lifecycle`;
 
   const domains: Record<EngineeringDomain, EngineeringDomainItem[]> = {
     PRODUCT_ARCHITECTURE: [
@@ -521,8 +532,8 @@ function createDeterministicEngineeringBlueprint(
         whyItMatters: "Prevents data loss and builds user confidence.",
         technicalSpecification: "React state management with optimistic UI updates and Sonner toast notifications.",
         affectedFeatures: ["Creation Studio"],
-        affectedScreens: ["/dashboard/items/new"],
-        affectedEntities: ["CoreResource"],
+        affectedScreens: [primaryScreen],
+        affectedEntities: [primaryEntity],
         source: "SYSTEM_RECOMMENDED",
         status: "CONFIRMED",
         priority: "HIGH",
@@ -553,8 +564,8 @@ function createDeterministicEngineeringBlueprint(
         whyItMatters: "Delivers maximum speed without unnecessary loading spinners.",
         technicalSpecification: "React 19 Server Components for data fetching with client component forms.",
         affectedFeatures: ["Dashboard"],
-        affectedScreens: ["/dashboard"],
-        affectedEntities: ["UserProfile"],
+        affectedScreens: [primaryScreen],
+        affectedEntities: ["UserProfile", primaryEntity],
         source: "SYSTEM_RECOMMENDED",
         status: "CONFIRMED",
         priority: "CRITICAL",
@@ -568,9 +579,9 @@ function createDeterministicEngineeringBlueprint(
         simpleExplanation: "All form inputs are validated and business rules are verified on the server before database persistence.",
         whyItMatters: "Guarantees system integrity and blocks malformed data.",
         technicalSpecification: "Next.js Server Actions and REST handlers using Zod validation schemas.",
-        affectedFeatures: ["Resource CRUD"],
-        affectedScreens: ["/dashboard"],
-        affectedEntities: ["CoreResource"],
+        affectedFeatures: [`${primaryEntity} CRUD`],
+        affectedScreens: [primaryScreen],
+        affectedEntities: [primaryEntity],
         source: "SYSTEM_RECOMMENDED",
         status: "CONFIRMED",
         priority: "CRITICAL",
@@ -584,9 +595,9 @@ function createDeterministicEngineeringBlueprint(
         simpleExplanation: "Structured endpoints for creating, reading, updating, and deleting items.",
         whyItMatters: "Allows predictable communication between the interface and database.",
         technicalSpecification: "REST JSON API with standard status codes and structured error payloads.",
-        affectedFeatures: ["Resource CRUD"],
-        affectedScreens: ["/dashboard"],
-        affectedEntities: ["CoreResource"],
+        affectedFeatures: [`${primaryEntity} Operations`],
+        affectedScreens: [primaryScreen],
+        affectedEntities: [primaryEntity],
         source: "SYSTEM_RECOMMENDED",
         status: "CONFIRMED",
         priority: "CRITICAL",
@@ -628,13 +639,28 @@ function createDeterministicEngineeringBlueprint(
       {
         id: "authz_1",
         domain: "AUTHORIZATION",
-        title: "Row-Level Security (RLS) Isolation",
-        simpleExplanation: "Every user can only view, edit, or delete their own data.",
-        whyItMatters: "Ensures multi-tenant data privacy at the database engine level.",
-        technicalSpecification: "PostgreSQL RLS policies: auth.uid() = user_id for all operations.",
+        title:
+          blueprint.overview?.productType === "E-commerce"
+            ? "Public Catalog Reads & Private Customer Order Protection"
+            : blueprint.overview?.productType === "SaaS"
+            ? "Multi-Tenant Workspace Isolation & RBAC Enforcement"
+            : "Row-Level Security (RLS) Isolation",
+        simpleExplanation:
+          blueprint.overview?.productType === "E-commerce"
+            ? "Anyone can browse published products and variants, but only verified customers or merchants can access order details."
+            : blueprint.overview?.productType === "SaaS"
+            ? "Each organization's workspace data is strictly isolated; users cannot access records outside their team membership."
+            : "Every user can only view, edit, or delete their own data.",
+        whyItMatters: "Ensures multi-tenant data privacy and prevents IDOR / unauthorized data leaks.",
+        technicalSpecification:
+          blueprint.overview?.productType === "E-commerce"
+            ? "Supabase RLS: public SELECT on published products; orders require auth.uid() = user_id or cryptographic order token verification."
+            : blueprint.overview?.productType === "SaaS"
+            ? "PostgreSQL RLS: organization_id IN (SELECT org_id FROM organization_members WHERE user_id = auth.uid()) and role-based permissions."
+            : "PostgreSQL RLS policies: auth.uid() = user_id for all operations.",
         affectedFeatures: ["Data Privacy"],
         affectedScreens: screenPaths,
-        affectedEntities: ["CoreResource"],
+        affectedEntities: [primaryEntity],
         source: "SYSTEM_RECOMMENDED",
         status: "CONFIRMED",
         priority: "CRITICAL",
@@ -644,11 +670,26 @@ function createDeterministicEngineeringBlueprint(
       {
         id: "sec_1",
         domain: "SECURITY",
-        title: "Input Validation & Defense in Depth",
-        simpleExplanation: "Validates all payloads and keeps API keys securely hidden on the server.",
-        whyItMatters: "Blocks injection attacks and prevents secret leaks.",
-        technicalSpecification: "Zod runtime validation and server-only environment variable isolation.",
-        affectedFeatures: ["All Forms"],
+        title:
+          blueprint.overview?.productType === "E-commerce"
+            ? "Zero-Trust Pricing, Concurrency Locking & Cryptographic Webhooks"
+            : blueprint.overview?.productType === "SaaS"
+            ? "Zero-Trust Role & Payment Validation with Idempotent Dunning"
+            : "Input Validation & Defense in Depth",
+        simpleExplanation:
+          blueprint.overview?.productType === "E-commerce"
+            ? "All cart prices are recalculated on the server, inventory is decremented atomically, and webhooks verify HMAC signatures."
+            : blueprint.overview?.productType === "SaaS"
+            ? "Server actions strictly verify permissions from the session, ignoring client-submitted roles or prices."
+            : "Validates all payloads and keeps API keys securely hidden on the server.",
+        whyItMatters: "Blocks injection attacks, financial tampering, overselling, and unauthorized privilege escalation.",
+        technicalSpecification:
+          blueprint.overview?.productType === "E-commerce"
+            ? "Server-side price calculation, UPDATE product_variants ... WHERE inventory_quantity >= $1, and HMAC signature verification on webhooks."
+            : blueprint.overview?.productType === "SaaS"
+            ? "Zod runtime validation, server-side role resolution from session, and processed_webhook_events idempotency table."
+            : "Zod runtime validation and server-only environment variable isolation.",
+        affectedFeatures: ["All Forms", "Payments"],
         affectedScreens: screenPaths,
         affectedEntities: entityNames,
         source: "SYSTEM_RECOMMENDED",
@@ -664,9 +705,9 @@ function createDeterministicEngineeringBlueprint(
         simpleExplanation: "Fast lookups and sub-second page transitions as data grows.",
         whyItMatters: "Maintains snappy performance under load.",
         technicalSpecification: "B-Tree indexes on user_id foreign keys and created_at timestamps.",
-        affectedFeatures: ["Item Listings"],
-        affectedScreens: ["/dashboard"],
-        affectedEntities: ["CoreResource"],
+        affectedFeatures: [`${primaryEntity} Listings`],
+        affectedScreens: [primaryScreen],
+        affectedEntities: [primaryEntity],
         source: "SYSTEM_RECOMMENDED",
         status: "CONFIRMED",
         priority: "MEDIUM",
@@ -692,13 +733,28 @@ function createDeterministicEngineeringBlueprint(
       {
         id: "test_1",
         domain: "TESTING",
-        title: "Critical Path Integration & Security Tests",
-        simpleExplanation: "Automated checks verifying that creation workflows work and unauthorized users are blocked.",
-        whyItMatters: "Guarantees reliable code quality before deployments.",
-        technicalSpecification: "Unit and integration tests for API endpoints and RLS security policies.",
-        affectedFeatures: ["Core Flow"],
-        affectedScreens: ["/dashboard"],
-        affectedEntities: ["CoreResource"],
+        title:
+          blueprint.overview?.productType === "E-commerce"
+            ? "Inventory Concurrency & Webhook Idempotency Verification"
+            : blueprint.overview?.productType === "SaaS"
+            ? "Negative Tenant Isolation & Plan Quota Test Suite"
+            : "Critical Path Integration & Security Tests",
+        simpleExplanation:
+          blueprint.overview?.productType === "E-commerce"
+            ? "Automated tests verify that concurrent checkouts never oversell stock and repeated webhooks do not double-fulfill orders."
+            : blueprint.overview?.productType === "SaaS"
+            ? "Automated tests verify that cross-tenant access returns 403 Forbidden and non-paying users cannot exceed plan quotas."
+            : "Automated checks verifying that creation workflows work and unauthorized users are blocked.",
+        whyItMatters: "Catches security, concurrency, and financial regressions before they reach production.",
+        technicalSpecification:
+          blueprint.overview?.productType === "E-commerce"
+            ? "Integration tests simulating simultaneous checkouts on stock=1 and asserting duplicate webhook replay returns 200 without side effects."
+            : blueprint.overview?.productType === "SaaS"
+            ? "Automated negative integration tests asserting 403 on cross-tenant read/write and quota boundary enforcement."
+            : "Unit and integration tests for API endpoints and RLS security policies.",
+        affectedFeatures: ["Core Flow", "Security"],
+        affectedScreens: [primaryScreen],
+        affectedEntities: [primaryEntity],
         source: "SYSTEM_RECOMMENDED",
         status: "CONFIRMED",
         priority: "HIGH",
@@ -740,12 +796,12 @@ function createDeterministicEngineeringBlueprint(
 
   const apiContracts: ApiContract[] = [
     {
-      id: "api_get_resources",
-      endpoint: "/api/resources",
+      id: `api_get_${primaryEntity.toLowerCase()}`,
+      endpoint: primaryEndpoint,
       method: "GET",
-      purpose: "Fetches all active resources for the logged-in user",
+      purpose: `Fetches all active ${primaryEntity.toLowerCase()} records for the logged-in user`,
       inputPayload: "None (authenticated cookie session)",
-      outputPayload: "{ items: CoreResource[] }",
+      outputPayload: `{ items: ${primaryEntity}[] }`,
       errorCodes: [
         { code: 401, scenario: "Unauthenticated session", resolution: "Redirect user to login" },
         { code: 500, scenario: "Database fetch failure", resolution: "Show retry message" },
@@ -755,12 +811,12 @@ function createDeterministicEngineeringBlueprint(
       rolesAllowed: [primaryRole, "Platform Administrator"],
     },
     {
-      id: "api_post_resource",
-      endpoint: "/api/resources",
+      id: `api_post_${primaryEntity.toLowerCase()}`,
+      endpoint: primaryEndpoint,
       method: "POST",
-      purpose: "Creates a new resource record",
-      inputPayload: "{ title: string, metadata?: object }",
-      outputPayload: "{ item: CoreResource, message: string }",
+      purpose: `Creates a new ${primaryEntity.toLowerCase()} record`,
+      inputPayload: "{ title: string, metadata?: Record<string, unknown> }",
+      outputPayload: `{ item: ${primaryEntity}, message: string }`,
       errorCodes: [
         { code: 400, scenario: "Invalid input payload", resolution: "Highlight invalid field" },
         { code: 401, scenario: "Unauthenticated", resolution: "Redirect to login" },
@@ -773,34 +829,34 @@ function createDeterministicEngineeringBlueprint(
 
   const entityRelationships: EntityRelationship[] = [
     {
-      id: "rel_user_resource",
+      id: `rel_user_${primaryEntity.toLowerCase()}`,
       fromEntity: "UserProfile",
-      toEntity: "CoreResource",
+      toEntity: primaryEntity,
       relationType: "ONE_TO_MANY",
-      foreignKey: "CoreResource.user_id -> UserProfile.id",
+      foreignKey: `${primaryEntity}.user_id -> UserProfile.id`,
       onDelete: "CASCADE",
-      simpleMeaning: "Each user can create multiple resources. Deleting an account deletes its resources.",
+      simpleMeaning: `Each user can create multiple ${primaryEntity.toLowerCase()} records. Deleting an account deletes its records.`,
     },
   ];
 
   const stateTransitions: StateTransition[] = [
     {
       id: "trans_draft_active",
-      entity: "CoreResource",
+      entity: primaryEntity,
       fromState: "draft",
       toState: "active",
       allowedRoles: [primaryRole],
-      trigger: "User saves and activates resource",
-      sideEffects: ["Item becomes accessible on dashboard", "Status badge changes to Active"],
-      preventedIf: "Required resource name is blank",
+      trigger: `User saves and activates ${primaryEntity.toLowerCase()}`,
+      sideEffects: [`Item becomes accessible on ${primaryScreen}`, "Status badge changes to Active"],
+      preventedIf: `Required ${primaryEntity.toLowerCase()} name is blank`,
     },
     {
       id: "trans_active_archived",
-      entity: "CoreResource",
+      entity: primaryEntity,
       fromState: "active",
       toState: "archived",
       allowedRoles: [primaryRole, "Platform Administrator"],
-      trigger: "User clicks Archive item",
+      trigger: `User clicks Archive ${primaryEntity.toLowerCase()}`,
       sideEffects: ["Item removed from active listing but preserved in database history"],
     },
   ];
@@ -847,12 +903,12 @@ function createDeterministicEngineeringBlueprint(
   const traceabilityMatrix: TraceabilityItem[] = [
     {
       featureId: "feat_mgmt",
-      featureTitle: "Core Resource Management",
-      screens: ["/dashboard", "/dashboard/items/new"],
-      workflows: ["Standard Item Lifecycle"],
-      dataEntities: ["CoreResource", "UserProfile"],
-      apiEndpoints: ["/api/resources"],
-      backendServices: ["ResourceService.create", "ResourceService.list"],
+      featureTitle: `${primaryEntity} Management`,
+      screens: [primaryScreen],
+      workflows: [coreWorkflowName],
+      dataEntities: [primaryEntity, "UserProfile"],
+      apiEndpoints: [primaryEndpoint],
+      backendServices: [`${primaryEntity}Service.create`, `${primaryEntity}Service.list`],
       authorizationRules: ["auth.uid() = user_id (RLS)"],
       testCases: ["Owner can create & edit", "Non-owner read attempt blocked with 403"],
     },

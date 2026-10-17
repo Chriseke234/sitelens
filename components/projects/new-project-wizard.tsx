@@ -46,14 +46,15 @@ export function NewProjectWizard({ onSuccess }: NewProjectWizardProps) {
 
   const productTypes: ProductType[] = [
     "SaaS",
-    "Marketplace",
     "Web App",
+    "Landing Page",
+    "E-commerce",
+    "Business Website",
+    "Marketplace",
     "Mobile App",
     "Internal Tool",
-    "E-commerce",
     "AI Product",
     "API",
-    "Landing Page",
     "Other",
   ];
 

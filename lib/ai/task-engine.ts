@@ -1,5 +1,6 @@
 import { getGeminiApiKey } from "./client";
 import { getProductTypeProfile } from "./product-type-profiles";
+import { runBuiltInTaskAgent } from "./aigenstra-local-agent";
 import {
   AigenstraTask,
   BuildMap,
@@ -12,7 +13,8 @@ import {
 /**
  * Generates implementation-sized, bounded coding tasks in real time from the
  * synthesized Build Map, Software Blueprint, AI Research Document, and user Discovery Q&A.
- * Zero fictional or hardcoded tasks are produced.
+ * Hybrid Architecture: Uses Gemini API when configured and reachable; automatically switches
+ * to Aigenstra's Built-In Adaptive Task Agent when Gemini API is missing or offline.
  */
 export async function generateProjectTasks(
   projectId: string,
@@ -27,8 +29,13 @@ export async function generateProjectTasks(
   const apiKey = getGeminiApiKey();
 
   if (!apiKey) {
-    throw new Error(
-      "AI Task Engine requires a configured GEMINI_API_KEY to synthesize real-time tasks."
+    return runBuiltInTaskAgent(
+      projectId,
+      projectName,
+      productType,
+      buildMap,
+      softwareBlueprint,
+      qnas
     );
   }
 
@@ -84,11 +91,19 @@ CRITICAL RULES:
 3. PRODUCT TYPE TAILORING (${profile.label}):
    - Core Paradigm: ${profile.architecturalSummary}
    - Typical Screen Patterns: ${profile.typicalScreenPatterns.join(" -> ")}
-   - For a Landing Page without custom backend accounts, prioritize design system, responsive hero/conversion sections, interactive calculators/showcases, lead capture forms, and SEO metadata rather than unneeded multi-tenant RBAC tasks—unless the user's answers explicitly requested authentication.
-   - For SaaS, E-commerce, Marketplace, Web App, Mobile App, Internal Tool, AI Product, or API, sequence database/schema tasks, authentication/tenancy, core domain workflows, and specialized integrations according to the user's confirmed answers.
-4. Change Boundaries: Explicitly specify 'mustChange', 'mayChange', and 'mustNotChange' file paths for the user's target repository so coding agents stay strictly in bounds.
-5. Acceptance Criteria: Must be observable, verifiable outcomes grounded in the user's confirmed answers and blueprint entities/screens.
-6. Next-Task Recommendation: Recommend the single best foundational task to execute first with a clear "whyNext" rationale.
+   - For SaaS: Explicitly plan tenant data isolation (PostgreSQL RLS), automated negative isolation test suites asserting 403 on cross-tenant requests, role-based access control (owner, admin, member, billing_admin), zero-trust server payment verification, and idempotent subscription dunning webhook reconciliation.
+   - For E-commerce: Explicitly plan multi-attribute product variants (SKU, price_cents, attributes), atomic inventory decrement with check constraints (inventory_quantity >= 0) to prevent overselling under high concurrency, zero-trust server total recalculation, and idempotent webhook signature reconciliation.
+   - For Landing Pages: Prioritize responsive conversion hero, interactive value showcase, lead capture form, and SEO metadata without unneeded auth/dashboard bloat unless explicitly requested.
+4. SPECIALIST TASK ROUTING: Every task should explicitly declare its specialized domain:
+   - "Data & Security Specialist" for database schemas, RLS policies, and migrations
+   - "SaaS & Tenancy Specialist" for multi-tenancy, RBAC permissions, and billing lifecycle
+   - "E-Commerce & Concurrency Specialist" for product variants, inventory locks, cart, and checkout reconciliation
+   - "UI/UX & Mobile Responsiveness Specialist" for storefront shells, navigation drawers, and fluid 360px+ responsiveness
+   - "API & Integration Specialist" for external webhooks, background jobs, and transactional notifications
+5. Change Boundaries: Explicitly specify 'mustChange', 'mayChange', and 'mustNotChange' file paths for the user's target repository so coding agents stay strictly in bounds.
+6. Acceptance Criteria: Must be observable, verifiable outcomes grounded in the user's confirmed answers and blueprint entities/screens.
+7. Next-Task Recommendation: Recommend the single best foundational task to execute first with a clear "whyNext" rationale.
+8. SHARED PRODUCT DEVELOPMENT STANDARD: Differentiate between intended deliverables (what this task defines), actual implementation files (what the coding agent creates/modifies), and verification criteria (the exact tests/typechecks required to prove the task works). Never mark acceptance criteria as satisfied without verifiable test evidence.
 
 PROJECT DETAILS:
 - Project Name: ${projectName}
@@ -162,89 +177,121 @@ Return a valid JSON object matching this exact schema:
 DO NOT include markdown code blocks in your response. Output raw JSON only.
 `;
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.2,
-          responseMimeType: "application/json",
-        },
-      }),
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.2,
+            responseMimeType: "application/json",
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      return runBuiltInTaskAgent(
+        projectId,
+        projectName,
+        productType,
+        buildMap,
+        softwareBlueprint,
+        qnas
+      );
     }
-  );
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gemini Task Engine failed (${response.status}): ${errText}`);
-  }
+    const data = await response.json();
+    const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawContent) {
+      return runBuiltInTaskAgent(
+        projectId,
+        projectName,
+        productType,
+        buildMap,
+        softwareBlueprint,
+        qnas
+      );
+    }
 
-  const data = await response.json();
-  const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawContent) {
-    throw new Error("Gemini Task Engine returned an empty response.");
-  }
+    const parsed = JSON.parse(rawContent);
+    if (!Array.isArray(parsed.tasks) || parsed.tasks.length === 0) {
+      return runBuiltInTaskAgent(
+        projectId,
+        projectName,
+        productType,
+        buildMap,
+        softwareBlueprint,
+        qnas
+      );
+    }
 
-  const parsed = JSON.parse(rawContent);
-  if (!Array.isArray(parsed.tasks) || parsed.tasks.length === 0) {
-    throw new Error("Gemini Task Engine did not return valid tasks.");
-  }
-
-  const now = new Date().toISOString();
-  const tasks: AigenstraTask[] = parsed.tasks.map((t: any, idx: number) => ({
-    ...t,
-    id: t.id || `task_${idx + 1}`,
-    project_id: projectId,
-    status: idx === 0 ? "READY" : t.status || "READY",
-    readiness: t.readiness || "READY",
-    dependencies: Array.isArray(t.dependencies) ? t.dependencies : [],
-    blocked_by: Array.isArray(t.blocked_by) ? t.blocked_by : [],
-    related_blueprint_items: Array.isArray(t.related_blueprint_items)
-      ? t.related_blueprint_items
-      : [],
-    related_engineering_items: Array.isArray(t.related_engineering_items)
-      ? t.related_engineering_items
-      : [],
-    related_decisions: Array.isArray(t.related_decisions) ? t.related_decisions : [],
-    related_assumptions: Array.isArray(t.related_assumptions)
-      ? t.related_assumptions
-      : [],
-    affected_screens: Array.isArray(t.affected_screens) ? t.affected_screens : [],
-    affected_entities: Array.isArray(t.affected_entities) ? t.affected_entities : [],
-    affected_apis: Array.isArray(t.affected_apis) ? t.affected_apis : [],
-    acceptance_criteria: Array.isArray(t.acceptance_criteria)
-      ? t.acceptance_criteria
-      : [],
-    change_boundaries: {
-      mustChange: Array.isArray(t.change_boundaries?.mustChange)
-        ? t.change_boundaries.mustChange
+    const now = new Date().toISOString();
+    const tasks: AigenstraTask[] = parsed.tasks.map((t: any, idx: number) => ({
+      ...t,
+      id: t.id || `task_${idx + 1}`,
+      project_id: projectId,
+      status: idx === 0 ? "READY" : t.status || "READY",
+      readiness: t.readiness || "READY",
+      dependencies: Array.isArray(t.dependencies) ? t.dependencies : [],
+      blocked_by: Array.isArray(t.blocked_by) ? t.blocked_by : [],
+      related_blueprint_items: Array.isArray(t.related_blueprint_items)
+        ? t.related_blueprint_items
         : [],
-      mayChange: Array.isArray(t.change_boundaries?.mayChange)
-        ? t.change_boundaries.mayChange
+      related_engineering_items: Array.isArray(t.related_engineering_items)
+        ? t.related_engineering_items
         : [],
-      mustNotChange: Array.isArray(t.change_boundaries?.mustNotChange)
-        ? t.change_boundaries.mustNotChange
+      related_decisions: Array.isArray(t.related_decisions) ? t.related_decisions : [],
+      related_assumptions: Array.isArray(t.related_assumptions)
+        ? t.related_assumptions
         : [],
-    },
-    created_at: now,
-    updated_at: now,
-  }));
+      affected_screens: Array.isArray(t.affected_screens) ? t.affected_screens : [],
+      affected_entities: Array.isArray(t.affected_entities) ? t.affected_entities : [],
+      affected_apis: Array.isArray(t.affected_apis) ? t.affected_apis : [],
+      acceptance_criteria: Array.isArray(t.acceptance_criteria)
+        ? t.acceptance_criteria
+        : [],
+      change_boundaries: {
+        mustChange: Array.isArray(t.change_boundaries?.mustChange)
+          ? t.change_boundaries.mustChange
+          : [],
+        mayChange: Array.isArray(t.change_boundaries?.mayChange)
+          ? t.change_boundaries.mayChange
+          : [],
+        mustNotChange: Array.isArray(t.change_boundaries?.mustNotChange)
+          ? t.change_boundaries.mustNotChange
+          : [],
+      },
+      created_at: now,
+      updated_at: now,
+    }));
 
-  const firstTask = tasks[0];
-  const recommendation: TaskRecommendation = parsed.recommendation || {
-    recommendedTaskId: firstTask.id,
-    recommendedTaskTitle: firstTask.title,
-    whyNext: `Starting with "${firstTask.title}" establishes the foundational architecture required by subsequent tasks.`,
-    prerequisitesMet: true,
-    alternativeReadyTasks: tasks.slice(1, 3).map((t) => ({
-      taskId: t.id,
-      title: t.title,
-      reason: t.purpose,
-    })),
-  };
+    const firstTask = tasks[0];
+    const recommendation: TaskRecommendation = parsed.recommendation || {
+      recommendedTaskId: firstTask.id,
+      recommendedTaskTitle: firstTask.title,
+      whyNext: `Starting with "${firstTask.title}" establishes the foundational architecture required by subsequent tasks.`,
+      prerequisitesMet: true,
+      alternativeReadyTasks: tasks.slice(1, 3).map((t) => ({
+        taskId: t.id,
+        title: t.title,
+        reason: t.purpose,
+      })),
+    };
 
-  return { tasks, recommendation };
+    return { tasks, recommendation };
+  } catch {
+    return runBuiltInTaskAgent(
+      projectId,
+      projectName,
+      productType,
+      buildMap,
+      softwareBlueprint,
+      qnas
+    );
+  }
 }
+

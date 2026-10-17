@@ -1,6 +1,10 @@
 import { getGeminiApiKey } from "./client";
 import { getProductTypeProfile } from "./product-type-profiles";
 import {
+  runBuiltInIdeaUnderstandingAgent,
+  runBuiltInSummaryAgent,
+} from "./aigenstra-local-agent";
+import {
   IdeaUnderstandingRecord,
   ProductSummary,
   BlueprintSkeleton,
@@ -9,7 +13,9 @@ import {
 
 /**
  * Synthesizes a raw user idea into a structured Idea Understanding Record
- * tailored to the project's Product Type. Zero fictional fallback data.
+ * tailored to the project's Product Type.
+ * Hybrid Architecture: Uses Gemini API when configured; automatically switches to
+ * Aigenstra's Built-In Understanding Agent when Gemini API is missing or offline.
  */
 export async function synthesizeIdeaUnderstanding(
   projectName: string,
@@ -18,9 +24,7 @@ export async function synthesizeIdeaUnderstanding(
 ): Promise<IdeaUnderstandingRecord> {
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    throw new Error(
-      "Gemini API key is required for real-time product understanding. Fictional fallbacks are disabled."
-    );
+    return runBuiltInIdeaUnderstandingAgent(projectName, rawIdea, productType);
   }
 
   const profile = getProductTypeProfile(productType);
@@ -57,32 +61,36 @@ Return a valid JSON object matching this schema:
 }
 `;
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          response_mime_type: "application/json",
-          temperature: 0.2,
-        },
-      }),
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: {
+            response_mime_type: "application/json",
+            temperature: 0.2,
+          },
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      return runBuiltInIdeaUnderstandingAgent(projectName, rawIdea, productType);
     }
-  );
 
-  if (!res.ok) {
-    throw new Error(`Idea understanding synthesis failed with HTTP ${res.status}`);
+    const resData = await res.json();
+    const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) {
+      return runBuiltInIdeaUnderstandingAgent(projectName, rawIdea, productType);
+    }
+
+    return JSON.parse(rawText);
+  } catch {
+    return runBuiltInIdeaUnderstandingAgent(projectName, rawIdea, productType);
   }
-
-  const resData = await res.json();
-  const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) {
-    throw new Error("Empty response from Idea Understanding AI.");
-  }
-
-  return JSON.parse(rawText);
 }
 
 /**
@@ -124,7 +132,9 @@ export function checkDiscoverySufficiency(
 
 /**
  * Generates a real-time Product Summary based strictly on the raw idea, product type,
- * and answered discovery Q&A. Zero fictional fallback data.
+ * and answered discovery Q&A.
+ * Hybrid Architecture: Uses Gemini API when configured; automatically switches to
+ * Aigenstra's Built-In Summary Agent when Gemini API is missing or offline.
  */
 export async function generateProductSummary(
   projectName: string,
@@ -133,16 +143,21 @@ export async function generateProductSummary(
   assumptions: ProductAssumption[] = [],
   productType?: string | null
 ): Promise<ProductSummary> {
+  const sufficiency = checkDiscoverySufficiency(qnaList);
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    throw new Error(
-      "Gemini API key is required to synthesize the product summary. Fictional fallbacks are disabled."
+    return runBuiltInSummaryAgent(
+      projectName,
+      rawIdea,
+      qnaList,
+      assumptions,
+      productType,
+      sufficiency.isSufficient
     );
   }
 
   const profile = getProductTypeProfile(productType);
   const answered = qnaList.filter((q) => q.answer && q.answer.trim().length > 0);
-  const sufficiency = checkDiscoverySufficiency(qnaList);
 
   const prompt = `
 System Instruction:
@@ -172,37 +187,62 @@ Return a valid JSON object matching this schema:
 }
 `;
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          response_mime_type: "application/json",
-          temperature: 0.2,
-        },
-      }),
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: {
+            response_mime_type: "application/json",
+            temperature: 0.2,
+          },
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      return runBuiltInSummaryAgent(
+        projectName,
+        rawIdea,
+        qnaList,
+        assumptions,
+        productType,
+        sufficiency.isSufficient
+      );
     }
-  );
 
-  if (!res.ok) {
-    throw new Error(`Product summary generation failed with HTTP ${res.status}`);
-  }
+    const resData = await res.json();
+    const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) {
+      return runBuiltInSummaryAgent(
+        projectName,
+        rawIdea,
+        qnaList,
+        assumptions,
+        productType,
+        sufficiency.isSufficient
+      );
+    }
 
-  const resData = await res.json();
-  const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) {
-    throw new Error("Empty response from Product Summary AI.");
+    const parsed = JSON.parse(rawText);
+    parsed.isSufficient = sufficiency.isSufficient;
+    if (assumptions.length > 0 && (!parsed.activeAssumptions || parsed.activeAssumptions.length === 0)) {
+      parsed.activeAssumptions = assumptions;
+    }
+    return parsed;
+  } catch {
+    return runBuiltInSummaryAgent(
+      projectName,
+      rawIdea,
+      qnaList,
+      assumptions,
+      productType,
+      sufficiency.isSufficient
+    );
   }
-
-  const parsed = JSON.parse(rawText);
-  parsed.isSufficient = sufficiency.isSufficient;
-  if (assumptions.length > 0 && (!parsed.activeAssumptions || parsed.activeAssumptions.length === 0)) {
-    parsed.activeAssumptions = assumptions;
-  }
-  return parsed;
 }
 
 /**

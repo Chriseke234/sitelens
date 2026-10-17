@@ -1,10 +1,13 @@
 import { getGeminiApiKey } from "./client";
 import { getProductTypeProfile } from "./product-type-profiles";
+import { runBuiltInBuildMapAgent } from "./aigenstra-local-agent";
 import { BuildMap, BuildStage, SoftwareBlueprint } from "@/types";
 
 /**
  * Generates an actionable, sequential Build Map strictly tailored to the project's
- * Software Blueprint and Product Type. Zero fictional fallback stages.
+ * Software Blueprint and Product Type.
+ * Hybrid Architecture: Uses Gemini API when configured and reachable; automatically switches
+ * to Aigenstra's Built-In Adaptive Build Map Agent when Gemini API is missing or offline.
  */
 export async function generateBuildMap(
   projectId: string,
@@ -12,9 +15,7 @@ export async function generateBuildMap(
 ): Promise<BuildMap> {
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    throw new Error(
-      "Gemini API key is required to generate your tailored Build Map. Fictional fallback stages are disabled."
-    );
+    return runBuiltInBuildMapAgent(projectId, blueprint);
   }
 
   const profile = getProductTypeProfile(blueprint.overview?.productType);
@@ -68,44 +69,48 @@ Return a valid JSON object matching this exact schema:
 DO NOT include markdown code blocks. Output raw JSON only.
 `;
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.2,
-          responseMimeType: "application/json",
-        },
-      }),
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.2,
+            responseMimeType: "application/json",
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      return runBuiltInBuildMapAgent(projectId, blueprint);
     }
-  );
 
-  if (!response.ok) {
-    const errText = await response.text().catch(() => "Unknown error");
-    throw new Error(`Build Map synthesis failed (HTTP ${response.status}): ${errText.slice(0, 150)}`);
+    const data = await response.json();
+    const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawContent) {
+      return runBuiltInBuildMapAgent(projectId, blueprint);
+    }
+
+    const parsed = JSON.parse(rawContent);
+    const stages: BuildStage[] = Array.isArray(parsed.stages) ? parsed.stages : [];
+    if (stages.length === 0) {
+      return runBuiltInBuildMapAgent(projectId, blueprint);
+    }
+
+    return {
+      project_id: projectId,
+      stages,
+      currentStageNumber: 1,
+      totalStages: stages.length,
+      completedStages: stages.filter((s) => s.status === "COMPLETED").length,
+      updated_at: new Date().toISOString(),
+    };
+  } catch {
+    return runBuiltInBuildMapAgent(projectId, blueprint);
   }
-
-  const data = await response.json();
-  const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawContent) {
-    throw new Error("Build Map AI returned an empty response.");
-  }
-
-  const parsed = JSON.parse(rawContent);
-  const stages: BuildStage[] = Array.isArray(parsed.stages) ? parsed.stages : [];
-  if (stages.length === 0) {
-    throw new Error("Build Map AI returned zero stages.");
-  }
-
-  return {
-    project_id: projectId,
-    stages,
-    currentStageNumber: 1,
-    totalStages: stages.length,
-    completedStages: stages.filter((s) => s.status === "COMPLETED").length,
-    updated_at: new Date().toISOString(),
-  };
 }
+

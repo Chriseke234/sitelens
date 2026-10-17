@@ -1,5 +1,94 @@
 import { ProductType } from "@/types";
 
+export interface ArchitectureMethodGuide {
+  stackOverview: string;
+  monthlyCost: string;
+  databaseAndAuth: string;
+  paymentsAndBilling: string;
+  backgroundTasks: string;
+  emailAndCommunications: string;
+  rateLimitingAndCaching: string;
+  tradeoffsAndLimits: string[];
+}
+
+export interface SaaSArchitectureDeepening {
+  tenancyModels: {
+    personalWorkspace: string;
+    teamOrganization: string;
+  };
+  roleBasedPermissions: Array<{
+    role: string;
+    permissions: string[];
+    canManageBilling: boolean;
+    canInviteMembers: boolean;
+  }>;
+  tenantDataIsolationRules: {
+    databasePolicySql: string;
+    apiEnforcementRule: string;
+    isolationTestPlan: string[];
+  };
+  subscriptionLifecycle: {
+    states: string[];
+    dunningPolicy: string;
+    quotaEnforcementRule: string;
+  };
+  paymentSecurityRules: string[];
+  operationalRequirements: {
+    auditLogging: string;
+    backgroundQueues: string;
+    backupAndRecovery: string;
+  };
+}
+
+export interface ECommerceArchitectureDeepening {
+  catalogAndVariants: {
+    categoryHierarchy: string;
+    variantAttributes: string[];
+    skuAndPricingRules: string;
+  };
+  searchAndDiscovery: {
+    filteringDimensions: string[];
+    sortingOptions: string[];
+    fullTextSearchEngine: string;
+  };
+  pricingAndPromotions: {
+    currencyAndTax: string;
+    discountAndCoupons: string;
+    serverCalculationEnforcement: string;
+  };
+  inventoryAndConcurrency: {
+    concurrencyProtectionSql: string;
+    reservationTtlMinutes: number;
+    lowStockThresholdHandling: string;
+    oversellingPreventionRule: string;
+  };
+  cartAndCheckout: {
+    guestVsAccountPolicy: string;
+    shippingCalculation: string;
+    sessionCartPersistence: string;
+  };
+  orderStateMachine: {
+    states: string[];
+    stateTransitions: Array<{
+      from: string;
+      to: string;
+      trigger: string;
+      stockAction: "RESERVE" | "CONFIRM_DECREMENT" | "RESTORE" | "NONE";
+    }>;
+  };
+  paymentReconciliation: {
+    zeroTrustValidationRule: string;
+    webhookSignatureVerification: string;
+    idempotencyTableSql: string;
+    failureAndDisputePolicy: string;
+  };
+  fulfillmentAndOperations: {
+    fulfillmentWorkflow: string;
+    staffRolePermissions: Array<{ role: string; capabilities: string[] }>;
+    transactionalNotifications: string[];
+  };
+}
+
 export interface ProductTypeArchitectureProfile {
   productType: ProductType;
   label: string;
@@ -11,6 +100,10 @@ export interface ProductTypeArchitectureProfile {
   uxAndConversionPriorities: string[];
   securityAndBackendPriorities: string[];
   antiBloatGuardrails: string[];
+  freeTierArchitecture?: ArchitectureMethodGuide;
+  paidScaleArchitecture?: ArchitectureMethodGuide;
+  saasDeepening?: SaaSArchitectureDeepening;
+  ecommerceDeepening?: ECommerceArchitectureDeepening;
 }
 
 export const PRODUCT_TYPE_PROFILES: Record<ProductType, ProductTypeArchitectureProfile> = {
@@ -18,46 +111,156 @@ export const PRODUCT_TYPE_PROFILES: Record<ProductType, ProductTypeArchitectureP
     productType: "SaaS",
     label: "B2B / B2C Software-as-a-Service (SaaS)",
     architecturalSummary:
-      "Multi-tenant recurring software platform centered around user/workspace onboarding, core value-creation workflows, role-based access control, and subscription/usage lifecycle management.",
+      "Multi-tenant recurring software platform centered around frictionless user/workspace onboarding, core value-creation workflows (TTFV < 60s), role-based access control, secure tenant data isolation, and subscription/usage lifecycle management. Supports both the $0/mo Free Bootstrap Method (Next.js + Supabase Free + Lemon Squeezy/Stripe + Resend) and the Paid Scale Method (Supabase Pro + Upstash Redis + Inngest/Temporal + Stripe Billing + Enterprise SSO).",
     researchFocusAreas: [
-      "Target customer workflow bottleneck and time-to-first-value (activation)",
-      "Competitor SaaS pricing/tier mechanics and feature gating",
-      "Multi-tenancy isolation model (individual user accounts vs. team workspaces/organizations)",
-      "Core recurring workflow frequency and state transitions",
+      "Target customer workflow bottleneck and time-to-first-value (activation under 60 seconds)",
+      "Launch budget strategy: Free Bootstrap Method ($0/mo) vs. Paid Scale Method ($100-$300+/mo)",
+      "Multi-tenancy isolation model: Personal user workspaces (user_id RLS) vs. Collaborative organization workspaces (organization_id RLS + membership roles)",
+      "Role-based permissions & resource-level authorization matrix (owner, admin, member, billing_admin)",
+      "Subscription and monetization mechanics: Free tier limits, usage counters, Stripe/Lemon Squeezy webhooks, and failed payment dunning",
+      "Tenant data isolation test planning at the database, API middleware, and Server Action layers",
     ],
     essentialQuestionDimensions: [
-      "Workspace & Tenancy Model: Will users work solo in personal accounts, or invite team members into shared workspaces with roles?",
+      "Workspace & Tenancy Model: Will users work solo in personal accounts (user_id RLS), or invite team members into shared workspaces with roles (organization_id RLS)?",
       "Core Activation Workflow: What is the exact primary action a user must complete in their first session to get value?",
-      "Monetization & Tier Gating: Will there be free/paid subscription tiers, usage limits, or trial periods at launch?",
-      "Data & External Integrations: What specific domain records are created, and do they connect to external webhooks or APIs?",
+      "Monetization & Tier Gating: Will you use a $0/mo Free bootstrap method (Stripe/Lemon Squeezy pay-per-transaction) or a Paid scale billing stack with tiered limits?",
+      "Data & External Integrations: What specific domain records are created, and do they connect to external webhooks, email triggers, or APIs?",
     ],
     typicalScreenPatterns: [
       "Authentication & Workspace Onboarding (/login, /signup, /onboarding)",
       "Primary Workspace Dashboard & KPI Telemetry (/dashboard)",
-      "Core Domain Workflow Studio & Execution View",
+      "Core Domain Workflow Studio & Execution View (/dashboard/[entity])",
       "Workspace Settings, Team Members & Subscription Billing (/dashboard/settings)",
     ],
     typicalDataEntities: [
-      "profiles / users",
-      "workspaces / organizations (if team-based)",
-      "workspace_members (role-scoped)",
+      "profiles (id, email, full_name, plan_tier, created_at)",
+      "organizations / workspaces (if collaborative team tenancy is selected)",
+      "organization_members (org_id, user_id, role [owner, admin, member, billing_admin])",
       "domain-specific core entity (derived strictly from user idea)",
-      "subscriptions / usage_logs (if monetized)",
+      "subscriptions (id, org_id, stripe_sub_id, plan_id, status, current_period_end)",
+      "usage_logs (id, org_id, metric_name, quantity, period_start, period_end)",
+      "audit_logs (id, org_id, actor_id, action, target_entity, ip_address, created_at)",
     ],
     uxAndConversionPriorities: [
-      "Frictionless onboarding that reaches the core workflow in under 60 seconds",
-      "Clear empty states with guided first-action triggers",
-      "Optimistic UI updates and skeleton loaders on all dashboard mutations",
+      "Frictionless onboarding reaching the core value action in under 60 seconds (Time to First Value / TTFV)",
+      "Clear, actionable empty states with guided first-action triggers rather than blank canvases",
+      "Optimistic UI updates with rollback and Sonner toast notifications on all mutations",
+      "Responsive navigation (360px mobile drawer to widescreen sidebar) with Lucide SVG icons (zero emojis)",
     ],
     securityAndBackendPriorities: [
-      "Supabase Row-Level Security (RLS) scoped to user_id or workspace_id",
-      "Server-side ownership and role verification on all mutations",
-      "Zod payload validation and idempotent webhook handlers",
+      "Supabase Row-Level Security (RLS) strictly enforced at the database engine level (auth.uid() = user_id or organization membership check)",
+      "Zero trust for client-submitted roles, prices, payment status, or tenant identifiers",
+      "Server Actions and REST route handlers with rigorous Zod schema validation",
+      "Idempotent webhook handlers for payment and external lifecycle events with signature verification",
+      "Automated negative tenant isolation tests asserting 403 on cross-tenant requests",
     ],
     antiBloatGuardrails: [
-      "Do not invent generic 'CoreResource' or 'WorkspaceItem' tables; name entities after the user's actual domain.",
-      "Do not add complex enterprise SSO or multi-region replication unless requested.",
+      "Never invent fictional placeholder tables (e.g., 'WorkspaceItem' or 'CoreResource'); name entities directly after the user's real business domain.",
+      "Do not force multi-tenant team organizations or enterprise SSO if the user only requires a personal solo SaaS.",
+      "Do not require heavy external queuing infrastructure when Supabase pg_cron or serverless background handlers suffice for the bootstrap stage.",
     ],
+    freeTierArchitecture: {
+      stackOverview:
+        "The $0/mo Bootstrap SaaS Method: Complete production-ready stack designed to validate, launch, and monetize without any fixed monthly server costs.",
+      monthlyCost: "$0.00 / month (100% pay-as-you-grow)",
+      databaseAndAuth:
+        "Supabase Free Tier (500 MB PostgreSQL, 50,000 monthly active users, Auth with email/password + social OAuth, built-in Row-Level Security)",
+      paymentsAndBilling:
+        "Lemon Squeezy or Stripe Checkout with Merchant-of-Record / standard checkout ($0 upfront, 2.9% + 30¢ or 5% + 50¢ per successful transaction only)",
+      backgroundTasks:
+        "Next.js App Router background routes + Supabase Database Webhooks / pg_cron for scheduled tasks ($0/mo)",
+      emailAndCommunications:
+        "Resend Free Tier (3,000 emails/month, 100 emails/day) for transactional onboarding & password recovery",
+      rateLimitingAndCaching:
+        "Cloudflare Free Tier (Global CDN, DDoS protection, edge caching) + in-memory Next.js cache",
+      tradeoffsAndLimits: [
+        "Supabase free projects pause after 7 days of inactivity (prevented by automated pings or active users)",
+        "500 MB database storage limit (sufficient for 100,000+ relational text rows)",
+        "3,000 monthly transactional emails before needing paid tier",
+      ],
+    },
+    paidScaleArchitecture: {
+      stackOverview:
+        "The High-Throughput / Scale SaaS Method: Resilient, high-concurrency infrastructure built for teams, high data volume, and strict SLAs.",
+      monthlyCost: "$150 - $450+ / month base",
+      databaseAndAuth:
+        "Supabase Pro ($25/mo) with Supavisor connection pooling, Point-in-Time Recovery (PITR), and dedicated compute add-on or AWS RDS PostgreSQL",
+      paymentsAndBilling:
+        "Stripe Billing + Customer Portal + idempotent webhook listeners with dead-letter queue and automated dunning/retry logic",
+      backgroundTasks:
+        "Inngest or Temporal ($20 - $100/mo) for durable step-function workflows, retries, and scheduled jobs with zero lost state",
+      emailAndCommunications:
+        "Resend Pro ($20/mo) or AWS SES with dedicated IP and automated deliverability monitoring",
+      rateLimitingAndCaching:
+        "Upstash Redis ($10 - $50/mo) with sliding-window distributed rate limiting and global session caching",
+      tradeoffsAndLimits: [
+        "Higher fixed operational cost prior to product-market fit",
+        "Requires managing multiple vendor credentials and webhook endpoints",
+      ],
+    },
+    saasDeepening: {
+      tenancyModels: {
+        personalWorkspace: "Single-user SaaS: auth.uid() = user_id. Every record references user_id. Fast to launch, zero team overhead.",
+        teamOrganization: "Collaborative B2B SaaS: organizations + organization_members. Records reference organization_id. Roles: owner, admin, member, billing_admin.",
+      },
+      roleBasedPermissions: [
+        {
+          role: "owner",
+          permissions: ["read", "write", "delete", "manage_members", "manage_billing", "delete_organization"],
+          canManageBilling: true,
+          canInviteMembers: true,
+        },
+        {
+          role: "admin",
+          permissions: ["read", "write", "delete", "manage_members"],
+          canManageBilling: false,
+          canInviteMembers: true,
+        },
+        {
+          role: "member",
+          permissions: ["read", "write"],
+          canManageBilling: false,
+          canInviteMembers: false,
+        },
+        {
+          role: "billing_admin",
+          permissions: ["read", "manage_billing"],
+          canManageBilling: true,
+          canInviteMembers: false,
+        },
+      ],
+      tenantDataIsolationRules: {
+        databasePolicySql:
+          "CREATE POLICY tenant_isolation_policy ON target_table FOR ALL USING (organization_id IN (SELECT org_id FROM organization_members WHERE user_id = auth.uid()));",
+        apiEnforcementRule:
+          "Server Actions and Route Handlers must verify that the authenticated user belongs to the requested organization_id before executing any mutation.",
+        isolationTestPlan: [
+          "Unit Test: Verify RLS policy blocks SELECT queries when auth.uid() is not a member of the organization",
+          "Integration Test: User A creates a record in Org A; User B (in Org B) attempts GET /api/records/[id] -> must return 403 or 404",
+          "Mutation Test: User B attempts POST/PUT/DELETE on Org A record -> must return 403 Forbidden",
+        ],
+      },
+      subscriptionLifecycle: {
+        states: ["trialing", "active", "past_due", "canceled", "unpaid"],
+        dunningPolicy:
+          "On invoice.payment_failed: transition status to past_due, send automated dunning email, grant 3-day grace period before restricting write actions.",
+        quotaEnforcementRule:
+          "Before executing high-resource actions, check active subscription status and compare current usage_records count against plan entitlement limit.",
+      },
+      paymentSecurityRules: [
+        "NEVER trust client-provided price, plan_tier, or payment status. Resolve price strictly on the server from database or billing catalog.",
+        "Verify Stripe/Lemon Squeezy webhook signatures using the endpoint secret before processing events.",
+        "Store event ID in a processed_webhook_events table to guarantee idempotency on retries.",
+      ],
+      operationalRequirements: {
+        auditLogging:
+          "Record every privilege escalation, member invite, role change, and deletion in an immutable audit_logs table.",
+        backgroundQueues:
+          "Use Supabase pg_cron for daily maintenance and Inngest/Temporal for durable asynchronous workflows.",
+        backupAndRecovery:
+          "Configure automated daily PostgreSQL backups with Point-in-Time Recovery (PITR) for mission-critical SaaS data.",
+      },
+    },
   },
 
   "Landing Page": {
@@ -107,47 +310,123 @@ export const PRODUCT_TYPE_PROFILES: Record<ProductType, ProductTypeArchitectureP
     productType: "E-commerce",
     label: "Direct-to-Consumer (DTC) / Online E-commerce Store",
     architecturalSummary:
-      "Transactional storefront and order fulfillment platform featuring product catalog browsing, variant/inventory selection, persistent shopping cart, checkout & payment verification, and order lifecycle tracking.",
+      "Transactional storefront and order fulfillment platform featuring product catalog hierarchies, variant/attribute matrix, real-time search & faceted filtering, inventory reservation concurrency control, persistent shopping cart, zero-trust checkout calculation, idempotent payment webhook reconciliation, and strict order state lifecycle tracking.",
     researchFocusAreas: [
-      "Product catalog structure (physical vs. digital goods, variants like size/color, SKU pricing)",
-      "Shopping cart & checkout flow (guest checkout vs. customer accounts, shipping calculation)",
-      "Payment gateway expectations and order state machine (pending, paid, fulfilled, cancelled)",
-      "Merchandising UX, product filtering, and mobile checkout conversion",
+      "Product catalog structure: categories, variant matrix (size/color/SKU), and attribute definitions",
+      "Search, discovery & merchandising: full-text search, multi-faceted filtering (category, price, availability), and sorting",
+      "Pricing, tax, discounts & promotions: country/currency rules, coupon validation, and server-side total recalculation",
+      "Inventory reservation & concurrency control: atomic decrements and row-level locking (SELECT ... FOR UPDATE) to eliminate overselling",
+      "Checkout & payment reconciliation: guest vs customer accounts, address validation, shipping methods, and cryptographic webhook verification",
+      "Order state machine: pending_payment -> processing -> fulfilled -> delivered -> canceled/refunded/disputed",
+      "Store administration & operations: fulfillment tracking, returns, inventory thresholds, and transactional email notifications",
     ],
     essentialQuestionDimensions: [
-      "Product & Variant Structure: What types of products are sold, and do they have variants (e.g., sizes, colors, digital tiers) or inventory stock limits?",
-      "Checkout & Account Flow: Can shoppers buy via fast guest checkout, or must they create an account first?",
-      "Payment & Fulfillment: How are payments collected (e.g., Stripe/Paystack online checkout vs. pay-on-delivery) and how is shipping/delivery handled?",
-      "Store Management: What order status updates or catalog management controls does the store owner need?",
+      "Target Market, Country & Currency: What primary countries are you selling to, what currency (e.g., USD, EUR, GBP, NGN), and are there specific regional tax/VAT rules?",
+      "Catalog & Product Variants: What types of products are sold (physical vs digital) and do they have multi-attribute variants (e.g., sizes, colors, material, SKU) or stock tracking?",
+      "Checkout Flow & Guest Buying: Can shoppers complete checkout as guests with just email/address, or is customer account creation mandatory?",
+      "Payment Gateway & Delivery Model: Which payment provider will be integrated (e.g., Stripe Checkout, Lemon Squeezy, Paystack, PayPal) and what is the shipping/delivery fulfillment method?",
+      "Inventory & Order Rules: How should low-stock or out-of-stock items behave, and what return/refund policy transitions should be supported?",
     ],
     typicalScreenPatterns: [
-      "Storefront Home & Featured Collections (/)",
-      "Product Catalog Grid with Category/Search Filters (/products)",
-      "Product Detail Page with Variant Selector & Add-to-Cart (/products/[slug])",
-      "Slide-over Cart Drawer & Checkout Flow (/checkout)",
-      "Order Confirmation & Status Lookup (/orders/[id])",
-      "Merchant Catalog & Order Fulfillment Console (/admin/orders)",
+      "Storefront Home with Hero, Value Props, and Featured Collections (/)",
+      "Product Catalog Grid with Category Filter Drawer & Faceted Search (/products)",
+      "Product Detail Page with Multi-Attribute Variant Selector, Gallery & Add-to-Cart (/products/[slug])",
+      "Persistent Slide-over Cart Drawer with Line-Item Quantity Controls",
+      "Multi-Step or One-Page Responsive Checkout with Address & Payment (/checkout)",
+      "Order Confirmation with Itemized Receipt & Real-Time Tracking Link (/orders/[id])",
+      "Customer Account Order History & Address Book (/account/orders)",
+      "Store Admin Order Management, Inventory Levels & Fulfillment Console (/admin/orders)",
     ],
     typicalDataEntities: [
-      "products & product_variants",
-      "categories / collections",
-      "carts & cart_items",
-      "orders & order_items",
-      "customer_profiles / shipping_addresses",
+      "categories (id, name, slug, parent_id, image_url, sort_order)",
+      "products (id, name, slug, description, category_id, base_price_cents, is_published, created_at)",
+      "product_variants (id, product_id, sku, title, price_cents, compare_at_price_cents, inventory_quantity, low_stock_threshold, attributes_json)",
+      "carts & cart_items (id, session_id, user_id, variant_id, quantity, expires_at)",
+      "inventory_reservations (id, variant_id, order_id, quantity, reserved_at, expires_at, status)",
+      "orders (id, order_number, customer_id, customer_email, status, subtotal_cents, tax_cents, shipping_cents, total_cents, currency, shipping_address_json)",
+      "order_items (id, order_id, variant_id, title, unit_price_cents, quantity, total_cents)",
+      "processed_webhook_events (id, event_id, provider, event_type, processed_at)",
+      "coupons (id, code, discount_type, value, min_order_cents, max_uses, uses_count, expires_at)",
     ],
     uxAndConversionPriorities: [
-      "Instant Add-to-Cart feedback and persistent cart state across refreshes",
-      "High-resolution real Unsplash product imagery with responsive gallery layout",
-      "Minimal-step mobile-friendly checkout with inline field validation",
+      "Frictionless Add-to-Cart with instant drawer feedback and zero full-page reloads",
+      "Persistent cart state synced to session storage or Supabase table across browser sessions",
+      "High-resolution real Unsplash imagery with responsive thumbnails and fluid gallery zoom",
+      "Mobile-optimized checkout (360px+) with auto-complete addresses and inline card validation",
+      "Clear stock availability badges ('In Stock', 'Only 3 left', 'Backorder') to drive urgency",
     ],
     securityAndBackendPriorities: [
-      "Server-side price and subtotal calculation (never trust client-submitted prices)",
-      "Atomic inventory decrement and idempotent payment webhook verification",
-      "Supabase RLS separating public catalog reads from private customer order records",
+      "Zero trust for client-submitted prices, discounts, or subtotals: recalculate all totals server-side from product_variants table",
+      "Row-level locking (`SELECT ... FOR UPDATE`) or atomic SQL decrement (`UPDATE product_variants SET inventory_quantity = inventory_quantity - $1 WHERE id = $2 AND inventory_quantity >= $1`) to prevent overselling under high concurrency",
+      "Idempotent payment webhook listener verifying provider signature header and recording event_id in processed_webhook_events before mutating order status",
+      "Never treat frontend success page redirect as payment confirmation; order status changes to 'paid/processing' exclusively upon validated webhook execution",
+      "Supabase Row-Level Security: public read on published products/variants, customer-isolated read/update on orders matching auth.uid() or secure order token",
     ],
     antiBloatGuardrails: [
-      "Do not use generic SaaS 'WorkspaceItem' schemas; model real products, variants, cart items, and orders.",
+      "Never invent fictional placeholder tables (e.g. 'WorkspaceItem'); use clean ecommerce schema: products, product_variants, orders, order_items.",
+      "Do not force mandatory account creation if the user idea or discovery answers prefer fast guest checkout.",
+      "Do not add complex multi-vendor commission splits unless the user explicitly requested a multi-vendor Marketplace.",
     ],
+    ecommerceDeepening: {
+      catalogAndVariants: {
+        categoryHierarchy: "Hierarchical category tree with parent_id and slug for SEO-friendly breadcrumb navigation (/collections/apparel/outerwear).",
+        variantAttributes: ["size", "color", "material", "format", "edition"],
+        skuAndPricingRules: "Each variant has a unique SKU, price_cents integer (preventing IEEE 754 float rounding errors), and optional compare_at_price_cents for discount badges.",
+      },
+      searchAndDiscovery: {
+        filteringDimensions: ["category_slug", "price_range_min_max", "variant_attributes", "in_stock_only", "rating"],
+        sortingOptions: ["featured", "price_asc", "price_desc", "newest", "best_selling"],
+        fullTextSearchEngine: "PostgreSQL pg_trgm and tsvector text search on product title and description.",
+      },
+      pricingAndPromotions: {
+        currencyAndTax: "Prices stored in base integer cents with ISO 4217 currency code. Tax rates applied based on destination shipping address jurisdiction.",
+        discountAndCoupons: "Coupon engine supporting percentage discounts, fixed-amount deductions, minimum cart value thresholds, and global max-use limits.",
+        serverCalculationEnforcement: "The checkout Server Action recalculates: subtotal = sum(variant.price_cents * qty) - coupon_discount + shipping_fee + calculated_tax. Client payload total is completely discarded.",
+      },
+      inventoryAndConcurrency: {
+        concurrencyProtectionSql: "UPDATE product_variants SET inventory_quantity = inventory_quantity - $1, updated_at = NOW() WHERE id = $2 AND inventory_quantity >= $1 RETURNING id, inventory_quantity;",
+        reservationTtlMinutes: 15,
+        lowStockThresholdHandling: "When inventory_quantity <= low_stock_threshold, display 'Only X items left' warning in UI and send merchant replenishment notification.",
+        oversellingPreventionRule: "If atomic decrement returns 0 rows affected, reject the checkout transaction immediately with 'INSUFFICIENT_STOCK' error and prompt shopper to adjust cart.",
+      },
+      cartAndCheckout: {
+        guestVsAccountPolicy: "Support guest checkout with customer_email + shipping_address. If customer creates an account post-purchase, attach previous guest orders via verified email.",
+        shippingCalculation: "Tiered shipping calculation (e.g., standard flat rate vs express) or live carrier quote API based on destination postal code.",
+        sessionCartPersistence: "Anonymous carts stored in localStorage with periodic sync to Supabase carts table; merged automatically upon customer login.",
+      },
+      orderStateMachine: {
+        states: ["pending_payment", "processing", "shipped", "delivered", "canceled", "refunded", "disputed"],
+        stateTransitions: [
+          { from: "draft", to: "pending_payment", trigger: "CHECKOUT_INITIATED", stockAction: "RESERVE" },
+          { from: "pending_payment", to: "processing", trigger: "PAYMENT_WEBHOOK_VERIFIED", stockAction: "CONFIRM_DECREMENT" },
+          { from: "pending_payment", to: "canceled", trigger: "RESERVATION_EXPIRED_OR_FAILED", stockAction: "RESTORE" },
+          { from: "processing", to: "shipped", trigger: "CARRIER_DISPATCHED", stockAction: "NONE" },
+          { from: "shipped", to: "delivered", trigger: "CARRIER_DELIVERED", stockAction: "NONE" },
+          { from: "processing", to: "refunded", trigger: "ADMIN_REFUND_ISSUED", stockAction: "RESTORE" },
+          { from: "delivered", to: "refunded", trigger: "RETURN_RECEIVED_AND_RESTOCKED", stockAction: "RESTORE" },
+          { from: "processing", to: "disputed", trigger: "PAYMENT_CHARGEBACK_OPENED", stockAction: "NONE" },
+        ],
+      },
+      paymentReconciliation: {
+        zeroTrustValidationRule: "Frontend redirect parameters (e.g. ?session_id=cs_test_xxx&success=true) are cosmetic only. Order state MUST remain pending_payment until provider webhook fires with cryptographic signature.",
+        webhookSignatureVerification: "Stripe-Signature or Lemon Squeezy X-Signature header verified strictly using raw request body buffer and server-only endpoint secret.",
+        idempotencyTableSql: "INSERT INTO processed_webhook_events (event_id, provider, event_type, processed_at) VALUES ($1, $2, $3, NOW()) ON CONFLICT (event_id) DO NOTHING RETURNING id;",
+        failureAndDisputePolicy: "On charge.failed or payment_intent.payment_failed, update order status to payment_failed and send recovery email. On charge.dispute.created, freeze order fulfillment and notify merchant.",
+      },
+      fulfillmentAndOperations: {
+        fulfillmentWorkflow: "Admin scans order items, marks fulfilled with carrier name + tracking number, triggering automated customer dispatch email.",
+        staffRolePermissions: [
+          { role: "store_admin", capabilities: ["manage_catalog", "manage_orders", "issue_refunds", "configure_shipping", "manage_staff"] },
+          { role: "warehouse_fulfillment", capabilities: ["view_orders", "print_packing_slips", "update_tracking_numbers", "adjust_inventory"] },
+          { role: "support_agent", capabilities: ["view_orders", "resend_receipts", "initiate_return_requests"] },
+        ],
+        transactionalNotifications: [
+          "Order Confirmation & Receipt with itemized breakdown",
+          "Order Shipped Notification with carrier tracking URL",
+          "Out of Stock / Cancellation Alert with refund confirmation",
+        ],
+      },
+    },
   },
 
   "Marketplace": {
@@ -402,6 +681,50 @@ export const PRODUCT_TYPE_PROFILES: Record<ProductType, ProductTypeArchitectureP
     ],
   },
 
+  "Business Website": {
+    productType: "Business Website",
+    label: "Business, Agency & Service Showcase Website",
+    architecturalSummary:
+      "Trust-first multi-page business presence featuring service/solution pages, portfolio/case studies, interactive quote/consultation booking stored in Supabase, client testimonials, and technical/local SEO.",
+    researchFocusAreas: [
+      "Core services offered, target client profile, and trust/authority signals",
+      "Primary conversion mechanism (consultation booking, custom quote request, or contact inquiry)",
+      "Portfolio, case studies, pricing packages, and FAQ structure",
+      "Admin/CMS needs for updating services, testimonials, and managing incoming client leads",
+    ],
+    essentialQuestionDimensions: [
+      "Services & Value Proposition: What are the main services, packages, or solutions your business offers to clients?",
+      "Client Lead & Booking Flow: How should prospective clients take action (e.g., book a consultation slot, request a custom quote, or submit a contact inquiry)?",
+      "Trust & Social Proof Sections: Which credibility elements should be featured (case studies/portfolio, client testimonials, team credentials, pricing tiers, or FAQs)?",
+      "Lead Management & Updates: Do you want a protected admin dashboard to view incoming client inquiries and update site content?",
+    ],
+    typicalScreenPatterns: [
+      "Home & Brand Authority Showcase (/)",
+      "Services, Packages & Solutions Breakdown (/services)",
+      "Case Studies / Portfolio & Client Testimonials (/work)",
+      "Interactive Consultation Booking & Quote Request (/contact)",
+      "Admin Lead Inbox & Content Manager (/admin/inquiries)",
+    ],
+    typicalDataEntities: [
+      "service_inquiries / bookings (client_name, email, service_needed, budget, preferred_date, status)",
+      "services / packages (title, summary, deliverables, price_range)",
+      "case_studies / testimonials (client_name, outcome_metric, quote, featured)",
+    ],
+    uxAndConversionPriorities: [
+      "Clear service positioning and visible CTA on every page (360px+ mobile to desktop)",
+      "Validated inquiry/booking forms with instant confirmation feedback",
+      "Fast page loads, structured JSON-LD schema, and OpenGraph metadata for SEO",
+    ],
+    securityAndBackendPriorities: [
+      "Supabase RLS allowing public INSERT on service_inquiries while restricting SELECT/UPDATE to authenticated business admins",
+      "Server-side Zod validation and spam/rate-limit protection on contact and booking forms",
+    ],
+    antiBloatGuardrails: [
+      "Do not force customer login just to view services or submit a business inquiry.",
+      "Keep architecture focused on credibility, service clarity, lead capture, and simple admin management.",
+    ],
+  },
+
   "Other": {
     productType: "Other",
     label: "Custom Digital Product Architecture",
@@ -446,8 +769,12 @@ export function getProductTypeProfile(
   if (!productType) {
     return PRODUCT_TYPE_PROFILES["SaaS"];
   }
+  const clean = productType.trim().toLowerCase();
+  if (clean.includes("business") || clean.includes("agency") || clean.includes("corporate")) {
+    return PRODUCT_TYPE_PROFILES["Business Website"];
+  }
   const normalized = Object.keys(PRODUCT_TYPE_PROFILES).find(
-    (k) => k.toLowerCase() === productType.trim().toLowerCase()
+    (k) => k.toLowerCase() === clean
   ) as ProductType | undefined;
 
   return normalized

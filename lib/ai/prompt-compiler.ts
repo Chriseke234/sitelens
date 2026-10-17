@@ -11,7 +11,10 @@ import {
   PromptSection,
   PromptQualityStatus,
 } from "@/types";
-import { optimizePromptSections } from "./prompt-optimizer";
+import {
+  optimizePromptSections,
+  validateTaskQualityControls,
+} from "./prompt-optimizer";
 
 /**
  * Returns specialized system directives tailored for the user's external coding agent.
@@ -37,6 +40,7 @@ export function getAgentDirectives(agent: CodingAgentProfile): {
           "Use Lucide SVG icons exclusively; never output raw emojis.",
           "Avoid mixed frontend/backend logic; keep Server Actions separated from Client Components.",
           "Enforce Supabase Row-Level Security (RLS) on all database access.",
+          "Follow the Shared Product Development Standard: Distinguish between intended, implemented, and verified states. Never report a feature as complete until verified with tests or typechecks.",
           "Verify implementation by running 'npm run typecheck' and confirming 0 errors.",
         ],
       };
@@ -49,6 +53,7 @@ export function getAgentDirectives(agent: CodingAgentProfile): {
         executionRules: [
           "Explore the relevant workspace files first.",
           "Keep edits tightly bounded to the specified files.",
+          "Follow the Shared Product Development Standard: Differentiate between intended, implemented, and verified states.",
           "Write modular TypeScript with comprehensive error handling.",
           "Execute local validation commands after completing changes.",
         ],
@@ -63,6 +68,7 @@ export function getAgentDirectives(agent: CodingAgentProfile): {
         executionRules: [
           "Respect existing directory layouts and component exports.",
           "Use TypeScript strict mode with explicit return types.",
+          "Follow the Shared Product Development Standard: Never treat planned features as implemented without code evidence.",
           "Implement defensive error states and loading skeletons for all async actions.",
         ],
       };
@@ -77,6 +83,7 @@ export function getAgentDirectives(agent: CodingAgentProfile): {
           "You are a Principal Software Engineer implementing a targeted production task within a modern Next.js and Supabase architecture.",
         executionRules: [
           "Follow the provided requirements, change boundaries, and acceptance criteria exactly.",
+          "Follow the Shared Product Development Standard: Distinguish intended requirements from verified functionality.",
           "Implement zero-trust security and input validation on all routes.",
           "Deliver complete, working code without placeholder stubs.",
         ],
@@ -154,13 +161,16 @@ export async function compileTaskPrompt(
   const qualityStatus = evaluatePromptQuality(
     task,
     contextPack,
-    optimizedSections
+    optimizedSections,
+    resolvedProductType,
+    qnas
   );
   const readinessScore = calculateReadinessScore(
     task,
     contextPack,
     qualityStatus,
-    qnas
+    qnas,
+    resolvedProductType
   );
 
   // Format full Markdown
@@ -402,6 +412,36 @@ function buildGroundedSectionsFromSpec(
       ? task.acceptance_criteria.map((a, i) => `${i + 1}. ${a}`).join("\n")
       : `1. Feature executes "${task.title}" satisfying user value: "${task.user_value}"\n2. Clean TypeScript with 0 compilation errors.\n3. Responsive layout verified across mobile (360px+), tablet, and desktop.`;
 
+  const hasRepoContext = Boolean(
+    contextPack?.repository?.detectedStack ||
+    contextPack?.repository?.existingCapabilitiesToPreserve?.length
+  );
+
+  const repoInspectionDirective = !hasRepoContext
+    ? `\n\n[MANDATORY REPOSITORY INSPECTION PROTOCOL]:\nTarget repository access has not been pre-indexed. You MUST inspect the workspace files, directory layout, package.json dependencies, and Supabase client setup first, and report what exists before creating or editing files. Do not invent arbitrary file paths.`
+    : "";
+
+  const isHighRisk =
+    task.complexity === "LARGE" ||
+    task.task_type === "DATABASE" ||
+    task.task_type === "AUTH" ||
+    task.task_type === "SECURITY";
+
+  const stagedProtocol = isHighRisk
+    ? `\n\n### STAGED EXECUTION PROTOCOL (High-Risk Architectural Change):\nStage 1: Investigate & Inspect -> Examine existing workspace files, types, and dependencies before modifying code.\nStage 2: Architectural Plan -> Declare the exact file diffs and schema modifications matching MUST/MAY CHANGE boundaries.\nStage 3: Implement & Guard -> Write clean, production-ready TypeScript following zero-trust security and responsive guidelines.\nStage 4: Test & Verify -> Execute 'npx tsc --noEmit' and run verification test cases against acceptance criteria.`
+    : "";
+
+  const securityGuidelines = [
+    "1. Enforce server-side authentication and authorization on all protected routes and mutations.",
+    productTypeName === "SaaS"
+      ? "2. Enforce Supabase Row-Level Security (RLS) with strict tenant isolation (auth.uid() = user_id or organization_id membership subquery). Never trust client-submitted roles or prices. Automated negative test must assert 403 on cross-tenant access."
+      : productTypeName === "E-commerce"
+      ? "2. Enforce atomic inventory decrements (or row locking) to prevent overselling under high concurrency. Recalculate all subtotals and discounts server-side. Payment webhooks must verify HMAC signatures and enforce idempotency via processed_webhook_events."
+      : "2. Verify resource ownership server-side via Supabase Row-Level Security (RLS) to prevent IDOR.",
+    "3. Validate and sanitize all incoming inputs with strict Zod schema validation.",
+    "4. Never expose service-role keys or private credentials to the client bundle.",
+  ].join("\n");
+
   return [
     {
       key: "ROLE",
@@ -445,10 +485,11 @@ function buildGroundedSectionsFromSpec(
       title: "4. CURRENT STATE & PRESERVATION RULES",
       purpose: "Ensures existing working systems are not broken or regressed.",
       content:
-        contextPack?.repository?.existingCapabilitiesToPreserve &&
+        (contextPack?.repository?.existingCapabilitiesToPreserve &&
         contextPack.repository.existingCapabilitiesToPreserve.length > 0
           ? `Existing Capabilities Detected in Codebase:\n${contextPack.repository.existingCapabilitiesToPreserve.map((c) => `- ${c}`).join("\n")}\n\nPreservation Directive: Extend or build upon these existing patterns. DO NOT recreate or introduce conflicting secondary implementations.`
-          : `Active ${projectName} baseline (${productTypeName}).\nPreservation Rule: Do not remove or alter existing working features, routes, or database configurations outside the scope of "${task.title}".`,
+          : `Active ${projectName} baseline (${productTypeName}).\nPreservation Rule: Do not remove or alter existing working features, routes, or database configurations outside the scope of "${task.title}".`) +
+        repoInspectionDirective,
     },
     {
       key: "RELEVANT_CONTEXT",
@@ -475,6 +516,7 @@ function buildGroundedSectionsFromSpec(
         `3. Provide complete UI states: Empty state with clear action, Loading skeleton, Error boundary with retry, and real-time feedback.`,
         `4. Ensure fluid responsiveness across mobile viewports (360px+), tablet (768px+), and desktop (1280px+).`,
         `5. Maintain strict separation between frontend UI components and backend Supabase data access.`,
+        stagedProtocol,
       ]
         .filter(Boolean)
         .join("\n"),
@@ -489,7 +531,7 @@ function buildGroundedSectionsFromSpec(
       key: "SECURITY",
       title: "8. SECURITY & DATA INTEGRITY",
       purpose: "Enforces data safety, authorization, and input validation.",
-      content: `1. Enforce server-side authentication and authorization on all protected routes and mutations.\n2. Verify resource ownership server-side via Supabase Row-Level Security (RLS) to prevent IDOR.\n3. Validate and sanitize all incoming inputs with strict schema validation.\n4. Never expose service-role keys or private credentials to the client bundle.`,
+      content: securityGuidelines,
     },
     {
       key: "EDGE_CASES",
@@ -524,10 +566,22 @@ function buildGroundedSectionsFromSpec(
 function evaluatePromptQuality(
   task: AigenstraTask,
   contextPack?: ContextPack | null,
-  sections?: PromptSection[]
+  sections?: PromptSection[],
+  productType: string = "SaaS",
+  qnas: DiscoveryQnA[] = []
 ): PromptQualityStatus {
   if (!task.title || !task.purpose) {
     return "NOT_READY";
+  }
+
+  const qc = validateTaskQualityControls(
+    task,
+    productType,
+    qnas.map((q) => ({ question: q.question, answer: q.answer || "" }))
+  );
+
+  if (!qc.isReadyForPromptCompilation) {
+    return "NEEDS_REVIEW";
   }
 
   if (task.readiness === "BLOCKED" || task.readiness === "NEEDS_DECISION") {
@@ -542,25 +596,26 @@ function evaluatePromptQuality(
 }
 
 /**
- * Computes an overall readiness score (0–100%).
+ * Computes an overall readiness score (0–100%) grounded in deterministic quality controls.
  */
 function calculateReadinessScore(
   task: AigenstraTask,
   contextPack?: ContextPack | null,
   status?: PromptQualityStatus,
-  qnas: DiscoveryQnA[] = []
+  qnas: DiscoveryQnA[] = [],
+  productType: string = "SaaS"
 ): number {
-  let score = 50;
+  const qc = validateTaskQualityControls(
+    task,
+    productType,
+    qnas.map((q) => ({ question: q.question, answer: q.answer || "" }))
+  );
 
-  if (task.acceptance_criteria && task.acceptance_criteria.length > 0) score += 15;
-  if (task.change_boundaries?.mustChange?.length > 0) score += 15;
-  if (contextPack && contextPack.includedItems?.length > 0) score += 10;
-  if (qnas.some((q) => q.answer && q.answer.trim().length > 0)) score += 10;
-
+  let score = qc.score;
   if (status === "NEEDS_REVIEW") score = Math.min(score, 65);
   if (status === "NOT_READY") score = Math.min(score, 40);
 
-  return Math.min(100, score);
+  return Math.min(100, Math.max(20, score));
 }
 
 /**

@@ -145,6 +145,10 @@ export function UnifiedStudioView({
 
     // 2. Real-Time AI Research Summary
     if (loadedResearch) {
+      const marketSummaryText =
+        loadedResearch.market_summary || loadedResearch.market_context || "";
+      const userContextText = loadedResearch.user_context || "";
+
       const recFeatures = Array.isArray(loadedResearch.recommended_features)
         ? loadedResearch.recommended_features
             .slice(0, 4)
@@ -153,11 +157,16 @@ export function UnifiedStudioView({
                 `• **${f.title || "Capability"}**: ${f.rationale || ""}`
             )
             .join("\n")
+        : Array.isArray(loadedResearch.opportunities)
+        ? loadedResearch.opportunities
+            .slice(0, 4)
+            .map((op: string) => `• ${op}`)
+            .join("\n")
         : "";
 
       const keyNeeds = Array.isArray(loadedResearch.user_needs)
         ? loadedResearch.user_needs
-            .slice(0, 3)
+            .slice(0, 4)
             .map((n: string) => `• ${n}`)
             .join("\n")
         : "";
@@ -167,12 +176,15 @@ export function UnifiedStudioView({
         sender: "assistant",
         kind: "research",
         text: [
-          `**Real-Time AI Research Findings (${project.product_type || "Product"})**`,
-          loadedResearch.market_summary
-            ? `\n**Domain & Market Analysis:**\n${loadedResearch.market_summary}`
+          `**Adaptive AI Research Findings (${project.product_type || "Product"} Playbook)**`,
+          marketSummaryText
+            ? `\n**Domain & Architecture Analysis:**\n${marketSummaryText}`
+            : null,
+          userContextText
+            ? `\n**Target User & Workflow Guidance:**\n${userContextText}`
             : null,
           recFeatures
-            ? `\n**Recommended ${project.product_type || "Product"} Architecture Capabilities:**\n${recFeatures}`
+            ? `\n**Essential ${project.product_type || "Product"} Capabilities:**\n${recFeatures}`
             : null,
           keyNeeds ? `\n**Core User Needs Identified:**\n${keyNeeds}` : null,
         ]
@@ -783,18 +795,27 @@ export function UnifiedStudioView({
               currentUnansweredQuestion &&
               Array.isArray(currentUnansweredQuestion.suggested_options) &&
               currentUnansweredQuestion.suggested_options.length > 0 && (
-                <div className="border-t-2 border-[#080808] bg-[#F8F6EC] px-4 py-3 space-y-2">
-                  <div className="flex items-center justify-between">
+                <div className="border-t-2 border-[#080808] bg-[#F8F6EC] px-4 py-3 space-y-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-[10px] font-black uppercase text-[#080808]/75">
                       Researched Options for Question {answeredCount + 1} of{" "}
-                      {totalQuestions} (Click to select or type below):
+                      {totalQuestions} (Click an option, use AI Recommend, or type below):
                     </span>
-                    {currentUnansweredQuestion.default_recommendation && (
-                      <span className="border border-[#080808] bg-[#B7FF6A] px-1.5 py-0.5 text-[9px] font-black uppercase text-[#080808]">
-                        Recommended:{" "}
-                        {currentUnansweredQuestion.default_recommendation}
-                      </span>
-                    )}
+                    <button
+                      type="button"
+                      disabled={isSending || isSynthesizingProcess2}
+                      onClick={() =>
+                        submitDiscoveryAnswer(
+                          currentUnansweredQuestion.default_recommendation ||
+                            currentUnansweredQuestion.suggested_options?.[0] ||
+                            ""
+                        )
+                      }
+                      className="inline-flex items-center gap-1.5 border-2 border-[#080808] bg-[#B7FF6A] px-2.5 py-1 text-[10px] font-black uppercase text-[#080808] shadow-[2px_2px_0px_#080808] hover:bg-[#FFE500] active:translate-y-0.5 disabled:opacity-50 transition-all"
+                    >
+                      <Sparkles className="h-3 w-3 stroke-[2.5]" />
+                      <span>AI Recommend for Me (Best Practice)</span>
+                    </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {currentUnansweredQuestion.suggested_options.map(
@@ -876,33 +897,54 @@ export function UnifiedStudioView({
                       Domain & Architecture Summary
                     </div>
                     <p className="font-medium text-[#080808]/85 leading-relaxed">
-                      {researchDoc.market_summary}
+                      {researchDoc.market_summary || researchDoc.market_context}
                     </p>
                   </div>
 
                   {Array.isArray(researchDoc.recommended_features) &&
-                    researchDoc.recommended_features.length > 0 && (
+                  researchDoc.recommended_features.length > 0 ? (
+                    <div className="border border-[#080808] bg-[#F8F6EC] p-3 space-y-1.5">
+                      <div className="text-[10px] font-black uppercase text-[#080808]/60">
+                        Researched {project.product_type} Capabilities
+                      </div>
+                      <ul className="space-y-1.5">
+                        {researchDoc.recommended_features
+                          .slice(0, 4)
+                          .map((feat: any, i: number) => (
+                            <li
+                              key={i}
+                              className="text-[11px] font-medium text-[#080808] border-l-2 border-[#080808] pl-2"
+                            >
+                              <strong className="font-black">
+                                {feat.title || "Capability"}:
+                              </strong>{" "}
+                              {feat.rationale}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    Array.isArray(researchDoc.opportunities) &&
+                    researchDoc.opportunities.length > 0 && (
                       <div className="border border-[#080808] bg-[#F8F6EC] p-3 space-y-1.5">
                         <div className="text-[10px] font-black uppercase text-[#080808]/60">
-                          Researched {project.product_type} Capabilities
+                          Key {project.product_type} Opportunities
                         </div>
                         <ul className="space-y-1.5">
-                          {researchDoc.recommended_features
+                          {researchDoc.opportunities
                             .slice(0, 4)
-                            .map((feat: any, i: number) => (
+                            .map((op: string, i: number) => (
                               <li
                                 key={i}
                                 className="text-[11px] font-medium text-[#080808] border-l-2 border-[#080808] pl-2"
                               >
-                                <strong className="font-black">
-                                  {feat.title || "Capability"}:
-                                </strong>{" "}
-                                {feat.rationale}
+                                {op}
                               </li>
                             ))}
                         </ul>
                       </div>
-                    )}
+                    )
+                  )}
 
                   {Array.isArray(researchDoc.risks) &&
                     researchDoc.risks.length > 0 && (
@@ -913,8 +955,17 @@ export function UnifiedStudioView({
                         <ul className="space-y-1 text-[11px] font-medium text-[#080808]/85">
                           {researchDoc.risks
                             .slice(0, 3)
-                            .map((risk: string, i: number) => (
-                              <li key={i}>• {risk}</li>
+                            .map((riskItem: any, i: number) => (
+                              <li key={i}>
+                                •{" "}
+                                {typeof riskItem === "string"
+                                  ? riskItem
+                                  : `${riskItem.risk}${
+                                      riskItem.mitigation
+                                        ? ` — Mitigation: ${riskItem.mitigation}`
+                                        : ""
+                                    }`}
+                              </li>
                             ))}
                         </ul>
                       </div>
@@ -1005,7 +1056,7 @@ export function UnifiedStudioView({
       {/* PROCESS 2: AGENT PROMPTS & WIREFRAME (Strictly rendered ONLY when isDiscoveryComplete === true) */}
       {isDiscoveryComplete && activeMode === "prompts" && (
         <div className="space-y-6">
-          {/* Coding Agent Profile & Task Selector Bar */}
+          {/* Coding Agent Profile & From-Scratch-to-Production Step Bar */}
           <div className="border-[3px] border-[#080808] bg-white p-4 shadow-[5px_5px_0px_#080808] space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-[#080808] pb-3">
               <div className="flex items-center gap-2">
@@ -1045,12 +1096,60 @@ export function UnifiedStudioView({
               </div>
             </div>
 
+            {/* Vibecoder From-Scratch-to-Production Step Sequence Bar */}
+            {tasks.length > 0 && (
+              <div className="border-2 border-[#080808] bg-[#F8F6EC] p-3 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-[#080808]">
+                    <Compass className="h-3.5 w-3.5 stroke-[2.5]" />
+                    <span>
+                      From-Scratch-to-Production Build Order ({tasks.length} Steps)
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-[#080808]/70">
+                    Run each step in order inside {selectedAgent} to build {project.name} with zero token waste
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+                  {tasks.map((t, idx) => {
+                    const isSelected = t.id === (selectedTaskId || tasks[0]?.id);
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        disabled={isCompiling}
+                        onClick={() => handleSelectTask(t.id)}
+                        className={`flex flex-col items-start justify-between border-2 border-[#080808] p-2.5 text-left transition-all ${
+                          isSelected
+                            ? "bg-[#FFE500] text-[#080808] shadow-[2.5px_2.5px_0px_#080808] -translate-y-0.5"
+                            : "bg-white text-[#080808] hover:bg-[#FFE500]/30"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full gap-1 mb-1">
+                          <span className="border border-[#080808] bg-[#080808] px-1.5 py-0.5 text-[9px] font-black uppercase text-[#FFE500]">
+                            Step {idx + 1}
+                          </span>
+                          <span className="text-[9px] font-black uppercase text-[#080808]/65">
+                            {t.task_type}
+                          </span>
+                        </div>
+                        <div className="text-[11px] font-black uppercase leading-snug line-clamp-2">
+                          {t.title.replace(/^Step\s+\d+\s+of\s+\d+:\s*/i, "")}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Task Selector & Prompt Actions */}
             {tasks.length > 0 && (
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   <span className="text-xs font-black uppercase text-[#080808] shrink-0">
-                    Implementation Task ({tasks.length}):
+                    Active Step ({tasks.findIndex((t) => t.id === (selectedTaskId || tasks[0]?.id)) + 1} of {tasks.length}):
                   </span>
                   <select
                     value={selectedTaskId || ""}
@@ -1059,7 +1158,7 @@ export function UnifiedStudioView({
                   >
                     {tasks.map((t, idx) => (
                       <option key={t.id} value={t.id}>
-                        {idx + 1}. {t.title} ({t.complexity || "MEDIUM"})
+                        Step {idx + 1}: {t.title} ({t.complexity || "MEDIUM"})
                       </option>
                     ))}
                   </select>

@@ -200,3 +200,191 @@ export function optimizePromptSections(
     },
   };
 }
+
+export interface QualityControlFinding {
+  code: string;
+  severity: "ERROR" | "WARNING" | "INFO";
+  category:
+    | "CONTRADICTION"
+    | "SCOPE_BLOAT"
+    | "SECURITY_OMISSION"
+    | "CONCURRENCY"
+    | "ACCEPTANCE_CRITERIA"
+    | "ANTI_FABRICATION";
+  message: string;
+  recommendation: string;
+}
+
+export interface TaskQualityReport {
+  taskId: string;
+  taskTitle: string;
+  isReadyForPromptCompilation: boolean;
+  score: number; // 0 - 100
+  findings: QualityControlFinding[];
+}
+
+/**
+ * Deterministic quality control engine for Aigenstra tasks.
+ * Validates against scope bloat, contradictory decisions, missing security/concurrency rules,
+ * unverified acceptance criteria, and fabricated test claims.
+ */
+export function validateTaskQualityControls(
+  task: {
+    id: string;
+    title: string;
+    task_type: string;
+    complexity?: string;
+    acceptance_criteria?: string[];
+    change_boundaries?: ChangeBoundaries;
+  },
+  productType: string = "SaaS",
+  confirmedDecisions: Array<{ question: string; answer: string }> = []
+): TaskQualityReport {
+  const findings: QualityControlFinding[] = [];
+  const criteria = task.acceptance_criteria || [];
+
+  // 1. Acceptance Criteria Validation
+  if (criteria.length < 2) {
+    findings.push({
+      code: "QC_MINIMAL_CRITERIA",
+      severity: "ERROR",
+      category: "ACCEPTANCE_CRITERIA",
+      message: "Task has fewer than 2 verifiable acceptance criteria.",
+      recommendation: "Define at least 2 explicit, verifiable test or typecheck outcomes.",
+    });
+  }
+
+  const vaguePatterns = ["looks good", "make it work", "test everything", "handle etc", "standard stuff"];
+  for (const c of criteria) {
+    if (vaguePatterns.some((vp) => c.toLowerCase().includes(vp))) {
+      findings.push({
+        code: "QC_AMBIGUOUS_CRITERIA",
+        severity: "WARNING",
+        category: "ACCEPTANCE_CRITERIA",
+        message: `Criterion contains ambiguous phrasing: "${c}"`,
+        recommendation: "Replace with deterministic verification steps (e.g., 'Assert HTTP 403 on invalid session').",
+      });
+    }
+  }
+
+  // 2. Anti-Fabrication Test Verification
+  const hasExecutableVerification = criteria.some((c) => {
+    const text = c.toLowerCase();
+    return (
+      text.includes("typecheck") ||
+      text.includes("tsc") ||
+      text.includes("npm run build") ||
+      text.includes("403") ||
+      text.includes("rls") ||
+      text.includes("test") ||
+      text.includes("zod")
+    );
+  });
+
+  if (!hasExecutableVerification) {
+    findings.push({
+      code: "QC_NO_VERIFIABLE_EVIDENCE",
+      severity: "ERROR",
+      category: "ANTI_FABRICATION",
+      message: "No executable verification commands (typecheck, lint, or test assertion) found in acceptance criteria.",
+      recommendation: "Add 'npm run typecheck passes with 0 errors' or concrete HTTP/RLS test expectations.",
+    });
+  }
+
+  // 3. SaaS Tenant Isolation & Security
+  if (productType === "SaaS" && (task.task_type === "DATABASE" || task.task_type === "AUTH")) {
+    const mentionsIsolation = criteria.some((c) => {
+      const text = c.toLowerCase();
+      return text.includes("rls") || text.includes("isolation") || text.includes("row-level security") || text.includes("tenant");
+    });
+
+    if (!mentionsIsolation) {
+      findings.push({
+        code: "QC_SAAS_ISOLATION_OMISSION",
+        severity: "ERROR",
+        category: "SECURITY_OMISSION",
+        message: "SaaS database/auth task does not specify Row-Level Security (RLS) tenant isolation.",
+        recommendation: "Explicitly require RLS policies and negative isolation test cases asserting 403 on cross-tenant access.",
+      });
+    }
+  }
+
+  // 4. E-commerce Concurrency & Zero-Trust Checkout
+  if (productType === "E-commerce" && (task.task_type === "DATABASE" || task.title.toLowerCase().includes("checkout"))) {
+    const criteriaText = criteria.join(" ").toLowerCase();
+    const mentionsConcurrency =
+      criteriaText.includes("concurrency") ||
+      criteriaText.includes("atomic") ||
+      criteriaText.includes("inventory_quantity >=") ||
+      criteriaText.includes("overselling") ||
+      criteriaText.includes("lock");
+
+    if (!mentionsConcurrency) {
+      findings.push({
+        code: "QC_ECOM_CONCURRENCY_OMISSION",
+        severity: "WARNING",
+        category: "CONCURRENCY",
+        message: "E-commerce checkout/schema task does not specify concurrency protection against overselling.",
+        recommendation: "Enforce atomic inventory decrements (UPDATE ... WHERE inventory_quantity >= requested) or row locking.",
+      });
+    }
+
+    if (task.title.toLowerCase().includes("checkout")) {
+      const mentionsZeroTrust =
+        criteriaText.includes("server") || criteriaText.includes("discard") || criteriaText.includes("recalculate");
+      if (!mentionsZeroTrust) {
+        findings.push({
+          code: "QC_ECOM_ZERO_TRUST_PRICING",
+          severity: "ERROR",
+          category: "SECURITY_OMISSION",
+          message: "Checkout task does not specify server-side price recalculation.",
+          recommendation: "Mandate that subtotals and discounts are calculated strictly on the server from the product table.",
+        });
+      }
+    }
+  }
+
+  // 5. Semantic Contradiction Check with Confirmed Decisions
+  for (const decision of confirmedDecisions) {
+    const qLower = decision.question.toLowerCase();
+    const aLower = decision.answer.toLowerCase();
+
+    // Guest checkout vs mandatory auth
+    if (aLower.includes("guest checkout") && task.title.toLowerCase().includes("authentication") && task.task_type === "AUTH") {
+      const criteriaText = criteria.join(" ").toLowerCase();
+      if (criteriaText.includes("force login before cart") || criteriaText.includes("block guest")) {
+        findings.push({
+          code: "QC_CONTRADICTORY_DECISION_AUTH",
+          severity: "ERROR",
+          category: "CONTRADICTION",
+          message: `Task forces login but user confirmed: "${decision.question}: ${decision.answer}".`,
+          recommendation: "Support optional guest checkout with email capture rather than blocking anonymous carts.",
+        });
+      }
+    }
+
+    // Solo personal SaaS vs enterprise multi-tenant team bloat
+    if (aLower.includes("personal") && !aLower.includes("team") && task.title.toLowerCase().includes("organization member")) {
+      findings.push({
+        code: "QC_SCOPE_BLOAT_TEAM_RBAC",
+        severity: "WARNING",
+        category: "SCOPE_BLOAT",
+        message: `Task introduces team organization members, but user specified personal solo product.`,
+        recommendation: "Use single-user auth.uid() scoping to prevent unnecessary B2B multi-tenant complexity.",
+      });
+    }
+  }
+
+  const errorCount = findings.filter((f) => f.severity === "ERROR").length;
+  const warningCount = findings.filter((f) => f.severity === "WARNING").length;
+  const score = Math.max(0, 100 - errorCount * 30 - warningCount * 10);
+
+  return {
+    taskId: task.id,
+    taskTitle: task.title,
+    isReadyForPromptCompilation: errorCount === 0,
+    score,
+    findings,
+  };
+}
+

@@ -1,6 +1,10 @@
 import { getGeminiApiKey } from "./client";
 import { getProductTypeProfile } from "./product-type-profiles";
 import {
+  runBuiltInResearchAgent,
+  runBuiltInDiscoveryAgent,
+} from "./aigenstra-local-agent";
+import {
   UserPersona,
   FunctionalRequirement,
   NonFunctionalRequirement,
@@ -23,8 +27,8 @@ export interface ResearchContextInput {
 
 /**
  * Step 1: Generate Real-Time Research Synthesis Document BEFORE asking discovery questions.
- * Tailored strictly to the user's Product Type (SaaS, Landing Page, E-commerce, Web App, etc.)
- * and raw product concept. Zero fictional fallback data.
+ * Hybrid Architecture: Uses Gemini API when configured and reachable; automatically switches
+ * to Aigenstra's Built-In Adaptive Research Agent when Gemini API is missing or offline.
  */
 export async function generateResearchDocument(
   projectName: string,
@@ -40,8 +44,12 @@ export async function generateResearchDocument(
 ) {
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    throw new Error(
-      "Gemini API key is required for real-time product research. Fictional fallback data is disabled."
+    return runBuiltInResearchAgent(
+      projectName,
+      productDescription,
+      qnaContext,
+      productType,
+      projectDetails
     );
   }
 
@@ -120,40 +128,60 @@ Return a valid JSON object matching this exact schema:
 }
 `;
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          response_mime_type: "application/json",
-          temperature: 0.2,
-        },
-      }),
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: {
+            response_mime_type: "application/json",
+            temperature: 0.2,
+          },
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      return runBuiltInResearchAgent(
+        projectName,
+        productDescription,
+        qnaContext,
+        productType,
+        projectDetails
+      );
     }
-  );
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "Unknown AI error");
-    throw new Error(`Real-time research synthesis failed (HTTP ${res.status}): ${errText.slice(0, 150)}`);
+    const resData = await res.json();
+    const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) {
+      return runBuiltInResearchAgent(
+        projectName,
+        productDescription,
+        qnaContext,
+        productType,
+        projectDetails
+      );
+    }
+
+    return JSON.parse(rawText);
+  } catch {
+    return runBuiltInResearchAgent(
+      projectName,
+      productDescription,
+      qnaContext,
+      productType,
+      projectDetails
+    );
   }
-
-  const resData = await res.json();
-  const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) {
-    throw new Error("AI Research Agent returned an empty response.");
-  }
-
-  return JSON.parse(rawText);
 }
 
 /**
  * Step 2: Generate Adaptive Discovery Questions AFTER Research has been synthesized.
- * Grounded strictly in the Research Document and tailored to the user's Product Type
- * (SaaS, Web App, Landing Page, E-commerce, Marketplace, Mobile App, Internal Tool, AI Product, API).
- * Zero hardcoded fictional fallback questions.
+ * Hybrid Architecture: Uses Gemini API when configured and reachable; automatically switches
+ * to Aigenstra's Built-In Adaptive Discovery Agent when Gemini API is missing or offline.
  */
 export async function generateAdaptiveDiscoveryQuestions(
   projectName: string,
@@ -164,8 +192,11 @@ export async function generateAdaptiveDiscoveryQuestions(
 ): Promise<AdaptiveDiscoveryQuestion[]> {
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    throw new Error(
-      "Gemini API key is required to generate research-backed discovery questions. Fictional fallback questions are disabled."
+    return runBuiltInDiscoveryAgent(
+      projectName,
+      productDescription,
+      previousQnA,
+      productType
     );
   }
 
@@ -199,7 +230,7 @@ CRITICAL RULES FOR RESEARCH-BACKED, PRODUCT-TAILORED QUESTIONS:
    - If the user is building a "Landing Page", ask about conversion goals, CTA action, lead capture fields in Supabase, hero/section structure, social proof, and interactive elements—NEVER ask about multi-tenant order tracking or complex admin roles unless mentioned in their idea.
    - If the user is building "SaaS", ask about tenant/workspace structure, core workflow execution, role permissions, and billing/tier rules.
    - If the user is building "E-commerce", ask about product catalog/variants, guest vs. account checkout, payment provider, and order fulfillment states.
-   - If the user is building a "Web App", "Marketplace", "Mobile App", "Internal Tool", "AI Product", or "API", tailor every question to "${projectName}" and "${profile.productType}".
+   - If the user is building a "Business Website", "Web App", "Marketplace", "Mobile App", "Internal Tool", "AI Product", or "API", tailor every question to "${projectName}" and "${profile.productType}".
 3. DEDUPLICATION: Do NOT ask about anything already answered in previous Q&A or already explicitly stated in the user's description.
    Previous questions asked: ${JSON.stringify(answeredTexts)}
 4. TONE & OPTIONS:
@@ -232,38 +263,61 @@ Return a valid JSON array of 4 objects matching this exact schema:
 ]
 `;
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          response_mime_type: "application/json",
-          temperature: 0.2,
-        },
-      }),
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: {
+            response_mime_type: "application/json",
+            temperature: 0.2,
+          },
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      return runBuiltInDiscoveryAgent(
+        projectName,
+        productDescription,
+        previousQnA,
+        productType
+      );
     }
-  );
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "Unknown AI error");
-    throw new Error(`Discovery question synthesis failed (HTTP ${res.status}): ${errText.slice(0, 150)}`);
+    const resData = await res.json();
+    const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) {
+      return runBuiltInDiscoveryAgent(
+        projectName,
+        productDescription,
+        previousQnA,
+        productType
+      );
+    }
+
+    const parsed = JSON.parse(rawText);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return runBuiltInDiscoveryAgent(
+        projectName,
+        productDescription,
+        previousQnA,
+        productType
+      );
+    }
+
+    return parsed;
+  } catch {
+    return runBuiltInDiscoveryAgent(
+      projectName,
+      productDescription,
+      previousQnA,
+      productType
+    );
   }
-
-  const resData = await res.json();
-  const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) {
-    throw new Error("Discovery AI returned an empty response.");
-  }
-
-  const parsed = JSON.parse(rawText);
-  if (!Array.isArray(parsed) || parsed.length === 0) {
-    throw new Error("Discovery AI did not return a valid list of questions.");
-  }
-
-  return parsed;
 }
 
 /**
